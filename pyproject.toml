@@ -23,5 +23,7 @@ dev = [
 
 [tool.pylint]
 disable = [
-    "C0103"  # Disable snake_case naming convention check
+    "C0103",  # Disable snake_case naming convention check
+    "C0114",  # Missing module docstring
+    "R0903",  # Too few public methods
 ]
