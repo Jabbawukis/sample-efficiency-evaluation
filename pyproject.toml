@@ -1,0 +1,24 @@
+[project]
+name = "sample_efficiency_evaluation"
+version = "0.0.1"
+description = ""
+authors = [
+  { name="Daniel Christoph", email="christod@hu-berlin.de" },
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pytorch-transformers>=1.2.0,<2.0.0",
+    "datasets>=3.0.1,<4.0.0",
+    "evaluate>=0.4.3,<0.5.0",
+    "requests>=2.32.3,<3.0.0",
+    "wandb>=0.18.3,<0.19.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-cov>=5.0.0,<6.0.0",
+    "pylint>=3.3.1,<4.0.0",
+    "black>=23.0.0,<24.0.0"
+]
