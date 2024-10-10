@@ -41,7 +41,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests
+        pytest src/tests
 
     - name: Run pylint
       run: |
