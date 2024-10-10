@@ -4,11 +4,14 @@ FactMatcher
 
 import logging
 
+from abc import ABC, abstractmethod
 from tqdm import tqdm
+from typing_extensions import overload
+
 from utility import utility
 
 
-class FactMatcher:
+class FactMatcherBase(ABC):
     """
     FactMatcher
     """
@@ -20,7 +23,8 @@ class FactMatcher:
     def extract_entity_information(self, bear_data_path: str) -> dict:
         """
         Extract entity information from bear data.
-        :return:
+        :param bear_data_path: Path to bear data directory
+        :return: Relation dictionary
         """
         relation_dict: dict = {}
         for relation_key, _ in self.bear_relation_info_dict.items():
@@ -37,3 +41,20 @@ class FactMatcher:
                     "obj_label": fact_dict["obj_label"],
                 }
         return relation_dict
+
+    @abstractmethod
+    def match_facts(self) -> dict:
+        """
+        Match facts
+        :return: Matched facts
+        """
+
+
+class FactMatcherSimpleHeuristic(FactMatcherBase):
+    """
+    FactMatcherSimpleHeuristic
+    """
+
+    @overload
+    def match_facts(self) -> dict:
+        pass

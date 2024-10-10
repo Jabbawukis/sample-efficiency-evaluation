@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from sample_efficiency_evaluation.fact_matcher import FactMatcher
+from sample_efficiency_evaluation.fact_matcher import FactMatcherSimpleHeuristic
 from utility import utility
 
 
@@ -45,7 +45,7 @@ class FactMatcherTest(unittest.TestCase):
     def test_extract_entity_information(self):
         with patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict) as mock_load_json_dict:
 
-            fact_matcher = FactMatcher(
+            fact_matcher = FactMatcherSimpleHeuristic(
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
                 bear_data_path=f"{self.test_resources_abs_path}/BEAR",
             )

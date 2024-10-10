@@ -11,6 +11,7 @@ dependencies = [
     "datasets",
     "transformers>=4.38",
     "tqdm",
+    "datasets",
 ]
 dynamic = ["version"]
 
@@ -30,6 +31,7 @@ disable = [
     "C0115",  # Missing class docstring
     "C0116",  # Missing function docstring
     "C0301",  # Line too long
+    "E0401",  # Unable to import
 ]
 
 [tool.black]
