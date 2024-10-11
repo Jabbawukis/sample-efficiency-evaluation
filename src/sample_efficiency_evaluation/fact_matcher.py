@@ -23,11 +23,42 @@ class FactMatcherBase(ABC):
     """
 
     def __init__(self, **kwargs):
-        self.bear_relation_info_dict: dict = utility.load_json_dict(kwargs.get("bear_relation_info_path"))
-        self.entity_relation_info_dict: dict = self.extract_entity_information(kwargs.get("bear_data_path"))
+        """
+        Initialize FactMatcher
+
+        :param kwargs:
+        - bear_data_path: Path to bear data directory.
+            This is the main directory where all the bear data is stored. It should contain the relation_info.json file
+            and the BEAR directory.
+
+        - bear_relation_info_path: Path to the BEAR relation info file.
+            This file contains the relation information for the BEAR data. If not provided, it will be set to
+            {bear_data_path}/relation_info.json
+
+        - bear_facts_path: Path to the BEAR facts directory.
+            This is the directory where all the BEAR facts are stored. If not provided, it will be set to
+            {bear_data_path}/BEAR
+
+        - file_index_dir: Path to the index directory.
+            This is the directory where the index will be stored. If not provided, it will be set to "indexdir".
+
+        """
+        self.bear_data_path = kwargs.get("bear_data_path")
+
+        self.bear_relation_info_path = kwargs.get(
+            "bear_relation_info_path", f"{self.bear_data_path}/relation_info.json"
+        )
+
+        self.bear_facts_path = kwargs.get("bear_facts_path", f"{self.bear_data_path}/BEAR")
 
         index_path = kwargs.get("file_index_dir", "indexdir")
+
+        self.bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
+
+        self.entity_relation_info_dict: dict = self.extract_entity_information(self.bear_facts_path)
+
         self.writer, self.indexer = self.initialize_index(index_path)
+
         self.query_parser = QueryParser("content", schema=self.indexer.schema)
 
     def extract_entity_information(self, bear_data_path: str) -> dict:

@@ -48,13 +48,25 @@ class FactMatcherTest(unittest.TestCase):
         if os.path.exists(self.test_index_dir):
             shutil.rmtree(self.test_index_dir)
 
-    def test_extract_entity_information(self):
+    def test_extract_entity_information_good(self):
         with patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict) as mock_load_json_dict, \
              patch.object(FactMatcherSimpleHeuristic, "initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)):
 
             fact_matcher = FactMatcherSimpleHeuristic(
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
-                bear_data_path=f"{self.test_resources_abs_path}/BEAR",
+                bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
+            )
+
+            self.assertEqual(fact_matcher.bear_relation_info_dict, self.test_relation_info_dict)
+            self.assertEqual(fact_matcher.entity_relation_info_dict, self.test_entity_relation_info_dict)
+            mock_load_json_dict.assert_called_once_with(f"{self.test_resources_abs_path}/relation_info.json")
+
+    def test_extract_entity_information_good2(self):
+        with patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict) as mock_load_json_dict, \
+             patch.object(FactMatcherSimpleHeuristic, "initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)):
+
+            fact_matcher = FactMatcherSimpleHeuristic(
+                bear_data_path=f"{self.test_resources_abs_path}"
             )
 
             self.assertEqual(fact_matcher.bear_relation_info_dict, self.test_relation_info_dict)
@@ -66,8 +78,7 @@ class FactMatcherTest(unittest.TestCase):
             patch.object(FactMatcherSimpleHeuristic, "extract_entity_information", return_value=self.test_entity_relation_info_dict)
 
             fact_matcher = FactMatcherSimpleHeuristic(
-                bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
-                bear_data_path=f"{self.test_resources_abs_path}/BEAR",
+                bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
 
@@ -89,8 +100,7 @@ class FactMatcherTest(unittest.TestCase):
             patch.object(FactMatcherSimpleHeuristic, "extract_entity_information", return_value=self.test_entity_relation_info_dict)
 
             fact_matcher = FactMatcherSimpleHeuristic(
-                bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
-                bear_data_path=f"{self.test_resources_abs_path}/BEAR",
+                bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
 
