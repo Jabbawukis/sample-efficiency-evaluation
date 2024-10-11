@@ -11,6 +11,7 @@ help:
 ## run-workflow: Run the workflow pipeline locally for quick evaluation.
 .PHONY: run-workflow
 run-workflow:
+	pip install .
 	pytest tests/
 	black src/
 	pylint src/
