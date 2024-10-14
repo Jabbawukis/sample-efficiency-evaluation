@@ -7,12 +7,14 @@ import os.path
 import hashlib
 
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
-from whoosh.index import create_in, FileIndex
+from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.writing import SegmentWriter
 from whoosh.qparser import QueryParser, query
+from spacy.lang.en import English
 
 from utility import utility
 
@@ -42,6 +44,8 @@ class FactMatcherBase(ABC):
         - file_index_dir: Path to the index directory.
             This is the directory where the index will be stored. If not provided, it will be set to "indexdir".
 
+        - read_existing_index: If True, it will read the existing index. If False, it will create a new index.
+
         """
         self.bear_data_path = kwargs.get("bear_data_path")
 
@@ -55,13 +59,20 @@ class FactMatcherBase(ABC):
 
         self.bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
 
-        self.entity_relation_info_dict: dict = self.extract_entity_information(self.bear_facts_path)
+        self.entity_relation_info_dict: dict = self._extract_entity_information(self.bear_facts_path)
 
-        self.writer, self.indexer = self.initialize_index(index_path)
+        if kwargs.get("read_existing_index", False):
+            self.writer, self.indexer = self._open_existing_index_dir(index_path)
+        else:
+            self.writer, self.indexer = self._initialize_index(index_path)
 
         self.query_parser = QueryParser("content", schema=self.indexer.schema)
 
-    def extract_entity_information(self, bear_data_path: str) -> dict:
+        self.nlp_pipeline = English()
+
+        self.nlp_pipeline.add_pipe("sentencizer")
+
+    def _extract_entity_information(self, bear_data_path: str) -> dict:
         """
         Extract entity information from bear data.
         :param bear_data_path: Path to bear data directory
@@ -93,23 +104,32 @@ class FactMatcherBase(ABC):
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", content=file_content)
 
-    def index_dataset(self, file_contents: list[dict], text_key: str = "text") -> None:
+    def index_dataset(
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
+    ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
         :param text_key: Key to extract text from file content. Since the dataset is a list of file contents, we need to
         specify the key to extract text from the file content. That would be the case if we pass a huggingface dataset.
         :param file_contents: List of file contents
+        :param split_contents_into_sentences: Apply sentence splitting to the text before indexing.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Indexing dataset"):
-            self.index_file(file_content[text_key])
+            if split_contents_into_sentences:
+                split_doc = self.nlp_pipeline(file_content[text_key])
+                with ThreadPoolExecutor() as executor:
+                    sentences = [sent.text for sent in split_doc.sents]
+                    executor.map(self.index_file, sentences)
+            else:
+                self.index_file(file_content[text_key])
         self.commit_index()
 
     def commit_index(self) -> None:
         self.writer.commit()
 
     @staticmethod
-    def initialize_index(index_path) -> tuple[SegmentWriter, FileIndex]:
+    def _initialize_index(index_path) -> tuple[SegmentWriter, FileIndex]:
         """
         Initialize index writer and indexer.
         :param index_path:
@@ -119,6 +139,20 @@ class FactMatcherBase(ABC):
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
+        writer = indexer.writer()
+        return writer, indexer
+
+    @staticmethod
+    def _open_existing_index_dir(index_path) -> tuple[SegmentWriter, FileIndex]:
+        """
+        Open an already existing index directory and return writer and indexer.
+
+        If the index directory does not exist, it will raise an error.
+        Within the directory, there should be one index file.
+        :param index_path:
+        :return:
+        """
+        indexer = open_dir(index_path)
         writer = indexer.writer()
         return writer, indexer
 

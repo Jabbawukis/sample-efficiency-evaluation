@@ -12,7 +12,9 @@ dependencies = [
     "transformers>=4.38",
     "tqdm",
     "datasets",
-    "Whoosh-Reloaded"
+    "Whoosh-Reloaded",
+    "spacy",
+    "numpy",
 ]
 dynamic = ["version"]
 
