@@ -129,6 +129,15 @@ class FactMatcherBase(ABC):
     def commit_index(self) -> None:
         self.writer.commit()
 
+    def convert_relation_info_dict_to_json(self, file_path: str) -> None:
+        """
+        Convert relation info dictionary to json file.
+
+        :param file_path: Path to save the json file.
+        :return:
+        """
+        utility.save_json_dict(self.entity_relation_info_dict, file_path)
+
     @staticmethod
     def _initialize_index(index_path) -> tuple[SegmentWriter, FileIndex]:
         """
