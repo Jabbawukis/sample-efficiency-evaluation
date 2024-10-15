@@ -13,7 +13,8 @@ from tqdm import tqdm
 from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.writing import SegmentWriter
-from whoosh.qparser import QueryParser, query
+from whoosh.qparser import QueryParser
+from whoosh.query import And
 from spacy.lang.en import English
 
 from utility import utility
@@ -55,18 +56,16 @@ class FactMatcherBase(ABC):
 
         self.bear_facts_path = kwargs.get("bear_facts_path", f"{self.bear_data_path}/BEAR")
 
-        index_path = kwargs.get("file_index_dir", "indexdir")
-
-        self.bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
+        self.index_path = kwargs.get("file_index_dir", "indexdir")
 
         self.entity_relation_info_dict: dict = self._extract_entity_information(self.bear_facts_path)
 
         if kwargs.get("read_existing_index", False):
-            self.writer, self.indexer = self._open_existing_index_dir(index_path)
+            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
-            self.writer, self.indexer = self._initialize_index(index_path)
+            self.writer, self.indexer = self._initialize_index(self.index_path)
 
-        self.query_parser = QueryParser("content", schema=self.indexer.schema)
+        self.query_parser = QueryParser("text", schema=self.indexer.schema)
 
         self.nlp_pipeline = English()
 
@@ -79,7 +78,8 @@ class FactMatcherBase(ABC):
         :return: Relation dictionary
         """
         relation_dict: dict = {}
-        for relation_key, _ in self.bear_relation_info_dict.items():
+        bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
+        for relation_key, _ in bear_relation_info_dict.items():
             try:
                 fact_list: list[str] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
                 relation_dict.update({relation_key: {}})
@@ -92,6 +92,7 @@ class FactMatcherBase(ABC):
                 relation_dict[relation_key][fact_dict["sub_label"]] = {
                     "aliases": fact_dict["sub_aliases"],
                     "obj_label": fact_dict["obj_label"],
+                    "occurrences": 0,
                 }
         return relation_dict
 
@@ -102,7 +103,7 @@ class FactMatcherBase(ABC):
         :return:
         """
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
-        self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", content=file_content)
+        self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
     def index_dataset(
         self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
@@ -135,7 +136,7 @@ class FactMatcherBase(ABC):
         :param index_path:
         :return:
         """
-        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT(stored=True))
+        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=True))
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
@@ -159,10 +160,19 @@ class FactMatcherBase(ABC):
     @abstractmethod
     def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
         """
-        Search index
+        Search index for main-query and sub query.
+
         :param main_query: The main query
         :param sub_query: The sub query
         :return: List of search results
+        """
+
+    @abstractmethod
+    def create_fact_statistics(self) -> None:
+        """
+        Create fact statistics
+
+        :return:
         """
 
 
@@ -170,6 +180,23 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
     """
     FactMatcherSimpleHeuristic
     """
+
+    def create_fact_statistics(self) -> None:
+        """
+        Create fact statistics
+
+        This method will iterate over all the relations and facts and search the index for the subject and object.
+        It will also search for the aliases of the subject.
+        The occurrences will be updated in the relation dictionary.
+        :return:
+        """
+        for relation_key, relation in self.entity_relation_info_dict.items():
+            for subj, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                results = self.search_index(subj, fact["obj_label"])
+                relation[subj]["occurrences"] += len(results)
+                for alias in fact["aliases"]:
+                    results = self.search_index(alias, fact["obj_label"])
+                    relation[subj]["occurrences"] += len(results)
 
     def search_index(self, main_query: str, sub_query: str = "") -> list[dict[str, str]]:
         """
@@ -184,14 +211,12 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         """
         collected_results = []
         with self.indexer.searcher() as searcher:
-            user_q = self.query_parser.parse(main_query)
+            main_q = self.query_parser.parse(main_query)
             if sub_query != "":
-                print(f"Searching index for ({main_query}) and ({sub_query})")
-                sub_q = query.Term("content", sub_query)
-                results = searcher.search(user_q, filter=sub_q)
+                sub_q = self.query_parser.parse(sub_query)
+                results = searcher.search(And([main_q, sub_q]))
             else:
-                print(f"Searching index for ({main_query})")
-                results = searcher.search(user_q)
+                results = searcher.search(main_q)
             for result in results:
                 collected_results.append(dict(result))
         return collected_results

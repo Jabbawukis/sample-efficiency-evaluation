@@ -20,14 +20,17 @@ class FactMatcherTest(unittest.TestCase):
                 "Abu Dhabi": {
                     "aliases": ["Abū Dhabi", "Abudhabi"],
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
+                    "occurrences": 0,
                 },
                 "Armenia": {
                     "aliases": ["Republic of Armenia", "🇦🇲", "ARM", "AM"],
                     "obj_label": "Nikol Pashinyan",
+                    "occurrences": 0,
                 },
                 "Free State of Fiume": {
                     "aliases": [],
                     "obj_label": "Gabriele D'Annunzio",
+                    "occurrences": 0,
                 },
                 "Nepal": {
                     "aliases": [
@@ -38,6 +41,7 @@ class FactMatcherTest(unittest.TestCase):
                         "🇳🇵",
                     ],
                     "obj_label": "Khadga Prasad Sharma Oli",
+                    "occurrences": 0,
                 },
             }
         }
@@ -63,7 +67,6 @@ class FactMatcherTest(unittest.TestCase):
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
             )
 
-            self.assertEqual(fact_matcher.bear_relation_info_dict, self.test_relation_info_dict)
             self.assertEqual(fact_matcher.entity_relation_info_dict, self.test_entity_relation_info_dict)
             mock_error.assert_called_once()
             mock_load_json_dict.assert_called_once_with(f"{self.test_resources_abs_path}/relation_info.json")
@@ -79,7 +82,6 @@ class FactMatcherTest(unittest.TestCase):
 
             fact_matcher = FactMatcherSimpleHeuristic(bear_data_path=f"{self.test_resources_abs_path}")
 
-            self.assertEqual(fact_matcher.bear_relation_info_dict, self.test_relation_info_dict)
             self.assertEqual(fact_matcher.entity_relation_info_dict, self.test_entity_relation_info_dict)
             mock_error.assert_called_once()
             mock_load_json_dict.assert_called_once_with(f"{self.test_resources_abs_path}/relation_info.json")
@@ -188,17 +190,17 @@ class FactMatcherTest(unittest.TestCase):
                     {
                         "path": "/ddda5959a6a4f994ee6a55c0e60b6137ea776e79846fc5a35d58ef0840005905",
                         "title": "ddda5959a6a4f994ee6a55c0e60b6137ea776e79846fc5a35d58ef0840005905",
-                        "content": "Boeing is a company",
+                        "text": "Boeing is a company",
                     },
                     {
                         "path": "/1b4c34a604c95618ceb558da613bd8655d0a6a21ccaf0480dc150eff44d30047",
                         "title": "1b4c34a604c95618ceb558da613bd8655d0a6a21ccaf0480dc150eff44d30047",
-                        "content": "Boeing 747 is a plane",
+                        "text": "Boeing 747 is a plane",
                     },
                 ],
             )
 
-    def test_search_index_sub_query(self):
+    def test_search_index_sub_query_1(self):
         with (
             patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
             patch.object(
@@ -224,7 +226,38 @@ class FactMatcherTest(unittest.TestCase):
                     {
                         "path": "/1b4c34a604c95618ceb558da613bd8655d0a6a21ccaf0480dc150eff44d30047",
                         "title": "1b4c34a604c95618ceb558da613bd8655d0a6a21ccaf0480dc150eff44d30047",
-                        "content": "Boeing 747 is a plane",
+                        "text": "Boeing 747 is a plane",
+                    }
+                ],
+            )
+
+    def test_search_index_sub_query_2(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
+            patch.object(
+                FactMatcherSimpleHeuristic,
+                "_extract_entity_information",
+                return_value=self.test_entity_relation_info_dict,
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimpleHeuristic(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                file_index_dir=self.test_index_dir,
+            )
+
+            fact_matcher.index_file("Angela Merkel is the chancellor of Germany")
+            fact_matcher.index_file("Boeing 747 is a plane")
+            fact_matcher.commit_index()
+            results = fact_matcher.search_index("Angela Merkel", sub_query="chancellor Germany")
+            self.assertEqual(len(results), 1)
+            self.assertEqual(
+                results,
+                [
+                    {
+                        "path": "/4640d50a3d19c3d61223ee8bee3f4615164524b78bbf06bb2f7c70a6e4ccc6d4",
+                        "title": "4640d50a3d19c3d61223ee8bee3f4615164524b78bbf06bb2f7c70a6e4ccc6d4",
+                        "text": "Angela Merkel is the chancellor of Germany",
                     }
                 ],
             )
