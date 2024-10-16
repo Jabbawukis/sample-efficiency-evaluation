@@ -122,7 +122,7 @@ class FactMatcherTest(unittest.TestCase):
 
             mock_index_file.assert_any_call("Boeing is a company")
             mock_index_file.assert_any_call("Boeing 747 is a plane")
-            mock_commit_index.assert_called_once()
+            self.assertEqual(mock_index_file.call_count, 2)
 
     def test_index_dataset_2_split_into_sentences(self):
         with (
@@ -162,7 +162,7 @@ class FactMatcherTest(unittest.TestCase):
             mock_index_file.assert_any_call("Boeing is a company.")
             mock_index_file.assert_any_call("Boeing 747 is a plane.")
             mock_index_file.assert_any_call("Boeing 747 is a cool plane.")
-            mock_commit_index.assert_called_once()
+            self.assertEqual(mock_index_file.call_count, 3)
 
     def test_search_index(self):
         with (

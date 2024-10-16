@@ -124,7 +124,7 @@ class FactMatcherBase(ABC):
                     executor.map(self.index_file, sentences)
             else:
                 self.index_file(file_content[text_key])
-        self.commit_index()
+            self.commit_index()
 
     def commit_index(self) -> None:
         self.writer.commit()
