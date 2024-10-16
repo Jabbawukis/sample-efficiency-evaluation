@@ -66,7 +66,7 @@ class FactMatcherBase(ABC):
         if kwargs.get("read_existing_index", False):
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
-            self.save_file_content = kwargs.get("save_file_content", False)
+            self.save_file_content = kwargs.get("save_file_content", True)
             self.writer, self.indexer = self._initialize_index(self.index_path)
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)

@@ -175,7 +175,6 @@ class FactMatcherTest(unittest.TestCase):
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
-                save_file_content=True,
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
@@ -212,7 +211,6 @@ class FactMatcherTest(unittest.TestCase):
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
-                save_file_content=True,
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
@@ -244,7 +242,6 @@ class FactMatcherTest(unittest.TestCase):
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
-                save_file_content=True,
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
