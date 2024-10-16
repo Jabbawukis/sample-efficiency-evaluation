@@ -5,6 +5,7 @@ FactMatcher
 import logging
 import os.path
 import hashlib
+import threading
 
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
@@ -71,6 +72,8 @@ class FactMatcherBase(ABC):
 
         self.nlp_pipeline.add_pipe("sentencizer")
 
+        self.lock = threading.Lock()
+
     def _extract_entity_information(self, bear_data_path: str) -> dict:
         """
         Extract entity information from bear data.
@@ -106,14 +109,15 @@ class FactMatcherBase(ABC):
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
     def _index_data_set_file(self, file_content: dict, text_key : str, split_contents_into_sentences: bool) -> None:
-        if split_contents_into_sentences:
-            split_doc = self.nlp_pipeline(file_content[text_key])
-            sentences = [sent.text for sent in split_doc.sents]
-            for sentence in sentences:
-                self.index_file(sentence)
-        else:
-            self.index_file(file_content[text_key])
-        self.commit_index()
+        with self.lock:
+            if split_contents_into_sentences:
+                split_doc = self.nlp_pipeline(file_content[text_key])
+                sentences = [sent.text for sent in split_doc.sents]
+                for sentence in sentences:
+                    self.index_file(sentence)
+            else:
+                self.index_file(file_content[text_key])
+            self.commit_index()
 
     def index_dataset(
         self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
