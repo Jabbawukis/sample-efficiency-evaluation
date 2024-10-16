@@ -27,19 +27,10 @@ class FactMatcherTest(unittest.TestCase):
                     "obj_label": "Nikol Pashinyan",
                     "occurrences": 0,
                 },
-                "Free State of Fiume": {
-                    "aliases": [],
-                    "obj_label": "Gabriele D'Annunzio",
-                    "occurrences": 0,
-                },
+                "Free State of Fiume": {"aliases": [], "obj_label": "Gabriele D'Annunzio", "occurrences": 0},
+                "Gülcemal Sultan": {"aliases": [], "obj_label": "Albania", "occurrences": 0},
                 "Nepal": {
-                    "aliases": [
-                        "NPL",
-                        "Federal Democratic Republic of Nepal",
-                        "NEP",
-                        "NP",
-                        "🇳🇵",
-                    ],
+                    "aliases": ["NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"],
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "occurrences": 0,
                 },

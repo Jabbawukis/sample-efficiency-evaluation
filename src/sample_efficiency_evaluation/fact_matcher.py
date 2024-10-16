@@ -86,14 +86,13 @@ class FactMatcherBase(ABC):
         bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
         for relation_key, _ in bear_relation_info_dict.items():
             try:
-                fact_list: list[str] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
+                fact_list: list[dict] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
                 relation_dict.update({relation_key: {}})
             except FileNotFoundError:
                 logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
                 continue
-            for fact in fact_list:
+            for fact_dict in fact_list:
                 logging.info("Extracting entity information for %s", relation_key)
-                fact_dict = utility.load_json_str(fact)
                 relation_dict[relation_key][fact_dict["sub_label"]] = {
                     "aliases": fact_dict["sub_aliases"],
                     "obj_label": fact_dict["obj_label"],

@@ -12,25 +12,17 @@ def load_json_dict(json_file_path: str) -> dict:
     return json_dict
 
 
-def load_json_line_dict(json_line_file_path: str) -> list:
+def load_json_line_dict(json_line_file_path: str) -> list[dict]:
     """
     Load json line file.
     :param json_line_file_path: Path to json file
-    :return: Dictionary containing information
+    :return: List of dictionaries containing information
     """
+    json_list = []
     with open(json_line_file_path, "r", encoding="utf-8") as f:
-        json_list = list(f)
+        for line in f:
+            json_list.append(json.loads(line))
     return json_list
-
-
-def load_json_str(json_str: str) -> dict:
-    """
-    Load json string.
-    :param json_str: Json string
-    :return: Dictionary containing information
-    """
-    json_dict = json.loads(json_str)
-    return json_dict
 
 
 def save_json_dict(json_dict: dict, json_file_path: str):
@@ -40,4 +32,4 @@ def save_json_dict(json_dict: dict, json_file_path: str):
     :param json_file_path: Path to json file
     """
     with open(json_file_path, "w", encoding="utf-8") as f:
-        json.dump(json_dict, f, indent=4)
+        json.dump(json_dict, f, indent=4, ensure_ascii=False)
