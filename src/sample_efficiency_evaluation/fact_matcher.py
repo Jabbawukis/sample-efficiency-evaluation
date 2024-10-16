@@ -33,40 +33,44 @@ class FactMatcherBase(ABC):
         :param kwargs:
         - bear_data_path: Path to bear data directory.
             This is the main directory where all the bear data is stored. It should contain the relation_info.json file
-            and the BEAR directory.
+            and the BEAR facts directory.
 
-        - bear_relation_info_path: Path to the BEAR relation info file.
+        - bear_relation_info_path (optional): Path to the BEAR relation info file.
             This file contains the relation information for the BEAR data. If not provided, it will be set to
-            {bear_data_path}/relation_info.json
+            {bear_data_path}/relation_info.json.
 
-        - bear_facts_path: Path to the BEAR facts directory.
-            This is the directory where all the BEAR facts are stored. If not provided, it will be set to
-            {bear_data_path}/BEAR
+        - bear_facts_path (optional): Path to the BEAR facts directory.
+            This is the directory where all the BEAR fact files (.jsonl) are stored. If not provided, it will be set to
+            {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
+            containing more facts.
 
-        - file_index_dir: Path to the index directory.
-            This is the directory where the index will be stored. If not provided, it will be set to "indexdir".
+        - file_index_dir (optional): Path to the index directory.
+            This is the directory where the index will be stored.
+            If not provided, it will be set to "indexdir".
 
-        - read_existing_index: If True, it will read the existing index. If False, it will create a new index.
+        - read_existing_index (optional): If True, it will read the existing index. If False, it will create a new
+            index. The index file provided in the file_index_dir argument will be used to read the existing index.
+            If the file_index_dir argument is not set, the default "indexdir" will be used.
 
-        - save_file_content: If True, it will save the file content in the index. If False, it will not save the file
+        - save_file_content (optional): If True, it will save the file content in the index.
+            The result of an index search will contain the file content in the text field
+            e.g. {"path": "some_path", "title": "some_title", "text": "some_text"}.
+            If False, it will not save the file content.
 
         """
-        self.bear_data_path = kwargs.get("bear_data_path")
+        bear_data_path = kwargs.get("bear_data_path")
 
-        self.bear_relation_info_path = kwargs.get(
-            "bear_relation_info_path", f"{self.bear_data_path}/relation_info.json"
+        index_path = kwargs.get("file_index_dir", "indexdir")
+
+        self.entity_relation_info_dict: dict = self._extract_entity_information(
+            bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
+            bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
 
-        self.bear_facts_path = kwargs.get("bear_facts_path", f"{self.bear_data_path}/BEAR")
-
-        self.index_path = kwargs.get("file_index_dir", "indexdir")
-
-        self.entity_relation_info_dict: dict = self._extract_entity_information(self.bear_facts_path)
-
         if kwargs.get("read_existing_index", False):
-            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
+            self.writer, self.indexer = self._open_existing_index_dir(index_path)
         else:
-            self.writer, self.indexer = self._initialize_index(self.index_path, kwargs.get("save_file_content", True))
+            self.writer, self.indexer = self._initialize_index(index_path, kwargs.get("save_file_content", True))
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)
 
@@ -76,34 +80,10 @@ class FactMatcherBase(ABC):
 
         self.lock = threading.Lock()
 
-    def _extract_entity_information(self, bear_data_path: str) -> dict:
-        """
-        Extract entity information from bear data.
-        :param bear_data_path: Path to bear data directory
-        :return: Relation dictionary
-        """
-        relation_dict: dict = {}
-        bear_relation_info_dict: dict = utility.load_json_dict(self.bear_relation_info_path)
-        for relation_key, _ in bear_relation_info_dict.items():
-            try:
-                fact_list: list[dict] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
-                relation_dict.update({relation_key: {}})
-            except FileNotFoundError:
-                logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
-                continue
-            for fact_dict in fact_list:
-                logging.info("Extracting entity information for %s", relation_key)
-                relation_dict[relation_key][fact_dict["sub_label"]] = {
-                    "aliases": fact_dict["sub_aliases"],
-                    "obj_label": fact_dict["obj_label"],
-                    "occurrences": 0,
-                }
-        return relation_dict
-
     def index_file(self, file_content: str) -> None:
         """
         Index file.
-        :param file_content: File content to index
+        :param file_content: File content to index.
         :return:
         """
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
@@ -125,10 +105,12 @@ class FactMatcherBase(ABC):
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
-        :param text_key: Key to extract text from file content. Since the dataset is a list of file contents, we need to
-        specify the key to extract text from the file content. That would be the case if we pass a huggingface dataset.
-        :param file_contents: List of file contents
-        :param split_contents_into_sentences: Apply sentence splitting to the text before indexing.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
         :return:
         """
 
@@ -152,7 +134,8 @@ class FactMatcherBase(ABC):
     def _initialize_index(index_path: str, save_file_content: bool) -> tuple[SegmentWriter, FileIndex]:
         """
         Initialize index writer and indexer.
-        :param index_path:
+        :param index_path: Path to the index directory to create.
+        :param save_file_content: If True, it will save the file content in the index.
         :return:
         """
         indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=save_file_content))
@@ -169,12 +152,37 @@ class FactMatcherBase(ABC):
 
         If the index directory does not exist, it will raise an error.
         Within the directory, there should be one index file.
-        :param index_path:
-        :return:
+        :param index_path: Path to an existing index directory.
+        :return: Writer and indexer.
         """
         indexer = open_dir(index_path)
         writer = indexer.writer()
         return writer, indexer
+
+    @staticmethod
+    def _extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
+        """
+        Extract entity information from bear data.
+        :param bear_data_path: Path to bear facts directory.
+        :return: Relation dictionary
+        """
+        relation_dict: dict = {}
+        bear_relation_info_dict: dict = utility.load_json_dict(bear_relation_info_path)
+        for relation_key, _ in bear_relation_info_dict.items():
+            try:
+                fact_list: list[dict] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
+                relation_dict.update({relation_key: {}})
+            except FileNotFoundError:
+                logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
+                continue
+            for fact_dict in fact_list:
+                logging.info("Extracting entity information for %s", relation_key)
+                relation_dict[relation_key][fact_dict["sub_label"]] = {
+                    "aliases": fact_dict["sub_aliases"],
+                    "obj_label": fact_dict["obj_label"],
+                    "occurrences": 0,
+                }
+        return relation_dict
 
     @abstractmethod
     def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
