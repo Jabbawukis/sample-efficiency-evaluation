@@ -156,7 +156,9 @@ class FactMatcherBase(ABC):
         :param index_path:
         :return:
         """
-        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=self.save_file_content))
+        indexing_schema = Schema(
+            title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=self.save_file_content)
+        )
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
