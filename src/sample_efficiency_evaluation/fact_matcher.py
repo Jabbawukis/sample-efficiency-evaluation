@@ -31,32 +31,31 @@ class FactMatcherBase(ABC):
         Initialize FactMatcher
 
         :param kwargs:
-        - bear_data_path: Path to bear data directory.
+        - bear_data_path [str]: Path to bear data directory.
             This is the main directory where all the bear data is stored. It should contain the relation_info.json file
             and the BEAR facts directory.
 
-        - bear_relation_info_path (optional): Path to the BEAR relation info file.
+        - bear_relation_info_path [Optional[str]]: Path to the BEAR relation info file.
             This file contains the relation information for the BEAR data. If not provided, it will be set to
             {bear_data_path}/relation_info.json.
 
-        - bear_facts_path (optional): Path to the BEAR facts directory.
+        - bear_facts_path [Optional[str]]: Path to the BEAR facts directory.
             This is the directory where all the BEAR fact files (.jsonl) are stored. If not provided, it will be set to
             {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
             containing more facts.
 
-        - file_index_dir (optional): Path to the index directory.
+        - file_index_dir [Optional[str]]: Path to the index directory.
             This is the directory where the index will be stored.
             If not provided, it will be set to "indexdir".
 
-        - read_existing_index (optional): If True, it will read the existing index. If False, it will create a new
+        - read_existing_index [Optional[bool]]: If True, it will read the existing index. If False, it will create a new
             index. The index file provided in the file_index_dir argument will be used to read the existing index.
             If the file_index_dir argument is not set, the default "indexdir" will be used.
 
-        - save_file_content (optional): If True, it will save the file content in the index.
+        - save_file_content [Optional[bool]]: If True, it will save the file content in the index.
             The result of an index search will contain the file content in the text field
             e.g. {"path": "some_path", "title": "some_title", "text": "some_text"}.
-            If False, it will not save the file content.
-
+            If False, it will not save the file content. The default is True.
         """
         bear_data_path = kwargs.get("bear_data_path")
 
