@@ -48,6 +48,8 @@ class FactMatcherBase(ABC):
 
         - read_existing_index: If True, it will read the existing index. If False, it will create a new index.
 
+        - save_file_content: If True, it will save the file content in the index. If False, it will not save the file
+
         """
         self.bear_data_path = kwargs.get("bear_data_path")
 
@@ -64,6 +66,7 @@ class FactMatcherBase(ABC):
         if kwargs.get("read_existing_index", False):
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
+            self.save_file_content = kwargs.get("save_file_content", False)
             self.writer, self.indexer = self._initialize_index(self.index_path)
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)
@@ -147,14 +150,13 @@ class FactMatcherBase(ABC):
         """
         utility.save_json_dict(self.entity_relation_info_dict, file_path)
 
-    @staticmethod
-    def _initialize_index(index_path) -> tuple[SegmentWriter, FileIndex]:
+    def _initialize_index(self, index_path) -> tuple[SegmentWriter, FileIndex]:
         """
         Initialize index writer and indexer.
         :param index_path:
         :return:
         """
-        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=True))
+        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=self.save_file_content))
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
