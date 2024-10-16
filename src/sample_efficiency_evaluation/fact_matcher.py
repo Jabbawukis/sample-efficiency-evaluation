@@ -105,6 +105,16 @@ class FactMatcherBase(ABC):
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
+    def _index_data_set_file(self, file_content: dict, text_key : str, split_contents_into_sentences: bool) -> None:
+        if split_contents_into_sentences:
+            split_doc = self.nlp_pipeline(file_content[text_key])
+            sentences = [sent.text for sent in split_doc.sents]
+            for sentence in sentences:
+                self.index_file(sentence)
+        else:
+            self.index_file(file_content[text_key])
+        self.commit_index()
+
     def index_dataset(
         self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
     ) -> None:
@@ -116,15 +126,10 @@ class FactMatcherBase(ABC):
         :param split_contents_into_sentences: Apply sentence splitting to the text before indexing.
         :return:
         """
-        for file_content in tqdm(file_contents, desc="Indexing dataset"):
-            if split_contents_into_sentences:
-                split_doc = self.nlp_pipeline(file_content[text_key])
-                with ThreadPoolExecutor() as executor:
-                    sentences = [sent.text for sent in split_doc.sents]
-                    executor.map(self.index_file, sentences)
-            else:
-                self.index_file(file_content[text_key])
-            self.commit_index()
+
+        with ThreadPoolExecutor() as executor:
+            for file_content in tqdm(file_contents, desc="Indexing dataset"):
+                executor.submit(self._index_data_set_file, file_content, text_key, split_contents_into_sentences)
 
     def commit_index(self) -> None:
         self.writer.commit()
