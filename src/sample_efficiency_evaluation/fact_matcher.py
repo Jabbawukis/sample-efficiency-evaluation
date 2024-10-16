@@ -108,7 +108,7 @@ class FactMatcherBase(ABC):
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
-    def _index_data_set_file(self, file_content: dict, text_key : str, split_contents_into_sentences: bool) -> None:
+    def _index_data_set_file(self, file_content: dict, text_key: str, split_contents_into_sentences: bool) -> None:
         with self.lock:
             if split_contents_into_sentences:
                 split_doc = self.nlp_pipeline(file_content[text_key])
