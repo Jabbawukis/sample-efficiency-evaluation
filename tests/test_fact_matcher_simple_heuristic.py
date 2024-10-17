@@ -105,17 +105,18 @@ class FactMatcherTest(unittest.TestCase):
 
             fact_matcher.index_dataset(
                 [
-                    {"text": "Boeing is a company"},
+                    {"text": "Boeing is a company. Boeing 747 is a plane."},
                     {"text": "Boeing 747 is a plane"},
                 ],
                 text_key="text",
+                split_contents_into_sentences=False,
             )
 
-            mock_index_file.assert_any_call("Boeing is a company")
+            mock_index_file.assert_any_call("Boeing is a company. Boeing 747 is a plane.")
             mock_index_file.assert_any_call("Boeing 747 is a plane")
             self.assertEqual(mock_index_file.call_count, 2)
 
-    def test_index_dataset_2_split_into_sentences(self):
+    def test_index_dataset_2(self):
         with (
             patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
             patch.object(

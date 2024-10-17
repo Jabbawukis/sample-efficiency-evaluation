@@ -90,17 +90,18 @@ class FactMatcherBase(ABC):
 
     def _index_data_set_file(self, file_content: dict, text_key: str, split_contents_into_sentences: bool) -> None:
         with self.lock:
+            content = utility.clean_string(file_content[text_key])
             if split_contents_into_sentences:
-                split_doc = self.nlp_pipeline(file_content[text_key])
+                split_doc = self.nlp_pipeline(content)
                 sentences = [sent.text for sent in split_doc.sents]
                 for sentence in sentences:
                     self.index_file(sentence)
             else:
-                self.index_file(file_content[text_key])
+                self.index_file(content)
             self.commit_index()
 
     def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
