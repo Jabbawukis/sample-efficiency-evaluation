@@ -94,8 +94,8 @@ class FactMatcherTest(unittest.TestCase):
             ) as mock_index_file,
             patch.object(
                 FactMatcherSimpleHeuristic,
-                "commit_index",
-            ) as mock_commit_index,
+                "close_writer",
+            ) as mock_close_writer,
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -133,8 +133,8 @@ class FactMatcherTest(unittest.TestCase):
             ) as mock_index_file,
             patch.object(
                 FactMatcherSimpleHeuristic,
-                "commit_index",
-            ) as mock_commit_index,
+                "close_writer",
+            ) as mock_close_writer,
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -173,8 +173,8 @@ class FactMatcherTest(unittest.TestCase):
 
             fact_matcher.index_file("Boeing is a company")
             fact_matcher.index_file("Boeing 747 is a plane")
-            fact_matcher.commit_index()
             results = fact_matcher.search_index("Boeing")
+            fact_matcher.close_writer()
             self.assertEqual(len(results), 2)
             self.assertEqual(
                 results,
@@ -209,8 +209,8 @@ class FactMatcherTest(unittest.TestCase):
 
             fact_matcher.index_file("Boeing is a company")
             fact_matcher.index_file("Boeing 747 is a plane")
-            fact_matcher.commit_index()
             results = fact_matcher.search_index("Boeing", sub_query="747")
+            fact_matcher.close_writer()
             self.assertEqual(len(results), 1)
             self.assertEqual(
                 results,
@@ -240,8 +240,8 @@ class FactMatcherTest(unittest.TestCase):
 
             fact_matcher.index_file("Angela Merkel is the chancellor of Germany")
             fact_matcher.index_file("Boeing 747 is a plane")
-            fact_matcher.commit_index()
             results = fact_matcher.search_index("Angela Merkel", sub_query="chancellor Germany")
+            fact_matcher.close_writer()
             self.assertEqual(len(results), 1)
             self.assertEqual(
                 results,
@@ -253,3 +253,45 @@ class FactMatcherTest(unittest.TestCase):
                     }
                 ],
             )
+
+    def test_create_fact_statistics_good(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
+            patch.object(
+                FactMatcherSimpleHeuristic,
+                "_extract_entity_information",
+                return_value=self.test_entity_relation_info_dict,
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimpleHeuristic(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                file_index_dir=self.test_index_dir,
+            )
+            fact_matcher.index_file("Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan")
+            fact_matcher.index_file("Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan")
+            fact_matcher.index_file("Armenia blah blah blah Nikol Pashinyan")
+            fact_matcher.index_file("Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio")
+            fact_matcher.index_file("Nepal NPL is cool Khadga Prasad Sharma Oli")
+            fact_matcher.create_fact_statistics()
+            self.assertEqual(fact_matcher.entity_relation_info_dict, {
+            "P6": {
+                "Abu Dhabi": {
+                    "aliases": ["Abū Dhabi", "Abudhabi"],
+                    "obj_label": "Khalifa bin Zayed Al Nahyan",
+                    "occurrences": 2,
+                },
+                "Armenia": {
+                    "aliases": ["Republic of Armenia", "🇦🇲", "ARM", "AM"],
+                    "obj_label": "Nikol Pashinyan",
+                    "occurrences": 1,
+                },
+                "Free State of Fiume": {"aliases": [], "obj_label": "Gabriele D'Annunzio", "occurrences": 1},
+                "Gülcemal Sultan": {"aliases": [], "obj_label": "Albania", "occurrences": 0},
+                "Nepal": {
+                    "aliases": ["NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"],
+                    "obj_label": "Khadga Prasad Sharma Oli",
+                    "occurrences": 2,
+                },
+            }
+        })

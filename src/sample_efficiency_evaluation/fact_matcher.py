@@ -8,12 +8,11 @@ import hashlib
 import threading
 
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
 from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
-from whoosh.writing import SegmentWriter
+from whoosh.writing import SegmentWriter, BufferedWriter
 from whoosh.qparser import QueryParser
 from whoosh.query import And
 from spacy.lang.en import English
@@ -88,18 +87,6 @@ class FactMatcherBase(ABC):
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
-    def _index_data_set_file(self, file_content: dict, text_key: str, split_contents_into_sentences: bool) -> None:
-        with self.lock:
-            content = utility.clean_string(file_content[text_key])
-            if split_contents_into_sentences:
-                split_doc = self.nlp_pipeline(content)
-                sentences = [sent.text for sent in split_doc.sents]
-                for sentence in sentences:
-                    self.index_file(sentence)
-            else:
-                self.index_file(content)
-            self.commit_index()
-
     def index_dataset(
         self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
     ) -> None:
@@ -113,13 +100,23 @@ class FactMatcherBase(ABC):
         :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
         :return:
         """
+        for file_content in tqdm(file_contents, desc="Indexing dataset"):
+            content = utility.clean_string(file_content[text_key])
+            if split_contents_into_sentences:
+                split_doc = self.nlp_pipeline(content)
+                sentences = [sent.text for sent in split_doc.sents]
+                for sentence in sentences:
+                    self.index_file(sentence)
+            else:
+                self.index_file(content)
 
-        with ThreadPoolExecutor() as executor:
-            for file_content in tqdm(file_contents, desc="Indexing dataset"):
-                executor.submit(self._index_data_set_file, file_content, text_key, split_contents_into_sentences)
+    def close_writer(self) -> None:
+        """
+        Close the writer.
 
-    def commit_index(self) -> None:
-        self.writer.commit()
+        :return:
+        """
+        self.writer.close()
 
     def convert_relation_info_dict_to_json(self, file_path: str) -> None:
         """
@@ -131,7 +128,7 @@ class FactMatcherBase(ABC):
         utility.save_json_dict(self.entity_relation_info_dict, file_path)
 
     @staticmethod
-    def _initialize_index(index_path: str, save_file_content: bool) -> tuple[SegmentWriter, FileIndex]:
+    def _initialize_index(index_path: str, save_file_content: bool) -> tuple[BufferedWriter, FileIndex]:
         """
         Initialize index writer and indexer.
         :param index_path: Path to the index directory to create.
@@ -142,7 +139,7 @@ class FactMatcherBase(ABC):
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
-        writer = indexer.writer()
+        writer = BufferedWriter(indexer, period=120, limit=20)
         return writer, indexer
 
     @staticmethod
@@ -197,7 +194,7 @@ class FactMatcherBase(ABC):
     @abstractmethod
     def create_fact_statistics(self) -> None:
         """
-        Create fact statistics
+        Create fact statistics and close the writer.
 
         :return:
         """
@@ -224,6 +221,7 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                 for alias in fact["aliases"]:
                     results = self.search_index(alias, fact["obj_label"])
                     relation[subj]["occurrences"] += len(results)
+        self.close_writer()
 
     def search_index(self, main_query: str, sub_query: str = "") -> list[dict[str, str]]:
         """
@@ -237,7 +235,7 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         :return: List of search results
         """
         collected_results = []
-        with self.indexer.searcher() as searcher:
+        with self.writer.searcher() as searcher:
             main_q = self.query_parser.parse(main_query)
             if sub_query != "":
                 sub_q = self.query_parser.parse(sub_query)
