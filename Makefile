@@ -15,3 +15,8 @@ run-workflow:
 	pytest tests/
 	black src/
 	pylint src/
+
+## install: Install the package locally.
+.PHONY: install
+install:
+	pip install .
