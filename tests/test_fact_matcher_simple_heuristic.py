@@ -178,8 +178,8 @@ class FactMatcherTest(unittest.TestCase):
             ) as mock_index_file,
             patch.object(
                 FactMatcherSimpleHeuristic,
-                "close_writer",
-            ) as mock_close_writer,
+                "close",
+            ),
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -217,8 +217,8 @@ class FactMatcherTest(unittest.TestCase):
             ) as mock_index_file,
             patch.object(
                 FactMatcherSimpleHeuristic,
-                "close_writer",
-            ) as mock_close_writer,
+                "close",
+            ),
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -258,7 +258,7 @@ class FactMatcherTest(unittest.TestCase):
             fact_matcher.index_file("Boeing is a company")
             fact_matcher.index_file("Boeing 747 is a plane")
             results = fact_matcher.search_index("Boeing")
-            fact_matcher.close_writer()
+            fact_matcher.close()
             self.assertEqual(len(results), 2)
             self.assertEqual(
                 results,
@@ -294,7 +294,7 @@ class FactMatcherTest(unittest.TestCase):
             fact_matcher.index_file("Boeing is a company")
             fact_matcher.index_file("Boeing 747 is a plane")
             results = fact_matcher.search_index("Boeing", sub_query="747")
-            fact_matcher.close_writer()
+            fact_matcher.close()
             self.assertEqual(len(results), 1)
             self.assertEqual(
                 results,
@@ -325,7 +325,7 @@ class FactMatcherTest(unittest.TestCase):
             fact_matcher.index_file("Angela Merkel is the chancellor of Germany")
             fact_matcher.index_file("Boeing 747 is a plane")
             results = fact_matcher.search_index("Angela Merkel", sub_query="chancellor Germany")
-            fact_matcher.close_writer()
+            fact_matcher.close()
             self.assertEqual(len(results), 1)
             self.assertEqual(
                 results,

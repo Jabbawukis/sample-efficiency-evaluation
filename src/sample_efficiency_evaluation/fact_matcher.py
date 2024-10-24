@@ -111,7 +111,7 @@ class FactMatcherBase(ABC):
             else:
                 self.index_file(content)
 
-    def close_writer(self) -> None:
+    def close(self) -> None:
         """
         Close the writer.
 
@@ -246,7 +246,7 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                             collected_results.update([result["title"] for result in results])
                     fact["occurrences"] += len(collected_results)
         try:
-            self.close_writer()
+            self.close()
         except AttributeError:
             pass
 
