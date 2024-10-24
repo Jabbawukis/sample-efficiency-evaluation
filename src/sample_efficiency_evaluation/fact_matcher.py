@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from tqdm import tqdm
 from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
+from whoosh.searching import Searcher
 from whoosh.writing import SegmentWriter, BufferedWriter
 from whoosh.qparser import QueryParser
 from whoosh.query import And
@@ -214,16 +215,17 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         The occurrences will be updated in the relation dictionary.
         :return:
         """
-        for relation_key, relation in self.entity_relation_info_dict.items():
-            for subj, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
-                results = self.search_index(subj, fact["obj_label"])
-                relation[subj]["occurrences"] += len(results)
-                for alias in fact["aliases"]:
-                    results = self.search_index(alias, fact["obj_label"])
+        with self.writer.searcher() as searcher:
+            for relation_key, relation in self.entity_relation_info_dict.items():
+                for subj, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                    results = self.search_index(subj, fact["obj_label"], searcher)
                     relation[subj]["occurrences"] += len(results)
+                    for alias in fact["aliases"]:
+                        results = self.search_index(alias, fact["obj_label"])
+                        relation[subj]["occurrences"] += len(results)
         self.close_writer()
 
-    def search_index(self, main_query: str, sub_query: str = "") -> list[dict[str, str]]:
+    def search_index(self, main_query: str, sub_query: str = "", searcher: Searcher = None) -> list[dict[str, str]]:
         """
         Search index for main-query and sub query.
 
@@ -232,16 +234,18 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         found in the content field.
         :param main_query: The main query
         :param sub_query: The sub query
+        :param searcher: Searcher object
         :return: List of search results
         """
         collected_results = []
-        with self.writer.searcher() as searcher:
-            main_q = self.query_parser.parse(main_query)
-            if sub_query != "":
-                sub_q = self.query_parser.parse(sub_query)
-                results = searcher.search(And([main_q, sub_q]))
-            else:
-                results = searcher.search(main_q)
-            for result in results:
-                collected_results.append(dict(result))
+        if searcher is None:
+            searcher = self.writer.searcher()
+        main_q = self.query_parser.parse(main_query)
+        if sub_query != "":
+            sub_q = self.query_parser.parse(sub_query)
+            results = searcher.search(And([main_q, sub_q]))
+        else:
+            results = searcher.search(main_q)
+        for result in results:
+            collected_results.append(dict(result))
         return collected_results
