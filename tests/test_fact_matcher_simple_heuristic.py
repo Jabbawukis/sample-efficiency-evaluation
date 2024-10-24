@@ -415,7 +415,7 @@ class FactMatcherTest(unittest.TestCase):
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
-            fact_matcher.index_file("United States of America blah blah blah Washington, D.C.")
+            fact_matcher.index_file("United States of America blah Alexander blah blah Washington, D.C.")
             fact_matcher.index_file("United States of America (U.S.A.) blah blah blah Washington, D.C.")
             fact_matcher.index_file("United of America (U.S.A.) blah blah blah Washington, D.C.")
             fact_matcher.index_file("Alexander Hamilton blah blah blah the United States of America")
