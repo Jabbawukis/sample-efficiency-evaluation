@@ -175,9 +175,12 @@ class FactMatcherBase(ABC):
                 continue
             for fact_dict in fact_list:
                 logging.info("Extracting entity information for %s", relation_key)
-                relation_dict[relation_key][fact_dict["sub_label"]] = {
-                    "aliases": fact_dict["sub_aliases"],
+                relation_dict[relation_key][fact_dict["sub_id"]] = {
+                    "subj_label": fact_dict["sub_label"],
+                    "subj_aliases": set(fact_dict["sub_aliases"]),
+                    "obj_id": fact_dict["obj_id"],
                     "obj_label": fact_dict["obj_label"],
+                    "obj_aliases": set(),
                     "occurrences": 0,
                 }
         return relation_dict
@@ -217,13 +220,16 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         """
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
-                for subj, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
-                    results = self.search_index(subj, fact["obj_label"], searcher)
-                    relation[subj]["occurrences"] += len(results)
-                    for alias in fact["aliases"]:
+                for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                    results = self.search_index(fact["subj_label"], fact["obj_label"], searcher)
+                    fact["occurrences"] += len(results)
+                    for alias in fact["subj_aliases"]:
                         results = self.search_index(alias, fact["obj_label"])
-                        relation[subj]["occurrences"] += len(results)
-        self.close_writer()
+                        fact["occurrences"] += len(results)
+        try:
+            self.close_writer()
+        except AttributeError:
+            pass
 
     def search_index(self, main_query: str, sub_query: str = "", searcher: Searcher = None) -> list[dict[str, str]]:
         """
