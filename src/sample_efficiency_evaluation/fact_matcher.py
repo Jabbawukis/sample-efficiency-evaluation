@@ -231,7 +231,9 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         except AttributeError:
             pass
 
-    def search_index(self, main_query: str, sub_query: str = "", searcher: Searcher = None) -> list[dict[str, str]]:
+    def search_index(
+        self, main_query: str, sub_query: str = "", searcher_passed: Searcher = None
+    ) -> list[dict[str, str]]:
         """
         Search index for main-query and sub query.
 
@@ -240,10 +242,11 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         found in the content field.
         :param main_query: The main query
         :param sub_query: The sub query
-        :param searcher: Searcher object
+        :param searcher_passed: Searcher object
         :return: List of search results
         """
         collected_results = []
+        searcher = searcher_passed
         if searcher is None:
             searcher = self.writer.searcher()
         main_q = self.query_parser.parse(main_query)
@@ -254,4 +257,6 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
             results = searcher.search(main_q)
         for result in results:
             collected_results.append(dict(result))
+        if searcher_passed is None:
+            searcher.close()
         return collected_results
