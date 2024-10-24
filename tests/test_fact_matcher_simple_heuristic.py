@@ -85,9 +85,9 @@ class FactMatcherTest(unittest.TestCase):
                 "Q2127993": {
                     "subj_label": "Rainer Bernhardt",
                     "subj_aliases": {"Rainer Herbert Georg Bernhardt"},
-                    "obj_id": "Q178903",
-                    "obj_label": "Alexander Hamilton",
-                    "obj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 0,
                 }
             }
@@ -416,9 +416,12 @@ class FactMatcherTest(unittest.TestCase):
                 file_index_dir=self.test_index_dir,
             )
             fact_matcher.index_file("United States of America blah blah blah Washington, D.C.")
+            fact_matcher.index_file("United States of America (U.S.A.) blah blah blah Washington, D.C.")
             fact_matcher.index_file("United of America (U.S.A.) blah blah blah Washington, D.C.")
             fact_matcher.index_file("Alexander Hamilton blah blah blah the United States of America")
             fact_matcher.index_file("Publius blah blah blah the USA based in Washington, D.C.")
+            fact_matcher.index_file("Hamilton blah blah blah United States of America")
+            fact_matcher.index_file("US blah blah blah A. Ham")
             fact_matcher.create_fact_statistics()
             self.assertEqual(fact_matcher.entity_relation_info_dict, {
             "P_00": {
@@ -428,7 +431,7 @@ class FactMatcherTest(unittest.TestCase):
                     "obj_id": "Q61",
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
-                    "occurrences": 3,
+                    "occurrences": 4,
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -436,16 +439,16 @@ class FactMatcherTest(unittest.TestCase):
                     "obj_id": "Q30",
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
-                    "occurrences": 2,
+                    "occurrences": 3,
                 }
             },
             "P_01": {
                 "Q2127993": {
                     "subj_label": "Rainer Bernhardt",
                     "subj_aliases": {"Rainer Herbert Georg Bernhardt"},
-                    "obj_id": "Q178903",
-                    "obj_label": "Alexander Hamilton",
-                    "obj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 0,
                 }
             }

@@ -221,7 +221,7 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         Create fact statistics
 
         This method will iterate over all the relations and facts and search the index for the subject and object.
-        It will also search for the aliases of the subject.
+        It will also cross-search for the aliases of the subject and object.
         The occurrences will be updated in the relation dictionary.
         :return:
         """
