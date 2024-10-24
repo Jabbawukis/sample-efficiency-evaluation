@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import unittest
@@ -57,6 +58,40 @@ class FactMatcherTest(unittest.TestCase):
                 },
             }
         }
+        self.test_relation_info_dict_obj_aliases = {
+            "P_00": {"domains": ["stuff"]},
+            "P_01": {"domains": ["hi"]},
+        }
+        self.test_entity_relation_info_dict_filled_obj_aliases = {
+            "P_00": {
+                "Q30": {
+                    "subj_label": "United States of America",
+                    "subj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
+                    "obj_id": "Q61",
+                    "obj_label": "Washington, D.C.",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                },
+                "Q178903": {
+                    "subj_label": "Alexander Hamilton",
+                    "subj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
+                    "occurrences": 0,
+                }
+            },
+            "P_01": {
+                "Q2127993": {
+                    "subj_label": "Rainer Bernhardt",
+                    "subj_aliases": {"Rainer Herbert Georg Bernhardt"},
+                    "obj_id": "Q178903",
+                    "obj_label": "Alexander Hamilton",
+                    "obj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "occurrences": 0,
+                }
+            }
+        }
         self.maxDiff = None
         self.test_resources_abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_resources"))
         self.indexer_mocked = MagicMock()
@@ -97,6 +132,34 @@ class FactMatcherTest(unittest.TestCase):
             self.assertEqual(fact_matcher.entity_relation_info_dict, self.test_entity_relation_info_dict)
             mock_error.assert_called_once()
             mock_load_json_dict.assert_called_once_with(f"{self.test_resources_abs_path}/relation_info.json")
+
+    def test_extract_entity_information_good_filled_obj_aliases(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases) as mock_load_json_dict,
+            patch.object(
+                FactMatcherSimpleHeuristic, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimpleHeuristic(bear_data_path=f"{self.test_resources_abs_path}")
+
+            self.assertEqual(fact_matcher.entity_relation_info_dict, self.test_entity_relation_info_dict_filled_obj_aliases)
+            mock_load_json_dict.assert_called_once_with(f"{self.test_resources_abs_path}/relation_info.json")
+
+    def test_convert_relation_info_dict_to_json(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
+            patch.object(
+                FactMatcherSimpleHeuristic, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
+            ),
+            patch.object(
+                FactMatcherSimpleHeuristic,
+                "_extract_entity_information",
+                return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
+            ),
+        ):
+            fact_matcher = FactMatcherSimpleHeuristic(bear_data_path=f"{self.test_resources_abs_path}")
+            fact_matcher.convert_relation_info_dict_to_json(f"{self.test_resources_abs_path}/test_relation_info.json")
 
     def test_index_dataset_1(self):
         with (
@@ -333,7 +396,57 @@ class FactMatcherTest(unittest.TestCase):
                     "obj_id": "Q3195923",
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "obj_aliases": set(),
-                    "occurrences": 2,
+                    "occurrences": 1,
                 },
+            }
+        })
+
+    def test_create_fact_statistics_good2(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
+            patch.object(
+                FactMatcherSimpleHeuristic,
+                "_extract_entity_information",
+                return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimpleHeuristic(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                file_index_dir=self.test_index_dir,
+            )
+            fact_matcher.index_file("United States of America blah blah blah Washington, D.C.")
+            fact_matcher.index_file("United of America (U.S.A.) blah blah blah Washington, D.C.")
+            fact_matcher.index_file("Alexander Hamilton blah blah blah the United States of America")
+            fact_matcher.index_file("Publius blah blah blah the USA based in Washington, D.C.")
+            fact_matcher.create_fact_statistics()
+            self.assertEqual(fact_matcher.entity_relation_info_dict, {
+            "P_00": {
+                "Q30": {
+                    "subj_label": "United States of America",
+                    "subj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
+                    "obj_id": "Q61",
+                    "obj_label": "Washington, D.C.",
+                    "obj_aliases": set(),
+                    "occurrences": 3,
+                },
+                "Q178903": {
+                    "subj_label": "Alexander Hamilton",
+                    "subj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
+                    "occurrences": 2,
+                }
+            },
+            "P_01": {
+                "Q2127993": {
+                    "subj_label": "Rainer Bernhardt",
+                    "subj_aliases": {"Rainer Herbert Georg Bernhardt"},
+                    "obj_id": "Q178903",
+                    "obj_label": "Alexander Hamilton",
+                    "obj_aliases": {"Publius","Hamilton","Alexander Hamilton, US Treasury secretary","A. Ham"},
+                    "occurrences": 0,
+                }
             }
         })

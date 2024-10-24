@@ -1,6 +1,13 @@
 import json
 
 
+class SetEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, set):
+            return list(o)
+        return json.JSONEncoder.default(self, o)
+
+
 def load_json_dict(json_file_path: str) -> dict:
     """
     Load json file.
@@ -32,7 +39,7 @@ def save_json_dict(json_dict: dict, json_file_path: str):
     :param json_file_path: Path to json file
     """
     with open(json_file_path, "w", encoding="utf-8") as f:
-        json.dump(json_dict, f, indent=4, ensure_ascii=False)
+        json.dump(json_dict, f, indent=4, ensure_ascii=False, cls=SetEncoder)
 
 
 def clean_string(text: str) -> str:

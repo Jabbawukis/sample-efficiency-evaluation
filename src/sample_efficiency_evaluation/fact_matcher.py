@@ -183,6 +183,13 @@ class FactMatcherBase(ABC):
                     "obj_aliases": set(),
                     "occurrences": 0,
                 }
+        for _, relation in relation_dict.items():
+            for _, fact in relation.items():
+                for _, relation_ in relation_dict.items():
+                    try:
+                        fact["obj_aliases"].update(relation_[fact["obj_id"]]["subj_aliases"])
+                    except KeyError:
+                        continue
         return relation_dict
 
     @abstractmethod
@@ -221,11 +228,23 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                    collected_results = set()
                     results = self.search_index(fact["subj_label"], fact["obj_label"], searcher)
-                    fact["occurrences"] += len(results)
+                    collected_results.update([result["title"] for result in results])
+
+                    for alias in fact["obj_aliases"]:
+                        results = self.search_index(fact["subj_label"], alias, searcher)
+                        collected_results.update([result["title"] for result in results])
+
                     for alias in fact["subj_aliases"]:
                         results = self.search_index(alias, fact["obj_label"])
-                        fact["occurrences"] += len(results)
+                        collected_results.update([result["title"] for result in results])
+
+                    for subj_aliases in fact["subj_aliases"]:
+                        for obj_aliases in fact["obj_aliases"]:
+                            results = self.search_index(subj_aliases, obj_aliases)
+                            collected_results.update([result["title"] for result in results])
+                    fact["occurrences"] += len(collected_results)
         try:
             self.close_writer()
         except AttributeError:
