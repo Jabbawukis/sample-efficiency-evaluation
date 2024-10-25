@@ -118,7 +118,10 @@ class FactMatcherBase(ABC):
 
         :return:
         """
-        self.writer.close()
+        try:
+            self.writer.close()
+        except AttributeError:
+            logging.error("Using SegmentWriter instead of BufferedWriter")
 
     def convert_relation_info_dict_to_json(self, file_path: str) -> None:
         """
@@ -264,10 +267,8 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                             results = self.search_index(subj_aliases, obj_aliases)
                             collected_results.update([result["title"] for result in results])
                     fact["occurrences"] += len(collected_results)
-        try:
-            self.close()
-        except AttributeError:
-            pass
+        self.close()
+
 
     def search_index(
         self, main_query: str, sub_query: str = "", searcher_passed: Searcher = None
