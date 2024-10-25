@@ -20,3 +20,8 @@ run-workflow:
 .PHONY: install
 install:
 	pip install .
+
+## download-knowledge-base: Download the knowledge base for entity linking.
+.PHONY: download-knowledge-base
+download-knowledge-base:
+	python -m spacy_entity_linker "download_knowledge_base"

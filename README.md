@@ -22,7 +22,7 @@ This project aims to measure the sample efficiency of different language model a
 
 2. Install the required dependencies:
     ```bash
-    pip install .
+    make install
     ```
 
 3. Download the BEAR dataset from the following link: [BEAR Dataset](https://github.com/lm-pub-quiz/BEAR)

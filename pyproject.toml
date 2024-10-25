@@ -13,7 +13,8 @@ dependencies = [
     "tqdm",
     "datasets",
     "Whoosh-Reloaded",
-    "spacy",
+    "spacy[cuda12x]",
+    "spacy-entity-linker",
     "numpy",
 ]
 dynamic = ["version"]

@@ -9,6 +9,7 @@ import threading
 
 from abc import ABC, abstractmethod
 
+import spacy
 from tqdm import tqdm
 from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
@@ -73,9 +74,9 @@ class FactMatcherBase(ABC):
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)
 
-        self.nlp_pipeline = English()
+        self.sentencizer = English()
 
-        self.nlp_pipeline.add_pipe("sentencizer")
+        self.sentencizer.add_pipe("sentencizer")
 
         self.lock = threading.Lock()
 
@@ -104,7 +105,7 @@ class FactMatcherBase(ABC):
         for file_content in tqdm(file_contents, desc="Indexing dataset"):
             content = utility.clean_string(file_content[text_key])
             if split_contents_into_sentences:
-                split_doc = self.nlp_pipeline(content)
+                split_doc = self.sentencizer(content)
                 sentences = [sent.text for sent in split_doc.sents]
                 for sentence in sentences:
                     self.index_file(sentence)
@@ -209,6 +210,24 @@ class FactMatcherBase(ABC):
 
         :return:
         """
+
+
+class FactMatcherEntityLinking(FactMatcherBase):
+
+    def create_fact_statistics(self) -> None:
+        pass
+
+    def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
+        pass
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        spacy.prefer_gpu()
+
+        self.entity_linker = spacy.load("en_core_web_md")
+
+        self.entity_linker.add_pipe("entityLinker", last=True)
 
 
 class FactMatcherSimpleHeuristic(FactMatcherBase):
