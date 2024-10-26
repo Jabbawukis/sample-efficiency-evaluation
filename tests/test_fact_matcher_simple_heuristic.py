@@ -176,10 +176,6 @@ class FactMatcherTest(unittest.TestCase):
                 FactMatcherSimpleHeuristic,
                 "index_file",
             ) as mock_index_file,
-            patch.object(
-                FactMatcherSimpleHeuristic,
-                "close",
-            ),
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -215,10 +211,6 @@ class FactMatcherTest(unittest.TestCase):
                 FactMatcherSimpleHeuristic,
                 "index_file",
             ) as mock_index_file,
-            patch.object(
-                FactMatcherSimpleHeuristic,
-                "close",
-            ),
         ):
 
             fact_matcher = FactMatcherSimpleHeuristic(
@@ -357,6 +349,7 @@ class FactMatcherTest(unittest.TestCase):
             fact_matcher.index_file("Armenia blah blah blah Nikol Pashinyan")
             fact_matcher.index_file("Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio")
             fact_matcher.index_file("Nepal NPL is cool Khadga Prasad Sharma Oli")
+            fact_matcher.close()
             fact_matcher.create_fact_statistics()
             self.assertEqual(fact_matcher.entity_relation_info_dict, {
             "P6": {
@@ -403,6 +396,77 @@ class FactMatcherTest(unittest.TestCase):
 
     def test_create_fact_statistics_good2(self):
         with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
+            patch.object(
+                FactMatcherSimpleHeuristic,
+                "_extract_entity_information",
+                return_value=self.test_entity_relation_info_dict,
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimpleHeuristic(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                file_index_dir=self.test_index_dir,
+            )
+
+            fact_matcher.index_dataset(
+                [
+                    {"text": "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
+                    {"text": "Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
+                    {"text": "Armenia blah blah blah Nikol Pashinyan"},
+                    {"text": "Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio"},
+                    {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"},
+                ],
+                text_key="text",
+                split_contents_into_sentences=False,
+            )
+            fact_matcher.close()
+            fact_matcher.create_fact_statistics()
+            self.assertEqual(fact_matcher.entity_relation_info_dict, {
+            "P6": {
+                "Q1519": {
+                    "subj_label": "Abu Dhabi",
+                    "subj_aliases": {"Abū Dhabi", "Abudhabi"},
+                    "obj_id": "Q1059948",
+                    "obj_label": "Khalifa bin Zayed Al Nahyan",
+                    "obj_aliases": set(),
+                    "occurrences": 2,
+                },
+                "Q399": {
+                    "subj_label": "Armenia",
+                    "subj_aliases": {"Republic of Armenia", "🇦🇲", "ARM", "AM"},
+                    "obj_id": "Q7035479",
+                    "obj_label": "Nikol Pashinyan",
+                    "obj_aliases": set(),
+                    "occurrences": 1,
+                },
+                "Q548114": {
+                    "subj_label": "Free State of Fiume",
+                    "subj_aliases": set(),
+                    "obj_id": "Q193236",
+                    "obj_label": "Gabriele D'Annunzio",
+                    "obj_aliases": set(),
+                    "occurrences": 1},
+                "Q5626824": {
+                    "subj_label": "Gülcemal Sultan",
+                    "subj_aliases": set(),
+                    "obj_id": "Q222",
+                    "obj_label": "Albania",
+                    "obj_aliases": set(),
+                    "occurrences": 0},
+                "Q837": {
+                    "subj_label": "Nepal",
+                    "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
+                    "obj_id": "Q3195923",
+                    "obj_label": "Khadga Prasad Sharma Oli",
+                    "obj_aliases": set(),
+                    "occurrences": 1,
+                },
+            }
+        })
+
+    def test_create_fact_statistics_good3(self):
+        with (
             patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
             patch.object(
                 FactMatcherSimpleHeuristic,
@@ -422,6 +486,7 @@ class FactMatcherTest(unittest.TestCase):
             fact_matcher.index_file("Publius blah blah blah the USA based in Washington, D.C.")
             fact_matcher.index_file("Hamilton blah blah blah United States of America")
             fact_matcher.index_file("US blah blah blah A. Ham")
+            fact_matcher.close()
             fact_matcher.create_fact_statistics()
             self.assertEqual(fact_matcher.entity_relation_info_dict, {
             "P_00": {

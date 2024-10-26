@@ -60,7 +60,7 @@ class FactMatcherBase(ABC):
         """
         bear_data_path = kwargs.get("bear_data_path")
 
-        index_path = kwargs.get("file_index_dir", "indexdir")
+        self.index_path = kwargs.get("file_index_dir", "indexdir")
 
         self.entity_relation_info_dict: dict = self._extract_entity_information(
             bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
@@ -68,9 +68,9 @@ class FactMatcherBase(ABC):
         )
 
         if kwargs.get("read_existing_index", False):
-            self.writer, self.indexer = self._open_existing_index_dir(index_path)
+            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
-            self.writer, self.indexer = self._initialize_index(index_path, kwargs.get("save_file_content", True))
+            self.writer, self.indexer = self._initialize_index(self.index_path, kwargs.get("save_file_content", True))
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)
 
@@ -83,6 +83,8 @@ class FactMatcherBase(ABC):
     def index_file(self, file_content: str) -> None:
         """
         Index file.
+
+        Call the close() method after finishing indexing the files.
         :param file_content: File content to index.
         :return:
         """
@@ -94,6 +96,8 @@ class FactMatcherBase(ABC):
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
+
+        Call the close() method after finishing indexing the files.
         :param text_key: Key to extract text from file content.
         Since the dataset is a list of dictionaries, we need to
         specify the key to extract the file content.
@@ -116,6 +120,7 @@ class FactMatcherBase(ABC):
         """
         Close the writer.
 
+        This method should be called after finishing indexing the files, and/or searching the index.
         :return:
         """
         try:
@@ -247,6 +252,7 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         The occurrences will be updated in the relation dictionary.
         :return:
         """
+        self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
@@ -267,8 +273,6 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                             results = self.search_index(subj_aliases, obj_aliases)
                             collected_results.update([result["title"] for result in results])
                     fact["occurrences"] += len(collected_results)
-        self.close()
-
 
     def search_index(
         self, main_query: str, sub_query: str = "", searcher_passed: Searcher = None
