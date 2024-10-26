@@ -91,31 +91,6 @@ class FactMatcherBase(ABC):
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
 
-    def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
-    ) -> None:
-        """
-        Index dataset files, the dataset is a list of file contents.
-
-        Call the close() method after finishing indexing the files.
-        :param text_key: Key to extract text from file content.
-        Since the dataset is a list of dictionaries, we need to
-        specify the key to extract the file content.
-        That would be the case if we pass a huggingface dataset.
-        :param file_contents: List of dictionaries containing the file contents
-        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
-        :return:
-        """
-        for file_content in tqdm(file_contents, desc="Indexing dataset"):
-            content = utility.clean_string(file_content[text_key])
-            if split_contents_into_sentences:
-                split_doc = self.sentencizer(content)
-                sentences = [sent.text for sent in split_doc.sents]
-                for sentence in sentences:
-                    self.index_file(sentence)
-            else:
-                self.index_file(content)
-
     def close(self) -> None:
         """
         Close the writer.
@@ -219,14 +194,28 @@ class FactMatcherBase(ABC):
         :return:
         """
 
+    @abstractmethod
+    def index_dataset(
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+    ) -> None:
+        """
+        Index dataset files, the dataset is a list of file contents.
+
+        Call the close() method after finishing indexing the files.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
+        :return:
+        """
+
 
 class FactMatcherEntityLinking(FactMatcherBase):
-
-    def create_fact_statistics(self) -> None:
-        pass
-
-    def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
-        pass
+    """
+    FactMatcherEntityLinking
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -237,11 +226,69 @@ class FactMatcherEntityLinking(FactMatcherBase):
 
         self.entity_linker.add_pipe("entityLinker", last=True)
 
+    def index_dataset(
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+    ) -> None:
+        """
+        Index dataset files, the dataset is a list of file contents.
+
+        Call the close() method after finishing indexing the files.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
+        :return:
+        """
+        for file_content in tqdm(file_contents, desc="Indexing dataset"):
+            content = utility.clean_string(file_content[text_key])
+            if split_contents_into_sentences:
+                split_doc = self.sentencizer(content)
+                sentences = [sent.text for sent in split_doc.sents]
+                for sentence in sentences:
+                    all_linked_entities = self.entity_linker(sentence)._.linkedEntities
+                    sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
+                    self.index_file(sentence)
+            else:
+                self.index_file(content)
+
+    def create_fact_statistics(self) -> None:
+        pass
+
+    def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
+        pass
+
 
 class FactMatcherSimpleHeuristic(FactMatcherBase):
     """
     FactMatcherSimpleHeuristic
     """
+
+    def index_dataset(
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+    ) -> None:
+        """
+        Index dataset files, the dataset is a list of file contents.
+
+        Call the close() method after finishing indexing the files.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
+        :return:
+        """
+        for file_content in tqdm(file_contents, desc="Indexing dataset"):
+            content = utility.clean_string(file_content[text_key])
+            if split_contents_into_sentences:
+                split_doc = self.sentencizer(content)
+                sentences = [sent.text for sent in split_doc.sents]
+                for sentence in sentences:
+                    self.index_file(sentence)
+            else:
+                self.index_file(content)
 
     def create_fact_statistics(self) -> None:
         """

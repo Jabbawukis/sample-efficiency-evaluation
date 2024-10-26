@@ -52,3 +52,17 @@ def clean_string(text: str) -> str:
     text = text.replace("\r", " ")
     text = text.replace("\t", " ")
     return text
+
+
+def decorate_sentence_with_ids(sentence: str, linked_entities) -> str:
+    """
+    Decorate entities with IDs.
+    :param sentence: List of entities
+    :param linked_entities: List of linked entities
+    :return: Dictionary containing entities with IDs
+    """
+    for linked_entity in linked_entities:
+        identifier = linked_entity.get_id()
+        label = linked_entity.get_label()
+        sentence = sentence.replace(label, f"({label}) [Q{identifier}]")
+    return sentence
