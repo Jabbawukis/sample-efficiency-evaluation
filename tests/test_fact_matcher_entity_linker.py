@@ -95,8 +95,8 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                 split_contents_into_sentences=False,
             )
 
-            mock_index_file.assert_any_call("I watched the (Pirates of the (Caribbean) [Q664609]) [Q194318] last silvester.")
-            mock_index_file.assert_any_call("I follow the (New England Patriots) [Q193390]")
+            mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. [Q12525597 Q194318 Q664609]")
+            mock_index_file.assert_any_call("I follow the New England Patriots [Q193390]")
             self.assertEqual(mock_index_file.call_count, 2)
 
     def test_index_dataset_2(self):
@@ -130,9 +130,9 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                 split_contents_into_sentences=True,
             )
 
-            mock_index_file.assert_any_call("I watched the (Pirates of the (Caribbean) [Q664609]) [Q194318] last silvester.")
-            mock_index_file.assert_any_call("I follow the (New England Patriots) [Q193390].")
-            mock_index_file.assert_any_call("(Boeing) [Q66] 747 is a cool plane.")
+            mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. [Q12525597 Q194318 Q664609]")
+            mock_index_file.assert_any_call("I follow the New England Patriots. [Q193390]")
+            mock_index_file.assert_any_call("Boeing 747 is a cool plane. [Q197 Q66]")
             self.assertEqual(mock_index_file.call_count, 3)
 
     def test_create_fact_statistics_good(self):
