@@ -5,7 +5,6 @@ FactMatcher
 import logging
 import os.path
 import hashlib
-import threading
 
 from abc import ABC, abstractmethod
 
@@ -67,7 +66,8 @@ class FactMatcherBase(ABC):
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
 
-        if kwargs.get("read_existing_index", False):
+        self.read_existing_index = kwargs.get("read_existing_index", False)
+        if self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
             self.writer, self.indexer = self._initialize_index(self.index_path, kwargs.get("save_file_content", True))
@@ -77,8 +77,6 @@ class FactMatcherBase(ABC):
         self.sentencizer = English()
 
         self.sentencizer.add_pipe("sentencizer")
-
-        self.lock = threading.Lock()
 
     def _index_file(self, file_content: str) -> None:
         """
@@ -276,7 +274,8 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 self._index_file(content)
 
     def create_fact_statistics(self) -> None:
-        self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
+        if not self.read_existing_index:
+            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
@@ -325,7 +324,8 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
         The occurrences will be updated in the relation dictionary.
         :return:
         """
-        self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
+        if not self.read_existing_index:
+            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
