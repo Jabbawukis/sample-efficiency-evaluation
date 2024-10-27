@@ -279,9 +279,9 @@ class FactMatcherEntityLinking(FactMatcherBase):
         self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         with self.writer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
-                for obj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
                     collected_results = set()
-                    results = self.search_index(obj_id, fact["obj_id"], searcher)
+                    results = self.search_index(subj_id, fact["obj_id"], searcher)
                     collected_results.update([result["title"] for result in results])
                     fact["occurrences"] += len(collected_results)
 
