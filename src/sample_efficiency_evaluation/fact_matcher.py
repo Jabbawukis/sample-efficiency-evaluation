@@ -80,7 +80,7 @@ class FactMatcherBase(ABC):
 
         self.lock = threading.Lock()
 
-    def index_file(self, file_content: str) -> None:
+    def _index_file(self, file_content: str) -> None:
         """
         Index file.
 
@@ -90,6 +90,36 @@ class FactMatcherBase(ABC):
         """
         doc_hash = str(hashlib.sha256(file_content.encode()).hexdigest())
         self.writer.add_document(title=doc_hash, path=f"/{doc_hash}", text=file_content)
+
+    def search_index(
+        self, main_query: str, sub_query: str = "", searcher_passed: Searcher = None
+    ) -> list[dict[str, str]]:
+        """
+        Search index for main-query and sub query.
+
+        If the sub-query is not provided, it will only search for the main query.
+        A simple heuristic is used to filter the search results where it is only considered a match if the query is
+        found in the content field.
+        :param main_query: The main query
+        :param sub_query: The sub query
+        :param searcher_passed: Searcher object
+        :return: List of search results
+        """
+        collected_results = []
+        searcher = searcher_passed
+        if searcher is None:
+            searcher = self.writer.searcher()
+        main_q = self.query_parser.parse(main_query)
+        if sub_query != "":
+            sub_q = self.query_parser.parse(sub_query)
+            results = searcher.search(And([main_q, sub_q]))
+        else:
+            results = searcher.search(main_q)
+        for result in results:
+            collected_results.append(dict(result))
+        if searcher_passed is None:
+            searcher.close()
+        return collected_results
 
     def close(self) -> None:
         """
@@ -177,16 +207,6 @@ class FactMatcherBase(ABC):
         return relation_dict
 
     @abstractmethod
-    def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
-        """
-        Search index for main-query and sub query.
-
-        :param main_query: The main query
-        :param sub_query: The sub query
-        :return: List of search results
-        """
-
-    @abstractmethod
     def create_fact_statistics(self) -> None:
         """
         Create fact statistics and close the writer.
@@ -249,15 +269,21 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 for sentence in sentences:
                     all_linked_entities = self.entity_linker(sentence)._.linkedEntities
                     sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
-                    self.index_file(sentence)
+                    self._index_file(sentence)
             else:
-                self.index_file(content)
+                all_linked_entities = self.entity_linker(content)._.linkedEntities
+                content = utility.decorate_sentence_with_ids(content, all_linked_entities)
+                self._index_file(content)
 
     def create_fact_statistics(self) -> None:
-        pass
-
-    def search_index(self, main_query: str, sub_query: str = "") -> list[dict]:
-        pass
+        self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
+        with self.writer.searcher() as searcher:
+            for relation_key, relation in self.entity_relation_info_dict.items():
+                for obj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                    collected_results = set()
+                    results = self.search_index(obj_id, fact["obj_id"], searcher)
+                    collected_results.update([result["title"] for result in results])
+                    fact["occurrences"] += len(collected_results)
 
 
 class FactMatcherSimpleHeuristic(FactMatcherBase):
@@ -286,9 +312,9 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                 split_doc = self.sentencizer(content)
                 sentences = [sent.text for sent in split_doc.sents]
                 for sentence in sentences:
-                    self.index_file(sentence)
+                    self._index_file(sentence)
             else:
-                self.index_file(content)
+                self._index_file(content)
 
     def create_fact_statistics(self) -> None:
         """
@@ -320,33 +346,3 @@ class FactMatcherSimpleHeuristic(FactMatcherBase):
                             results = self.search_index(subj_aliases, obj_aliases)
                             collected_results.update([result["title"] for result in results])
                     fact["occurrences"] += len(collected_results)
-
-    def search_index(
-        self, main_query: str, sub_query: str = "", searcher_passed: Searcher = None
-    ) -> list[dict[str, str]]:
-        """
-        Search index for main-query and sub query.
-
-        If the sub-query is not provided, it will only search for the main query.
-        A simple heuristic is used to filter the search results where it is only considered a match if the query is
-        found in the content field.
-        :param main_query: The main query
-        :param sub_query: The sub query
-        :param searcher_passed: Searcher object
-        :return: List of search results
-        """
-        collected_results = []
-        searcher = searcher_passed
-        if searcher is None:
-            searcher = self.writer.searcher()
-        main_q = self.query_parser.parse(main_query)
-        if sub_query != "":
-            sub_q = self.query_parser.parse(sub_query)
-            results = searcher.search(And([main_q, sub_q]))
-        else:
-            results = searcher.search(main_q)
-        for result in results:
-            collected_results.append(dict(result))
-        if searcher_passed is None:
-            searcher.close()
-        return collected_results
