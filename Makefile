@@ -25,3 +25,4 @@ install:
 .PHONY: download-knowledge-base
 download-knowledge-base:
 	python -m spacy_entity_linker "download_knowledge_base"
+	python -m spacy download en_core_web_sm
