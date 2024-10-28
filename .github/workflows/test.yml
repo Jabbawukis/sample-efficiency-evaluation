@@ -3,20 +3,14 @@ name: Tests
 on:
   push:
     branches: [ "main" ]
-    paths-ignore:
-    - "docs/**"
-    - "mkdocs.yml"
-    - "README.md"
-    - ".gitignore"
-    - "LICENSE"
+    paths:
+    - "tests/**"
+    - "src/**"
   pull_request:
     branches: [ "main" ]
-    paths-ignore:
-    - "docs/**"
-    - "mkdocs.yml"
-    - "README.md"
-    - ".gitignore"
-    - "LICENSE"
+    paths:
+    - "tests/**"
+    - "src/**"
 jobs:
   run:
     name: "Run Tests"
