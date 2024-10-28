@@ -66,7 +66,8 @@ class FactMatcherBase(ABC):
 
         if kwargs.get("require_gpu", False):
             spacy.require_gpu(kwargs.get("gpu_id", 0))
-        spacy.prefer_gpu(kwargs.get("gpu_id", 0))
+        else:
+            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
 
         bear_data_path = kwargs.get("bear_data_path")
 
