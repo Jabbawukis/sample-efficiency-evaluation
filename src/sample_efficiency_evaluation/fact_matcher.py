@@ -250,14 +250,14 @@ class FactMatcherEntityLinking(FactMatcherBase):
 
     :param kwargs:
     - entity_linker_model [str]: Entity linker model to use.
-        The default is "en_core_web_trf", which is a transformer-based model.
+        The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
         Refer to https://spacy.io/models/en for more information.
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_trf"))
+        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
 
         self.entity_linker.add_pipe("entityLinker", last=True)
 
