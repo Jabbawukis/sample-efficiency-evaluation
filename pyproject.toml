@@ -8,6 +8,8 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "torch",
+    "setuptools",
+    "wheel",
     "datasets",
     "transformers>=4.38",
     "tqdm",

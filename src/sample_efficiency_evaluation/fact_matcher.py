@@ -56,7 +56,18 @@ class FactMatcherBase(ABC):
             The result of an index search will contain the file content in the text field
             e.g. {"path": "some_path", "title": "some_title", "text": "some_text"}.
             If False, it will not save the file content. The default is True.
+
+        - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
+            The default is False.
+
+        - gpu_id [Optional[int]]: GPU ID to use for the spacy entity linker.
+            The default is 0.
         """
+
+        if kwargs.get("require_gpu", False):
+            spacy.require_gpu(kwargs.get("gpu_id", 0))
+        spacy.prefer_gpu(kwargs.get("gpu_id", 0))
+
         bear_data_path = kwargs.get("bear_data_path")
 
         self.index_path = kwargs.get("file_index_dir", "indexdir")
@@ -237,8 +248,6 @@ class FactMatcherEntityLinking(FactMatcherBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        spacy.prefer_gpu()
 
         self.entity_linker = spacy.load("en_core_web_md")
 
