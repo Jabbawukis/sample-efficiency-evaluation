@@ -62,5 +62,4 @@ def decorate_sentence_with_ids(sentence: str, linked_entities) -> str:
     :return: Dictionary containing entities with IDs
     """
     entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in linked_entities]
-    entity_ids.sort()
     return f"{sentence} [{' '.join(entity_ids)}]"

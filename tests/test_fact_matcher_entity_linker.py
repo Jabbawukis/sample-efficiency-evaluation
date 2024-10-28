@@ -79,13 +79,30 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                 FactMatcherEntityLinking,
                 "_index_file",
             ) as mock_index_file,
+            patch.object(
+                FactMatcherEntityLinking,
+                "_get_entity_ids",
+            ) as get_entity_ids_mock
         ):
 
             fact_matcher = FactMatcherEntityLinking(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
-
+            fact_matcher.entity_linker = MagicMock()
+            entity_1 = MagicMock()
+            entity_1.get_id.return_value = 12525597
+            entity_2 = MagicMock()
+            entity_2.get_id.return_value = 194318
+            entity_3 = MagicMock()
+            entity_3.get_id.return_value = 664609
+            entity_4 = MagicMock()
+            entity_4.get_id.return_value = 193390
+            entity_5 = MagicMock()
+            entity_5.get_id.return_value = 197
+            entity_6 = MagicMock()
+            entity_6.get_id.return_value = 66
+            get_entity_ids_mock.side_effect = [[entity_1, entity_2, entity_3], [entity_4]]
             fact_matcher.index_dataset(
                 [
                     {"text": "I watched the Pirates of the Caribbean last silvester."},
@@ -114,12 +131,30 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                 FactMatcherEntityLinking,
                 "_index_file",
             ) as mock_index_file,
+            patch.object(
+                FactMatcherEntityLinking,
+                "_get_entity_ids",
+            ) as get_entity_ids_mock,
         ):
 
             fact_matcher = FactMatcherEntityLinking(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
+            fact_matcher.entity_linker = MagicMock()
+            entity_1 = MagicMock()
+            entity_1.get_id.return_value = 12525597
+            entity_2 = MagicMock()
+            entity_2.get_id.return_value = 194318
+            entity_3 = MagicMock()
+            entity_3.get_id.return_value = 664609
+            entity_4 = MagicMock()
+            entity_4.get_id.return_value = 193390
+            entity_5 = MagicMock()
+            entity_5.get_id.return_value = 197
+            entity_6 = MagicMock()
+            entity_6.get_id.return_value = 66
+            get_entity_ids_mock.side_effect = [[entity_1, entity_2, entity_3], [entity_4], [entity_5, entity_6]]
 
             fact_matcher.index_dataset(
                 [

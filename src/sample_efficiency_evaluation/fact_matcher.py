@@ -261,6 +261,15 @@ class FactMatcherEntityLinking(FactMatcherBase):
 
         self.entity_linker.add_pipe("entityLinker", last=True)
 
+    def _get_entity_ids(self, content: str) -> set:
+        """
+        Get entity IDs from content.
+
+        :param content: Content to extract entity IDs from.
+        :return: Entity IDs
+        """
+        return self.entity_linker(content)._.linkedEntities
+
     def index_dataset(
         self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
     ) -> None:
@@ -282,11 +291,11 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 split_doc = self.sentencizer(content)
                 sentences = [sent.text for sent in split_doc.sents]
                 for sentence in sentences:
-                    all_linked_entities = self.entity_linker(sentence)._.linkedEntities
+                    all_linked_entities = self._get_entity_ids(sentence)
                     sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
                     self._index_file(sentence)
             else:
-                all_linked_entities = self.entity_linker(content)._.linkedEntities
+                all_linked_entities = self._get_entity_ids(content)
                 content = utility.decorate_sentence_with_ids(content, all_linked_entities)
                 self._index_file(content)
 
