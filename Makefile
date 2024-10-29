@@ -21,6 +21,11 @@ run-workflow:
 install:
 	pip install .
 
+## install-dev: Install the dev package locally.
+.PHONY: install-dev
+install-dev:
+	pip install .[dev]
+
 ## download-knowledge-base: Download the knowledge base for entity linking.
 .PHONY: download-knowledge-base
 download-knowledge-base:
