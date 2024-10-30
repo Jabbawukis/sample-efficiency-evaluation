@@ -231,6 +231,43 @@ class FactMatcherBase(ABC):
         """
         Index dataset files, the dataset is a list of file contents.
 
+        :return:
+        """
+
+
+class FactMatcherHybrid(FactMatcherBase):
+    """
+    FactMatcherHybrid
+
+    FactMatcherHybrid is a class that uses a simple search by string heuristic to search for entities in the dataset.
+    The dataset is searched and indexed on a document level.
+    If a document contains a relation subject and object,
+    the document is split into sentences
+    and the entitiy linker model is used to search for entities in the sentence.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
+
+        self.entity_linker.add_pipe("entityLinker", last=True)
+
+    def _get_entity_ids(self, content: str) -> set:
+        """
+        Get entity IDs from content.
+
+        :param content: Content to extract entity IDs from.
+        :return: Entity IDs
+        """
+        return self.entity_linker(content)._.linkedEntities
+
+    def index_dataset(
+        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
+    ) -> None:
+        """
+        Index dataset files, the dataset is a list of file contents.
+
         Call the close() method after finishing indexing the files.
         :param text_key: Key to extract text from file content.
         Since the dataset is a list of dictionaries, we need to
@@ -238,15 +275,83 @@ class FactMatcherBase(ABC):
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
         :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
+        It Has no effect on this method.
         :return:
         """
+        for file_content in tqdm(file_contents, desc="Indexing dataset"):
+            content = utility.clean_string(file_content[text_key])
+            self._index_file(content)
+
+    def _search_for_entities_by_id_and_string(
+        self, hits: list[dict], subj_id: str, obj_id: str, subj_label: str, obj_label: str
+    ) -> list[str]:
+        sent_with_occurrences = []
+        for hit in hits:
+            content = hit["text"]
+            split_doc = self.sentencizer(content)
+            sentences = [sent.text for sent in split_doc.sents]
+            for sentence in sentences:
+                all_linked_entities = self._get_entity_ids(sentence)
+                entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
+                if subj_id in entity_ids and obj_id in entity_ids:
+                    sent_with_occurrences.append(str(hashlib.sha256(sentence.encode()).hexdigest()))
+                elif subj_label in sentence and obj_label in sentence:
+                    sent_with_occurrences.append(str(hashlib.sha256(sentence.encode()).hexdigest()))
+        return sent_with_occurrences
+
+    def create_fact_statistics(self) -> None:
+        """
+        Create fact statistics
+
+        This method will iterate over all the relations and facts and search the index for the subject and object.
+        If a document contains a relation subject and object, the document is split into sentences and the entity linker
+        model is used to search for entities in the sentence (in combination with simple string search.).
+        Additionally, it will cross-search for the aliases of the
+        subject and object.
+        The occurrences will be updated in the relation dictionary.
+        :return:
+        """
+        if not self.read_existing_index:
+            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
+        with self.writer.searcher() as searcher:
+            for relation_key, relation in self.entity_relation_info_dict.items():
+                for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
+                    collected_results = set()
+                    results = self.search_index(fact["subj_label"], fact["obj_label"], searcher)
+                    occurrences = self._search_for_entities_by_id_and_string(
+                        results, subj_id, fact["obj_id"], fact["subj_label"], fact["obj_label"]
+                    )
+                    collected_results.update(occurrences)
+
+                    for alias in fact["obj_aliases"]:
+                        results = self.search_index(fact["subj_label"], alias, searcher)
+                        occurrences = self._search_for_entities_by_id_and_string(
+                            results, subj_id, fact["obj_id"], fact["subj_label"], alias
+                        )
+                        collected_results.update(occurrences)
+
+                    for alias in fact["subj_aliases"]:
+                        results = self.search_index(alias, fact["obj_label"])
+                        occurrences = self._search_for_entities_by_id_and_string(
+                            results, subj_id, fact["obj_id"], alias, fact["obj_label"]
+                        )
+                        collected_results.update(occurrences)
+
+                    for subj_aliases in fact["subj_aliases"]:
+                        for obj_aliases in fact["obj_aliases"]:
+                            results = self.search_index(subj_aliases, obj_aliases)
+                            occurrences = self._search_for_entities_by_id_and_string(
+                                results, subj_id, fact["obj_id"], subj_aliases, obj_aliases
+                            )
+                            collected_results.update(occurrences)
+                    fact["occurrences"] += len(collected_results)
 
 
 class FactMatcherEntityLinking(FactMatcherBase):
     """
     FactMatcherEntityLinking
 
-    FactMatcherEntityLinking is a class that uses the entity linker model to index the dataset.
+    FactMatcherEntityLinking is a class that uses the entity linker model to index and search the dataset.
 
     :param kwargs:
     - entity_linker_model [str]: Entity linker model to use.
@@ -311,9 +416,11 @@ class FactMatcherEntityLinking(FactMatcherBase):
                     fact["occurrences"] += len(collected_results)
 
 
-class FactMatcherSimpleHeuristic(FactMatcherBase):
+class FactMatcherSimple(FactMatcherBase):
     """
-    FactMatcherSimpleHeuristic
+    FactMatcherSimple
+
+    FactMatcherSimple is a class that uses a simple search by string heuristic to search for entities in the dataset.
     """
 
     def index_dataset(
