@@ -7,8 +7,10 @@ import os.path
 import hashlib
 
 from abc import ABC, abstractmethod
+from typing import Union
 
 import spacy
+from datasets import DatasetDict, Dataset, IterableDatasetDict, IterableDataset
 from tqdm import tqdm
 from whoosh.index import create_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
@@ -207,11 +209,11 @@ class FactMatcherBase(ABC):
                     "obj_aliases": set(),
                     "occurrences": 0,
                 }
-        for _, relation in relation_dict.items():
-            for _, fact in relation.items():
-                for _, relation_ in relation_dict.items():
+        for _, relations in relation_dict.items():
+            for _, fact in relations.items():
+                for _, relations_ in relation_dict.items():
                     try:
-                        fact["obj_aliases"].update(relation_[fact["obj_id"]]["subj_aliases"])
+                        fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
                     except KeyError:
                         continue
         return relation_dict
@@ -226,7 +228,10 @@ class FactMatcherBase(ABC):
 
     @abstractmethod
     def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -263,7 +268,10 @@ class FactMatcherHybrid(FactMatcherBase):
         return self.entity_linker(content)._.linkedEntities
 
     def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = False
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        split_contents_into_sentences: bool = False,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -376,7 +384,10 @@ class FactMatcherEntityLinking(FactMatcherBase):
         return self.entity_linker(content)._.linkedEntities
 
     def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -424,7 +435,10 @@ class FactMatcherSimple(FactMatcherBase):
     """
 
     def index_dataset(
-        self, file_contents: list[dict], text_key: str = "text", split_contents_into_sentences: bool = True
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.

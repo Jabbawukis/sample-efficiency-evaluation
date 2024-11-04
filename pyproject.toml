@@ -40,6 +40,8 @@ disable = [
     "E0401",  # Unable to import
     "R0913",  # Too many arguments
     "R0917",  # Too many positional arguments
+    "R0902",  # Too many instance attributes
+    "W0718",  # Catching too general exception Exception
 ]
 
 [tool.black]

@@ -1,1 +1,1 @@
-from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
+from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple, FactMatcherHybrid, FactMatcherEntityLinking

@@ -3,7 +3,7 @@ import unittest
 import shutil
 from unittest.mock import patch, MagicMock
 
-from sample_efficiency_evaluation.fact_matcher import FactMatcherHybrid
+from sample_efficiency_evaluation import FactMatcherHybrid
 from utility import utility
 
 

@@ -4,7 +4,7 @@ import unittest
 import shutil
 from unittest.mock import patch, MagicMock
 
-from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
+from sample_efficiency_evaluation import FactMatcherSimple
 from utility import utility
 
 
