@@ -1,2 +1,1 @@
 from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple, FactMatcherHybrid, FactMatcherEntityLinking
-from sample_efficiency_evaluation.dataset_processor import DatasetProcessor

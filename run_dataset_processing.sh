@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Configuration
-NUM_SLICES=4
-DATASET_PATH="PatrickHaller/pile-10M-words"
-DATASET_NAME=""
+NUM_SLICES=4                                   # Number of slices to divide the dataset into
+DATASET_PATH=""                                # Pass as string
+DATASET_NAME=""                                # Optional
 BEAR_DATA_PATH="BEAR"
 REL_INFO_OUTPUT_DIR="output"
 MATCHER_TYPE="simple"
 ENTITY_LINKER_MODEL="en_core_web_trf"
-SAVE_FILE_CONTENT="True"          # Pass as string
-READ_EXISTING_INDEX="False"       # Pass as string
-REQUIRE_GPU="False"               # Pass as string
-GPU_IDS=(0 1 2 3)
+SAVE_FILE_CONTENT="True"                       # Pass as string
+READ_EXISTING_INDEX="False"                    # Pass as string
+REQUIRE_GPU="False"                            # Pass as string
+GPU_IDS=(0 1 2 3)                              # Pass as array for each slice
 
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
