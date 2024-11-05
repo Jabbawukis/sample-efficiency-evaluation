@@ -10,7 +10,8 @@ class DatasetProcessor:
     def __init__(
         self,
         num_slices: int,
-        dataset_name: str,
+        dataset_path: str,
+        dataset_name: str = None,
         gpu_id: Union[int, list[int]] = 0,
         bear_data_path: str = "BEAR",
         matcher_type: str = "hybrid",
@@ -29,6 +30,7 @@ class DatasetProcessor:
         This class provides functionality to process a dataset in parallel using multiple instances of FactMatcher.
 
         :param num_slices: Number of slices to divide the dataset into, corresponding to the number of parallel workers.
+        :param dataset_path: Path of the dataset to load and process.
         :param dataset_name: Name of the dataset to load and process.
         :param matcher_type: Type of FactMatcher to use; options are "simple", "hybrid", or "entity_linker".
         :param bear_data_path: Path to the BEAR data directory.
@@ -43,6 +45,7 @@ class DatasetProcessor:
         :param save_file_content: Flag indicating whether to save the content of the files in the output dictionary.
         """
         self.num_slices = num_slices
+        self.dataset_path = dataset_path
         self.dataset_name = dataset_name
         self.bear_data_path = bear_data_path
         self.read_existing_index = read_existing_index
@@ -111,7 +114,7 @@ class DatasetProcessor:
         :param gpu_id: GPU ID to use for processing.
         :return:
         """
-        ds = datasets.load_dataset(self.dataset_name, split=f"train[{start_idx}:{end_idx}]")
+        ds = datasets.load_dataset(self.dataset_path, self.dataset_name, split=f"train[{start_idx}:{end_idx}]")
         fact_matcher = self._create_matcher(index_dir, gpu_id)
 
         if not self.read_existing_index:
@@ -127,7 +130,7 @@ class DatasetProcessor:
 
         :return:
         """
-        full_dataset = datasets.load_dataset(self.dataset_name, split="train")
+        full_dataset = datasets.load_dataset(self.dataset_path, self.dataset_name, split="train")
         dataset_len = len(full_dataset)
         slice_size = dataset_len // self.num_slices
         slices_info = [
