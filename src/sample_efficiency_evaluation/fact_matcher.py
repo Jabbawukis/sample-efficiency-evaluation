@@ -62,12 +62,11 @@ class FactMatcherBase(ABC):
 
         - gpu_id [Optional[int]]: GPU ID to use for the spacy entity linker.
             The default is 0.
-        """
 
-        if kwargs.get("require_gpu", False):
-            spacy.require_gpu(kwargs.get("gpu_id", 0))
-        else:
-            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
+        - entity_linker_model [str]: Entity linker model to use.
+            The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
+            Refer to https://spacy.io/models/en for more information.
+        """
 
         bear_data_path = kwargs.get("bear_data_path")
 
@@ -256,6 +255,11 @@ class FactMatcherHybrid(FactMatcherBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        if kwargs.get("require_gpu", False):
+            spacy.require_gpu(kwargs.get("gpu_id", 0))
+        else:
+            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
+
         self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
 
         self.entity_linker.add_pipe("entityLinker", last=True)
@@ -364,15 +368,15 @@ class FactMatcherEntityLinking(FactMatcherBase):
     FactMatcherEntityLinking
 
     FactMatcherEntityLinking is a class that uses the entity linker model to index and search the dataset.
-
-    :param kwargs:
-    - entity_linker_model [str]: Entity linker model to use.
-        The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
-        Refer to https://spacy.io/models/en for more information.
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        if kwargs.get("require_gpu", False):
+            spacy.require_gpu(kwargs.get("gpu_id", 0))
+        else:
+            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
 
         self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
 
