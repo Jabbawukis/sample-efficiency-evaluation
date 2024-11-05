@@ -151,10 +151,7 @@ class DatasetProcessor:
             ]
             results = []
             for future in futures:
-                try:
-                    results.append(future.result())
-                except Exception as e:
-                    print(f"An error occurred: {e}")
+                results.append(future.result())
         if self.output_separately:
             for idx, result in enumerate(results):
                 utility.save_json_dict(result, f"{self.rel_info_output_dir}/{idx+1}_relation_info.json")
