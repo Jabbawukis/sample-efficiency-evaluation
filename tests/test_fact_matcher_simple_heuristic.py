@@ -24,6 +24,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q399": {
                     "subj_label": "Armenia",
@@ -32,6 +33,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Nikol Pashinyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q548114": {
                     "subj_label": "Free State of Fiume",
@@ -39,14 +41,18 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_id": "Q193236",
                     "obj_label": "Gabriele D'Annunzio",
                     "obj_aliases": set(),
-                    "occurrences": 0},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
                 "Q5626824": {
                     "subj_label": "Gülcemal Sultan",
                     "subj_aliases": set(),
                     "obj_id": "Q222",
                     "obj_label": "Albania",
                     "obj_aliases": set(),
-                    "occurrences": 0},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
                 "Q837": {
                     "subj_label": "Nepal",
                     "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
@@ -54,6 +60,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
             }
         }
@@ -70,6 +77,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -78,6 +86,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 0,
+                    "sentences": set(),
                 }
             },
             "P_01": {
@@ -88,6 +97,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 0,
+                    "sentences": set(),
                 }
             }
         }
@@ -355,6 +365,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
             fact_matcher = FactMatcherSimple(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
+                save_file_content=True,
             )
 
             fact_matcher.index_dataset(
@@ -379,6 +390,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "obj_aliases": set(),
                     "occurrences": 2,
+                    "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan", "Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
                 },
                 "Q399": {
                     "subj_label": "Armenia",
@@ -387,6 +399,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Nikol Pashinyan",
                     "obj_aliases": set(),
                     "occurrences": 1,
+                    "sentences": {"Armenia blah blah blah Nikol Pashinyan"},
                 },
                 "Q548114": {
                     "subj_label": "Free State of Fiume",
@@ -394,14 +407,18 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_id": "Q193236",
                     "obj_label": "Gabriele D'Annunzio",
                     "obj_aliases": set(),
-                    "occurrences": 1},
+                    "occurrences": 1,
+                    "sentences": {"Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio"},
+                },
                 "Q5626824": {
                     "subj_label": "Gülcemal Sultan",
                     "subj_aliases": set(),
                     "obj_id": "Q222",
                     "obj_label": "Albania",
                     "obj_aliases": set(),
-                    "occurrences": 0},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
                 "Q837": {
                     "subj_label": "Nepal",
                     "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
@@ -409,6 +426,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "obj_aliases": set(),
                     "occurrences": 1,
+                    "sentences": {"Nepal NPL is cool Khadga Prasad Sharma Oli"},
                 },
             }
         })
@@ -453,6 +471,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 5,
+                    "sentences": set(),
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -461,6 +480,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 3,
+                    "sentences": set(),
                 }
             },
             "P_01": {
@@ -471,6 +491,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 0,
+                    "sentences": set(),
                 }
             }
         })

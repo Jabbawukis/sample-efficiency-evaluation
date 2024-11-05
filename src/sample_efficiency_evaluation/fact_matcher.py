@@ -12,7 +12,7 @@ from typing import Union
 import spacy
 from datasets import DatasetDict, Dataset, IterableDatasetDict, IterableDataset
 from tqdm import tqdm
-from whoosh.index import create_in, open_dir, FileIndex
+from whoosh.index import create_in, exists_in, open_dir, FileIndex
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.searching import Searcher
 from whoosh.writing import SegmentWriter, BufferedWriter
@@ -54,10 +54,8 @@ class FactMatcherBase(ABC):
             index. The index file provided in the file_index_dir argument will be used to read the existing index.
             If the file_index_dir argument is not set, the default "indexdir" will be used.
 
-        - save_file_content [Optional[bool]]: If True, it will save the file content in the index.
-            The result of an index search will contain the file content in the text field
-            e.g. {"path": "some_path", "title": "some_title", "text": "some_text"}.
-            If False, it will not save the file content. The default is True.
+        - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
+            in the relation dictionary. The default is False.
 
         - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
             The default is False.
@@ -75,6 +73,8 @@ class FactMatcherBase(ABC):
 
         self.index_path = kwargs.get("file_index_dir", "indexdir")
 
+        self.save_file_content = kwargs.get("save_file_content", False)
+
         self.entity_relation_info_dict: dict = self._extract_entity_information(
             bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
@@ -84,7 +84,7 @@ class FactMatcherBase(ABC):
         if self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
-            self.writer, self.indexer = self._initialize_index(self.index_path, kwargs.get("save_file_content", True))
+            self.writer, self.indexer = self._initialize_index(self.index_path)
 
         self.query_parser = QueryParser("text", schema=self.indexer.schema)
 
@@ -155,18 +155,17 @@ class FactMatcherBase(ABC):
         utility.save_json_dict(self.entity_relation_info_dict, file_path)
 
     @staticmethod
-    def _initialize_index(index_path: str, save_file_content: bool) -> tuple[BufferedWriter, FileIndex]:
+    def _initialize_index(index_path: str) -> tuple[BufferedWriter, FileIndex]:
         """
         Initialize index writer and indexer.
         :param index_path: Path to the index directory to create.
-        :param save_file_content: If True, it will save the file content in the index.
         :return:
         """
-        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=save_file_content))
+        indexing_schema = Schema(title=TEXT(stored=True), path=ID(stored=True), text=TEXT(stored=True))
         if not os.path.exists(index_path):
             os.mkdir(index_path)
         indexer = create_in(index_path, indexing_schema)
-        writer = BufferedWriter(indexer, period=120, limit=20)
+        writer = BufferedWriter(indexer, period=None)
         return writer, indexer
 
     @staticmethod
@@ -179,6 +178,8 @@ class FactMatcherBase(ABC):
         :param index_path: Path to an existing index directory.
         :return: Writer and indexer.
         """
+        if not exists_in(index_path):
+            raise FileNotFoundError(f"Index directory not found: {index_path}")
         indexer = open_dir(index_path)
         writer = indexer.writer()
         return writer, indexer
@@ -208,6 +209,7 @@ class FactMatcherBase(ABC):
                     "obj_label": fact_dict["obj_label"],
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 }
         for _, relations in relation_dict.items():
             for _, fact in relations.items():
@@ -292,8 +294,8 @@ class FactMatcherHybrid(FactMatcherBase):
 
     def _search_for_entities_by_id_and_string(
         self, hits: list[dict], subj_id: str, obj_id: str, subj_label: str, obj_label: str
-    ) -> list[str]:
-        sent_with_occurrences = []
+    ) -> set[str]:
+        sent_with_occurrences = set()
         for hit in hits:
             content = hit["text"]
             split_doc = self.sentencizer(content)
@@ -302,9 +304,9 @@ class FactMatcherHybrid(FactMatcherBase):
                 all_linked_entities = self._get_entity_ids(sentence)
                 entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
                 if subj_id in entity_ids and obj_id in entity_ids:
-                    sent_with_occurrences.append(str(hashlib.sha256(sentence.encode()).hexdigest()))
+                    sent_with_occurrences.update([sentence])
                 elif subj_label in sentence and obj_label in sentence:
-                    sent_with_occurrences.append(str(hashlib.sha256(sentence.encode()).hexdigest()))
+                    sent_with_occurrences.update([sentence])
         return sent_with_occurrences
 
     def create_fact_statistics(self) -> None:
@@ -321,7 +323,7 @@ class FactMatcherHybrid(FactMatcherBase):
         """
         if not self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
-        with self.writer.searcher() as searcher:
+        with self.indexer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
                     collected_results = set()
@@ -353,6 +355,8 @@ class FactMatcherHybrid(FactMatcherBase):
                             )
                             collected_results.update(occurrences)
                     fact["occurrences"] += len(collected_results)
+                    if self.save_file_content:
+                        fact["sentences"].update(collected_results)
 
 
 class FactMatcherEntityLinking(FactMatcherBase):
@@ -418,13 +422,17 @@ class FactMatcherEntityLinking(FactMatcherBase):
     def create_fact_statistics(self) -> None:
         if not self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
-        with self.writer.searcher() as searcher:
+        with self.indexer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
                     collected_results = set()
+                    sentences = set()
                     results = self.search_index(subj_id, fact["obj_id"], searcher)
                     collected_results.update([result["title"] for result in results])
+                    sentences.update([result["text"] for result in results])
                     fact["occurrences"] += len(collected_results)
+                    if self.save_file_content:
+                        fact["sentences"].update(sentences)
 
 
 class FactMatcherSimple(FactMatcherBase):
@@ -473,23 +481,30 @@ class FactMatcherSimple(FactMatcherBase):
         """
         if not self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
-        with self.writer.searcher() as searcher:
+        with self.indexer.searcher() as searcher:
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
                     collected_results = set()
+                    sentences = set()
                     results = self.search_index(fact["subj_label"], fact["obj_label"], searcher)
                     collected_results.update([result["title"] for result in results])
+                    sentences.update([result["text"] for result in results])
 
                     for alias in fact["obj_aliases"]:
                         results = self.search_index(fact["subj_label"], alias, searcher)
                         collected_results.update([result["title"] for result in results])
+                        sentences.update([result["text"] for result in results])
 
                     for alias in fact["subj_aliases"]:
                         results = self.search_index(alias, fact["obj_label"])
                         collected_results.update([result["title"] for result in results])
+                        sentences.update([result["text"] for result in results])
 
                     for subj_aliases in fact["subj_aliases"]:
                         for obj_aliases in fact["obj_aliases"]:
                             results = self.search_index(subj_aliases, obj_aliases)
                             collected_results.update([result["title"] for result in results])
+                            sentences.update([result["text"] for result in results])
                     fact["occurrences"] += len(collected_results)
+                    if self.save_file_content:
+                        fact["sentences"].update(sentences)

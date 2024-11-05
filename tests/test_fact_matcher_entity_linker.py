@@ -23,6 +23,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q399": {
                     "subj_label": "Armenia",
@@ -31,6 +32,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     "obj_label": "Nikol Pashinyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q548114": {
                     "subj_label": "Free State of Fiume",
@@ -38,14 +40,18 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     "obj_id": "Q193236",
                     "obj_label": "Gabriele D'Annunzio",
                     "obj_aliases": set(),
-                    "occurrences": 0},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
                 "Q5626824": {
                     "subj_label": "Gülcemal Sultan",
                     "subj_aliases": set(),
                     "obj_id": "Q222",
                     "obj_label": "Albania",
                     "obj_aliases": set(),
-                    "occurrences": 0},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
                 "Q837": {
                     "subj_label": "Nepal",
                     "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
@@ -53,6 +59,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
             }
         }
@@ -183,6 +190,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
             fact_matcher = FactMatcherEntityLinking(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
+                save_file_content=True,
             )
 
             fact_matcher.index_dataset(
@@ -196,45 +204,43 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
             )
             fact_matcher.close()
             fact_matcher.create_fact_statistics()
-            self.assertEqual(fact_matcher.entity_relation_info_dict, {
-            "P6": {
-                "Q1519": {
-                    "subj_label": "Abu Dhabi",
-                    "subj_aliases": {"Abū Dhabi", "Abudhabi"},
-                    "obj_id": "Q1059948",
-                    "obj_label": "Khalifa bin Zayed Al Nahyan",
-                    "obj_aliases": set(),
-                    "occurrences": 1,
-                },
-                "Q399": {
-                    "subj_label": "Armenia",
-                    "subj_aliases": {"Republic of Armenia", "🇦🇲", "ARM", "AM"},
-                    "obj_id": "Q7035479",
-                    "obj_label": "Nikol Pashinyan",
-                    "obj_aliases": set(),
-                    "occurrences": 1,
-                },
-                "Q548114": {
-                    "subj_label": "Free State of Fiume",
-                    "subj_aliases": set(),
-                    "obj_id": "Q193236",
-                    "obj_label": "Gabriele D'Annunzio",
-                    "obj_aliases": set(),
-                    "occurrences": 0},
-                "Q5626824": {
-                    "subj_label": "Gülcemal Sultan",
-                    "subj_aliases": set(),
-                    "obj_id": "Q222",
-                    "obj_label": "Albania",
-                    "obj_aliases": set(),
-                    "occurrences": 0},
-                "Q837": {
-                    "subj_label": "Nepal",
-                    "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
-                    "obj_id": "Q3195923",
-                    "obj_label": "Khadga Prasad Sharma Oli",
-                    "obj_aliases": set(),
-                    "occurrences": 0,
-                },
-            }
-        })
+            self.assertEqual(fact_matcher.entity_relation_info_dict, {'P6': {'Q1519': {'obj_aliases': set(),
+                  'obj_id': 'Q1059948',
+                  'obj_label': 'Khalifa bin Zayed Al Nahyan',
+                  'occurrences': 1,
+                  'sentences': {'Abu Dhabi blah blah blah Khalifa bin Zayed Al '
+                                'Nahyan [Q1519 Q1059948]'},
+                  'subj_aliases': {'Abudhabi', 'Abū Dhabi'},
+                  'subj_label': 'Abu Dhabi'},
+        'Q399': {'obj_aliases': set(),
+                 'obj_id': 'Q7035479',
+                 'obj_label': 'Nikol Pashinyan',
+                 'occurrences': 1,
+                 'sentences': {'Armenia blah blah blah Nikol Pashinyan [Q399 Q7035479]'},
+                 'subj_aliases': {'🇦🇲', 'AM', 'Republic of Armenia', 'ARM'},
+                 'subj_label': 'Armenia'},
+        'Q548114': {'obj_aliases': set(),
+                    'obj_id': 'Q193236',
+                    'obj_label': "Gabriele D'Annunzio",
+                    'occurrences': 0,
+                    'sentences': set(),
+                    'subj_aliases': set(),
+                    'subj_label': 'Free State of Fiume'},
+        'Q5626824': {'obj_aliases': set(),
+                     'obj_id': 'Q222',
+                     'obj_label': 'Albania',
+                     'occurrences': 0,
+                     'sentences': set(),
+                     'subj_aliases': set(),
+                     'subj_label': 'Gülcemal Sultan'},
+        'Q837': {'obj_aliases': set(),
+                 'obj_id': 'Q3195923',
+                 'obj_label': 'Khadga Prasad Sharma Oli',
+                 'occurrences': 0,
+                 'sentences': set(),
+                 'subj_aliases': {'Federal Democratic Republic of Nepal',
+                                  'NEP',
+                                  'NP',
+                                  'NPL',
+                                  '🇳🇵'},
+                 'subj_label': 'Nepal'}}})

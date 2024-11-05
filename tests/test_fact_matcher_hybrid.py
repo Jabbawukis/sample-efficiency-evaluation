@@ -23,6 +23,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -31,6 +32,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
+                    "sentences": set(),
                 }
             },
             "P_01": {
@@ -41,6 +43,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
+                    "sentences": set(),
                 },
                 "Q62085": {
                     "subj_label": "Joachim Sauer",
@@ -49,6 +52,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "Angela Merkel",
                     "obj_aliases": {"Merkel"},
                     "occurrences": 0,
+                    "sentences": set(),
                 }
             }
         }
@@ -141,6 +145,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
             fact_matcher = FactMatcherHybrid(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
+                save_file_content=True,
             )
 
             fact_matcher.index_dataset(
@@ -159,7 +164,6 @@ class FactMatcherTestHybrid(unittest.TestCase):
                              " A. Merkel blah blah blah Joachim Sauer."}
                 ],
                 text_key="text",
-                split_contents_into_sentences=False,
             )
             fact_matcher.close()
             fact_matcher.create_fact_statistics()
@@ -172,6 +176,11 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 5,
+                    "sentences": {"United States of America blah blah blah Washington, D.C. blah.",
+                                  "United States of America blah Alexander blah blah Washington, D.C. blah.",
+                                  "United States of America (U.S.A.) blah blah blah Washington, D.C. blah.",
+                                  "United of America (U.S.A.) blah blah blah Washington, D.C. blah.",
+                                  "Publius blah blah blah the USA based in Washington, D.C. blah."}
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -180,6 +189,9 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 3, # "A. Ham" does not get recognized by the entity linker.
+                    "sentences": {"Alexander Hamilton blah blah blah the United States of America.",
+                                  "Hamilton blah blah blah United States of America.",
+                                  "Publius blah blah blah the USA based in Washington, D.C. blah."},
                 }
             },
             "P_01": {
@@ -190,6 +202,8 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America","America","U.S.A.","USA","U.S.","US"},
                     "occurrences": 2, # "Rainer Bernhardt" does not get recognized by the entity linker.
+                    "sentences": {"Rainer Herbert Georg Bernhardt blah blah blah the USA blah.",
+                                  "Bernhardt blah blah blah United States of America."}
                 },
                 "Q62085": {
                     "subj_label": "Joachim Sauer",
@@ -198,6 +212,8 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     "obj_label": "Angela Merkel",
                     "obj_aliases": {"Merkel"},
                     "occurrences": 2, # "A. Merkel" by entity linker, "Merkel" by string matching.
+                    "sentences": {"Joachim Sauer and Merkel.",
+                                  "A. Merkel blah blah blah Joachim Sauer."}
                 }
             }
         })
