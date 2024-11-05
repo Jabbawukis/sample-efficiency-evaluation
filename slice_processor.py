@@ -64,6 +64,7 @@ def create_matcher():
 dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, split=f"train[{args.start_idx}:{args.end_idx}]")
 fact_matcher = create_matcher()
 fact_matcher.index_dataset(dataset_slice, text_key="text")  # Adjust "text" if needed
+fact_matcher.close()
 fact_matcher.create_fact_statistics()
 
 # Save results
