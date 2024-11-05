@@ -2,7 +2,7 @@
 
 # Configuration
 NUM_SLICES=4                                   # Number of slices to divide the dataset into
-DATASET_PATH="refactor"                                # Pass as string
+DATASET_PATH=""                                # Pass as string
 DATASET_NAME=""                                # Optional
 BEAR_DATA_PATH="BEAR"
 REL_INFO_OUTPUT_DIR="output"
