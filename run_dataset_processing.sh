@@ -1,24 +1,23 @@
 #!/bin/bash
 
 # Configuration
-NUM_SLICES=4                                   # Number of slices to divide the dataset into
-DATASET_PATH=""                                # Pass as string
-DATASET_NAME=""                                # Optional
-BEAR_DATA_PATH="BEAR"
-REL_INFO_OUTPUT_DIR="output"
-MATCHER_TYPE="simple"
-ENTITY_LINKER_MODEL="en_core_web_trf"
-SAVE_FILE_CONTENT="True"                       # Pass as string
-READ_EXISTING_INDEX="False"                    # Pass as string
-REQUIRE_GPU="False"                            # Pass as string
-GPU_IDS=(0 1 2 3)                              # Pass as array for each slice
+#NUM_SLICES=4                                   # Number of slices to divide the dataset into
+#DATASET_PATH=""                                # Pass as string
+#DATASET_NAME=""                                # Optional
+#BEAR_DATA_PATH="BEAR"
+#REL_INFO_OUTPUT_DIR="output"
+#MATCHER_TYPE="simple"
+#ENTITY_LINKER_MODEL="en_core_web_trf"
+#SAVE_FILE_CONTENT="True"                       # Pass as string
+#READ_EXISTING_INDEX="False"                    # Pass as string
+#REQUIRE_GPU="False"                            # Pass as string
+#GPU_ID=0                                       # Pass as int
 
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
 
 # Loop through each slice and assign a Python processing job
 for (( i=0; i<NUM_SLICES; i++ )); do
-    GPU_ID=${GPU_IDS[i]}
     FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
 
     # Ensure index directory exists

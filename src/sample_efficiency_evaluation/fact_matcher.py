@@ -232,7 +232,6 @@ class FactMatcherBase(ABC):
         self,
         file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
         text_key: str = "text",
-        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -277,7 +276,6 @@ class FactMatcherHybrid(FactMatcherBase):
         self,
         file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
         text_key: str = "text",
-        split_contents_into_sentences: bool = False,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -288,7 +286,6 @@ class FactMatcherHybrid(FactMatcherBase):
         specify the key to extract the file content.
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
-        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
         It Has no effect on this method.
         :return:
         """
@@ -309,7 +306,7 @@ class FactMatcherHybrid(FactMatcherBase):
                 entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
                 if subj_id in entity_ids and obj_id in entity_ids:
                     sent_with_occurrences.update([sentence])
-                elif subj_label in sentence and obj_label in sentence:
+                if subj_label.lower() in sentence.lower() and obj_label.lower() in sentence.lower():
                     sent_with_occurrences.update([sentence])
         return sent_with_occurrences
 
@@ -395,7 +392,6 @@ class FactMatcherEntityLinking(FactMatcherBase):
         self,
         file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
         text_key: str = "text",
-        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -406,22 +402,16 @@ class FactMatcherEntityLinking(FactMatcherBase):
         specify the key to extract the file content.
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
-        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Indexing dataset"):
             content = utility.clean_string(file_content[text_key])
-            if split_contents_into_sentences:
-                split_doc = self.sentencizer(content)
-                sentences = [sent.text for sent in split_doc.sents]
-                for sentence in sentences:
-                    all_linked_entities = self._get_entity_ids(sentence)
-                    sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
-                    self._index_file(sentence)
-            else:
-                all_linked_entities = self._get_entity_ids(content)
-                content = utility.decorate_sentence_with_ids(content, all_linked_entities)
-                self._index_file(content)
+            split_doc = self.sentencizer(content)
+            sentences = [sent.text for sent in split_doc.sents]
+            for sentence in sentences:
+                all_linked_entities = self._get_entity_ids(sentence)
+                sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
+                self._index_file(sentence)
 
     def create_fact_statistics(self) -> None:
         if not self.read_existing_index:
@@ -450,7 +440,6 @@ class FactMatcherSimple(FactMatcherBase):
         self,
         file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
         text_key: str = "text",
-        split_contents_into_sentences: bool = True,
     ) -> None:
         """
         Index dataset files, the dataset is a list of file contents.
@@ -461,18 +450,22 @@ class FactMatcherSimple(FactMatcherBase):
         specify the key to extract the file content.
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
-        :param split_contents_into_sentences: Apply sentence splitting to the file content before indexing.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Indexing dataset"):
             content = utility.clean_string(file_content[text_key])
-            if split_contents_into_sentences:
-                split_doc = self.sentencizer(content)
-                sentences = [sent.text for sent in split_doc.sents]
-                for sentence in sentences:
-                    self._index_file(sentence)
-            else:
-                self._index_file(content)
+            self._index_file(content)
+
+    def _search_for_entities_by_string(self, hits: list[dict], subj_label: str, obj_label: str) -> set[str]:
+        sent_with_occurrences = set()
+        for hit in hits:
+            content = hit["text"]
+            split_doc = self.sentencizer(content)
+            sentences = [sent.text for sent in split_doc.sents]
+            for sentence in sentences:
+                if subj_label.lower() in sentence.lower() and obj_label.lower() in sentence.lower():
+                    sent_with_occurrences.update([sentence])
+        return sent_with_occurrences
 
     def create_fact_statistics(self) -> None:
         """
@@ -489,26 +482,25 @@ class FactMatcherSimple(FactMatcherBase):
             for relation_key, relation in self.entity_relation_info_dict.items():
                 for _, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
                     collected_results = set()
-                    sentences = set()
                     results = self.search_index(fact["subj_label"], fact["obj_label"], searcher)
-                    collected_results.update([result["title"] for result in results])
-                    sentences.update([result["text"] for result in results])
+                    occurrences = self._search_for_entities_by_string(results, fact["subj_label"], fact["obj_label"])
+                    collected_results.update(occurrences)
 
                     for alias in fact["obj_aliases"]:
                         results = self.search_index(fact["subj_label"], alias, searcher)
-                        collected_results.update([result["title"] for result in results])
-                        sentences.update([result["text"] for result in results])
+                        occurrences = self._search_for_entities_by_string(results, fact["subj_label"], alias)
+                        collected_results.update(occurrences)
 
                     for alias in fact["subj_aliases"]:
                         results = self.search_index(alias, fact["obj_label"])
-                        collected_results.update([result["title"] for result in results])
-                        sentences.update([result["text"] for result in results])
+                        occurrences = self._search_for_entities_by_string(results, alias, fact["obj_label"])
+                        collected_results.update(occurrences)
 
                     for subj_aliases in fact["subj_aliases"]:
                         for obj_aliases in fact["obj_aliases"]:
                             results = self.search_index(subj_aliases, obj_aliases)
-                            collected_results.update([result["title"] for result in results])
-                            sentences.update([result["text"] for result in results])
+                            occurrences = self._search_for_entities_by_string(results, subj_aliases, obj_aliases)
+                            collected_results.update(occurrences)
                     fact["occurrences"] += len(collected_results)
                     if self.save_file_content:
-                        fact["sentences"].update(sentences)
+                        fact["sentences"].update(collected_results)

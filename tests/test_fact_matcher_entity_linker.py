@@ -116,66 +116,11 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     {"text": "I follow the New England Patriots"},
                 ],
                 text_key="text",
-                split_contents_into_sentences=False,
             )
 
             mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. [Q12525597 Q194318 Q664609]")
             mock_index_file.assert_any_call("I follow the New England Patriots [Q193390]")
             self.assertEqual(mock_index_file.call_count, 2)
-
-    def test_index_dataset_2(self):
-        with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
-            patch.object(
-                FactMatcherEntityLinking,
-                "_extract_entity_information",
-                return_value=self.test_entity_relation_info_dict,
-            ),
-            patch.object(
-                FactMatcherEntityLinking, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
-            ),
-            patch.object(
-                FactMatcherEntityLinking,
-                "_index_file",
-            ) as mock_index_file,
-            patch.object(
-                FactMatcherEntityLinking,
-                "_get_entity_ids",
-            ) as get_entity_ids_mock,
-        ):
-
-            fact_matcher = FactMatcherEntityLinking(
-                bear_data_path=f"{self.test_resources_abs_path}",
-                file_index_dir=self.test_index_dir,
-            )
-            fact_matcher.entity_linker = MagicMock()
-            entity_1 = MagicMock()
-            entity_1.get_id.return_value = 12525597
-            entity_2 = MagicMock()
-            entity_2.get_id.return_value = 194318
-            entity_3 = MagicMock()
-            entity_3.get_id.return_value = 664609
-            entity_4 = MagicMock()
-            entity_4.get_id.return_value = 193390
-            entity_5 = MagicMock()
-            entity_5.get_id.return_value = 197
-            entity_6 = MagicMock()
-            entity_6.get_id.return_value = 66
-            get_entity_ids_mock.side_effect = [[entity_1, entity_2, entity_3], [entity_4], [entity_5, entity_6]]
-
-            fact_matcher.index_dataset(
-                [
-                    {"text": "I watched the Pirates of the Caribbean last silvester. I follow the New England Patriots."},
-                    {"text": "Boeing 747 is a cool plane."},
-                ],
-                text_key="text",
-                split_contents_into_sentences=True,
-            )
-
-            mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. [Q12525597 Q194318 Q664609]")
-            mock_index_file.assert_any_call("I follow the New England Patriots. [Q193390]")
-            mock_index_file.assert_any_call("Boeing 747 is a cool plane. [Q197 Q66]")
-            self.assertEqual(mock_index_file.call_count, 3)
 
     def test_create_fact_statistics_good(self):
         with (
@@ -199,8 +144,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                     {"text": "Armenia blah blah blah Nikol Pashinyan"},
                     {"text": "Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio"},
                     {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"}],
-                text_key="text",
-                split_contents_into_sentences=True,
+                text_key="text"
             )
             fact_matcher.close()
             fact_matcher.create_fact_statistics()

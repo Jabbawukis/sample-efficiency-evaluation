@@ -90,8 +90,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     {"text": "I watched the Pirates of the Caribbean last silvester."},
                     {"text": "I follow the New England Patriots"},
                 ],
-                text_key="text",
-                split_contents_into_sentences=False,
+                text_key="text"
             )
 
             mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester.")
@@ -125,7 +124,6 @@ class FactMatcherTestHybrid(unittest.TestCase):
                     {"text": "Boeing 747 is a cool plane."},
                 ],
                 text_key="text",
-                split_contents_into_sentences=True,
             )
 
             mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. I follow the New England Patriots.")

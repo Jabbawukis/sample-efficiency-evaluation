@@ -198,7 +198,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     {"text": "Boeing 747 is a plane"},
                 ],
                 text_key="text",
-                split_contents_into_sentences=False,
+                
             )
 
             mock_index_file.assert_any_call("Boeing is a company. Boeing 747 is a plane.")
@@ -233,13 +233,12 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     {"text": "Boeing 747 is a cool plane."},
                 ],
                 text_key="text",
-                split_contents_into_sentences=True,
+                
             )
 
-            mock_index_file.assert_any_call("Boeing is a company.")
-            mock_index_file.assert_any_call("Boeing 747 is a plane.")
+            mock_index_file.assert_any_call("Boeing is a company. Boeing 747 is a plane.")
             mock_index_file.assert_any_call("Boeing 747 is a cool plane.")
-            self.assertEqual(mock_index_file.call_count, 3)
+            self.assertEqual(mock_index_file.call_count, 2)
 
     def test_search_index(self):
         with (
@@ -259,25 +258,16 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
             fact_matcher.index_dataset(
                 [{"text": "Boeing is a company. Boeing 747 is a plane."}],
                 text_key="text",
-                split_contents_into_sentences=True,
+                
             )
             results = fact_matcher.search_index("Boeing")
             fact_matcher.close()
-            self.assertEqual(len(results), 2)
+            self.assertEqual(len(results), 1)
             self.assertEqual(
                 results,
-                [
-                    {
-                        "path": "/1247eaec35149d764f9e5d91fd8b8a3c18b1d716f3fe88d3736bff2f605fee2a",
-                        "title": "1247eaec35149d764f9e5d91fd8b8a3c18b1d716f3fe88d3736bff2f605fee2a",
-                        "text": "Boeing is a company.",
-                    },
-                    {
-                        "path": "/c0f690980267574d47032f7a21259e83bdd29b3fb5a5c0dd48da21c40a3b3a10",
-                        "title": "c0f690980267574d47032f7a21259e83bdd29b3fb5a5c0dd48da21c40a3b3a10",
-                        "text": "Boeing 747 is a plane.",
-                    },
-                ],
+                [{'path': '/bca71e8376fccc36d8a182990017664c59740de27860c6ae67829670bcb690df',
+                  'text': 'Boeing is a company. Boeing 747 is a plane.',
+                  'title': 'bca71e8376fccc36d8a182990017664c59740de27860c6ae67829670bcb690df'}]
             )
 
     def test_search_index_sub_query_1(self):
@@ -298,7 +288,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
             fact_matcher.index_dataset(
                 [{"text": "Boeing 747 is a plane."}],
                 text_key="text",
-                split_contents_into_sentences=True,
+                
             )
 
 
@@ -336,7 +326,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     {"text": "Boeing 747 is a plane."},
                  {"text": "Angela Merkel is the chancellor of Germany"}],
                 text_key="text",
-                split_contents_into_sentences=True,
+                
             )
             results = fact_matcher.search_index("Angela Merkel", sub_query="chancellor Germany")
             fact_matcher.close()
@@ -377,7 +367,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"},
                 ],
                 text_key="text",
-                split_contents_into_sentences=False,
+                
             )
             fact_matcher.close()
             fact_matcher.create_fact_statistics()
@@ -458,7 +448,7 @@ class FactMatcherTestSimpleHeuristic(unittest.TestCase):
                     {"text": "US blah blah blah A. Ham"},
                 ],
                 text_key="text",
-                split_contents_into_sentences=False,
+                
             )
             fact_matcher.close()
             fact_matcher.create_fact_statistics()
