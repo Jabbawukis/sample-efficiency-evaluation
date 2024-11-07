@@ -2,7 +2,7 @@ import argparse
 import os
 from utility import utility
 from sample_efficiency_evaluation.fact_matcher_index import FactMatcherIndexHybrid, FactMatcherIndexSimple
-from sample_efficiency_evaluation.fact_matcher import FactMatcherEntityLinking
+from sample_efficiency_evaluation.fact_matcher import FactMatcherEntityLinking, FactMatcherSimple
 import datasets
 
 # Argument parser
@@ -53,6 +53,11 @@ def create_matcher():
             entity_linker_model=args.entity_linker_model,
             save_file_content=args.save_file_content,
             gpu_id=args.gpu_id
+        )
+    elif args.matcher_type == "simple":
+        return FactMatcherSimple(
+            bear_data_path=args.bear_data_path,
+            save_file_content=args.save_file_content,
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
