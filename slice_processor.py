@@ -94,11 +94,11 @@ dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, spli
 fact_matcher = create_matcher()
 
 if "index" in args.matcher_type:
-    fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
-else:
     fact_matcher.index_dataset(dataset_slice, text_key="text")  # Adjust "text" if needed
     fact_matcher.close()
     fact_matcher.create_fact_statistics()
+else:
+    fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
 
 # Save results
 output_path = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_info.json")
