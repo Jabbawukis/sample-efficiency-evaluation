@@ -17,6 +17,7 @@ from whoosh.query import And
 from spacy.lang.en import English
 
 from utility import utility
+from utility.utility import word_in_sentence
 
 
 class FactMatcherIndexBase(ABC):
@@ -266,7 +267,7 @@ class FactMatcherIndexHybrid(FactMatcherIndexBase):
                 entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
                 if subj_id in entity_ids and obj_id in entity_ids:
                     sent_with_occurrences.update([sentence])
-                if subj_label.lower() in sentence.lower() and obj_label.lower() in sentence.lower():
+                if word_in_sentence(subj_label, sentence) and word_in_sentence(obj_label, sentence):
                     sent_with_occurrences.update([sentence])
         return sent_with_occurrences
 
@@ -378,7 +379,7 @@ class FactMatcherIndexSimple(FactMatcherIndexBase):
             split_doc = self.sentencizer(content)
             sentences = [sent.text for sent in split_doc.sents]
             for sentence in sentences:
-                if subj_label.lower() in sentence.lower() and obj_label.lower() in sentence.lower():
+                if word_in_sentence(subj_label, sentence) and word_in_sentence(obj_label, sentence):
                     sent_with_occurrences.update([sentence])
         return sent_with_occurrences
 
