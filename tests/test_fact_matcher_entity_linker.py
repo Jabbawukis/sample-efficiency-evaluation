@@ -97,15 +97,23 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
             entity_5.get_id.return_value = 837
             entity_6 = MagicMock()
             entity_6.get_id.return_value = 3195923
-            get_entity_ids_mock.side_effect = [[entity_1, entity_2], [], [entity_3, entity_4], [], [entity_5, entity_6]]
+            get_entity_ids_mock.side_effect = [
+                [entity_1, entity_2],
+                [entity_2],
+                [entity_3, entity_4],
+                [],
+                [entity_5, entity_6],
+            ]
 
             fact_matcher.create_fact_statistics(
                 [
-                    {"text": "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
-                    {"text": "Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
+                    {
+                        "text": "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan. Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan."
+                    },
                     {"text": "Armenia blah blah blah Nikol Pashinyan"},
-                    {"text": "Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio"},
-                    {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"},
+                    {
+                        "text": "Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio. Nepal NPL is cool Khadga Prasad Sharma Oli"
+                    },
                 ],
                 text_key="text",
             )
@@ -118,7 +126,7 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
                             "obj_id": "Q1059948",
                             "obj_label": "Khalifa bin Zayed Al Nahyan",
                             "occurrences": 1,
-                            "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan"},
+                            "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan."},
                             "subj_aliases": {"Abudhabi", "Abū Dhabi"},
                             "subj_label": "Abu Dhabi",
                         },
