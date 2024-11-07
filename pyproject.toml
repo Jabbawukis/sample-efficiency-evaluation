@@ -42,7 +42,7 @@ disable = [
     "R0917",  # Too many positional arguments
     "R0902",  # Too many instance attributes
     "R0914",  # Too many local variables
-    "R1702",  # Too many nested blocks
+    "R0801",  # Similar lines in 2 files
 ]
 
 [tool.black]

@@ -3,7 +3,7 @@ import unittest
 import shutil
 from unittest.mock import patch, MagicMock
 
-from sample_efficiency_evaluation import FactMatcherHybrid
+from sample_efficiency_evaluation import FactMatcherIndexHybrid
 from utility import utility
 
 
@@ -68,7 +68,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
         with (
             patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
             patch.object(
-                FactMatcherHybrid, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
+                FactMatcherIndexHybrid, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
             ),
             patch.object(
                 utility,
@@ -76,12 +76,12 @@ class FactMatcherTestHybrid(unittest.TestCase):
                 return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
             ),
             patch.object(
-                FactMatcherHybrid,
+                FactMatcherIndexHybrid,
                 "_index_file",
             ) as mock_index_file,
         ):
 
-            fact_matcher = FactMatcherHybrid(
+            fact_matcher = FactMatcherIndexHybrid(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
@@ -106,15 +106,15 @@ class FactMatcherTestHybrid(unittest.TestCase):
                 return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
             ),
             patch.object(
-                FactMatcherHybrid, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
+                FactMatcherIndexHybrid, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
             ),
             patch.object(
-                FactMatcherHybrid,
+                FactMatcherIndexHybrid,
                 "_index_file",
             ) as mock_index_file,
         ):
 
-            fact_matcher = FactMatcherHybrid(
+            fact_matcher = FactMatcherIndexHybrid(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
             )
@@ -144,7 +144,7 @@ class FactMatcherTestHybrid(unittest.TestCase):
             ),
         ):
 
-            fact_matcher = FactMatcherHybrid(
+            fact_matcher = FactMatcherIndexHybrid(
                 bear_data_path=f"{self.test_resources_abs_path}",
                 file_index_dir=self.test_index_dir,
                 save_file_content=True,

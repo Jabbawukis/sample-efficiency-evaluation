@@ -1,7 +1,8 @@
 import argparse
 import os
 from utility import utility
-from sample_efficiency_evaluation.fact_matcher import FactMatcherHybrid, FactMatcherSimple, FactMatcherEntityLinking
+from sample_efficiency_evaluation.fact_matcher_index import FactMatcherIndexHybrid, FactMatcherIndexSimple
+from sample_efficiency_evaluation.fact_matcher import FactMatcherEntityLinking
 import datasets
 
 # Argument parser
@@ -27,8 +28,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
 
 # Create the appropriate FactMatcher instance based on matcher type
 def create_matcher():
-    if args.matcher_type == "hybrid":
-        return FactMatcherHybrid(
+    if args.matcher_type == "index_hybrid":
+        return FactMatcherIndexHybrid(
             bear_data_path=args.bear_data_path,
             read_existing_index=args.read_existing_index,
             require_gpu=args.require_gpu,
@@ -37,8 +38,8 @@ def create_matcher():
             save_file_content=args.save_file_content,
             gpu_id=args.gpu_id
         )
-    elif args.matcher_type == "simple":
-        return FactMatcherSimple(
+    elif args.matcher_type == "index_simple":
+        return FactMatcherIndexSimple(
             bear_data_path=args.bear_data_path,
             read_existing_index=args.read_existing_index,
             require_gpu=args.require_gpu,
@@ -87,7 +88,7 @@ print(f"Dataset: {args.dataset_path}"
 dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, split=f"train[{start_index}:{end_index}]")
 fact_matcher = create_matcher()
 
-if args.matcher_type == "entity_linker":
+if "index" in args.matcher_type:
     fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
 else:
     fact_matcher.index_dataset(dataset_slice, text_key="text")  # Adjust "text" if needed
