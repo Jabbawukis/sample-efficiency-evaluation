@@ -14,6 +14,7 @@ run-workflow:
 	pip install .[dev]
 	pytest tests/
 	black src/
+	black tests/
 	pylint src/
 
 ## install: Install the package locally.

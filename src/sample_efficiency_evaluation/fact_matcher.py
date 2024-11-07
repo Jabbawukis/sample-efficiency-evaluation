@@ -57,13 +57,13 @@ class FactMatcherBase(ABC):
         - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
             in the relation dictionary. The default is False.
 
-        - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
-            The default is False.
+        - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker if the entity linker
+            is used. The default is False.
 
         - gpu_id [Optional[int]]: GPU ID to use for the spacy entity linker.
             The default is 0.
 
-        - entity_linker_model [str]: Entity linker model to use.
+        - entity_linker_model [str]: Entity linker model to use if the entity linker is used (e.g., FactMatcherHybrid).
             The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
             Refer to https://spacy.io/models/en for more information.
         """
@@ -74,12 +74,13 @@ class FactMatcherBase(ABC):
 
         self.save_file_content = kwargs.get("save_file_content", False)
 
-        self.entity_relation_info_dict: dict = self._extract_entity_information(
+        self.entity_relation_info_dict: dict = utility.extract_entity_information(
             bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
 
         self.read_existing_index = kwargs.get("read_existing_index", False)
+
         if self.read_existing_index:
             self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
         else:
@@ -183,42 +184,6 @@ class FactMatcherBase(ABC):
         writer = indexer.writer()
         return writer, indexer
 
-    @staticmethod
-    def _extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
-        """
-        Extract entity information from bear data.
-        :param bear_data_path: Path to bear facts directory.
-        :return: Relation dictionary
-        """
-        relation_dict: dict = {}
-        bear_relation_info_dict: dict = utility.load_json_dict(bear_relation_info_path)
-        for relation_key, _ in bear_relation_info_dict.items():
-            try:
-                fact_list: list[dict] = utility.load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
-                relation_dict.update({relation_key: {}})
-            except FileNotFoundError:
-                logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
-                continue
-            for fact_dict in fact_list:
-                logging.info("Extracting entity information for %s", relation_key)
-                relation_dict[relation_key][fact_dict["sub_id"]] = {
-                    "subj_label": fact_dict["sub_label"],
-                    "subj_aliases": set(fact_dict["sub_aliases"]),
-                    "obj_id": fact_dict["obj_id"],
-                    "obj_label": fact_dict["obj_label"],
-                    "obj_aliases": set(),
-                    "occurrences": 0,
-                    "sentences": set(),
-                }
-        for _, relations in relation_dict.items():
-            for _, fact in relations.items():
-                for _, relations_ in relation_dict.items():
-                    try:
-                        fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
-                    except KeyError:
-                        continue
-        return relation_dict
-
     @abstractmethod
     def create_fact_statistics(self) -> None:
         """
@@ -244,7 +209,8 @@ class FactMatcherHybrid(FactMatcherBase):
     """
     FactMatcherHybrid
 
-    FactMatcherHybrid is a class that uses a simple search by string heuristic to search for entities in the dataset.
+    FactMatcherHybrid is a class that uses a simple search by string heuristic to search for entities in the indexed
+    dataset.
     The dataset is searched and indexed on a document level.
     If a document contains a relation subject and object,
     the document is split into sentences
@@ -286,7 +252,6 @@ class FactMatcherHybrid(FactMatcherBase):
         specify the key to extract the file content.
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
-        It Has no effect on this method.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Indexing dataset"):
@@ -360,80 +325,12 @@ class FactMatcherHybrid(FactMatcherBase):
                         fact["sentences"].update(collected_results)
 
 
-class FactMatcherEntityLinking(FactMatcherBase):
-    """
-    FactMatcherEntityLinking
-
-    FactMatcherEntityLinking is a class that uses the entity linker model to index and search the dataset.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        if kwargs.get("require_gpu", False):
-            spacy.require_gpu(kwargs.get("gpu_id", 0))
-        else:
-            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
-
-        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
-
-        self.entity_linker.add_pipe("entityLinker", last=True)
-
-    def _get_entity_ids(self, content: str) -> set:
-        """
-        Get entity IDs from content.
-
-        :param content: Content to extract entity IDs from.
-        :return: Entity IDs
-        """
-        return self.entity_linker(content)._.linkedEntities
-
-    def index_dataset(
-        self,
-        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-        text_key: str = "text",
-    ) -> None:
-        """
-        Index dataset files, the dataset is a list of file contents.
-
-        Call the close() method after finishing indexing the files.
-        :param text_key: Key to extract text from file content.
-        Since the dataset is a list of dictionaries, we need to
-        specify the key to extract the file content.
-        That would be the case if we pass a huggingface dataset.
-        :param file_contents: List of dictionaries containing the file contents
-        :return:
-        """
-        for file_content in tqdm(file_contents, desc="Indexing dataset"):
-            content = utility.clean_string(file_content[text_key])
-            split_doc = self.sentencizer(content)
-            sentences = [sent.text for sent in split_doc.sents]
-            for sentence in sentences:
-                all_linked_entities = self._get_entity_ids(sentence)
-                sentence = utility.decorate_sentence_with_ids(sentence, all_linked_entities)
-                self._index_file(sentence)
-
-    def create_fact_statistics(self) -> None:
-        if not self.read_existing_index:
-            self.writer, self.indexer = self._open_existing_index_dir(self.index_path)
-        with self.indexer.searcher() as searcher:
-            for relation_key, relation in self.entity_relation_info_dict.items():
-                for subj_id, fact in tqdm(relation.items(), desc=f"Creating fact statistics for {relation_key}"):
-                    collected_results = set()
-                    sentences = set()
-                    results = self.search_index(subj_id, fact["obj_id"], searcher)
-                    collected_results.update([result["title"] for result in results])
-                    sentences.update([result["text"] for result in results])
-                    fact["occurrences"] += len(collected_results)
-                    if self.save_file_content:
-                        fact["sentences"].update(sentences)
-
-
 class FactMatcherSimple(FactMatcherBase):
     """
     FactMatcherSimple
 
-    FactMatcherSimple is a class that uses a simple search by string heuristic to search for entities in the dataset.
+    FactMatcherSimple is a class that uses a simple search by string heuristic to search for entities in the indexed
+    dataset.
     """
 
     def index_dataset(
@@ -504,3 +401,117 @@ class FactMatcherSimple(FactMatcherBase):
                     fact["occurrences"] += len(collected_results)
                     if self.save_file_content:
                         fact["sentences"].update(collected_results)
+
+
+class FactMatcherEntityLinking:
+    """
+    FactMatcherEntityLinking
+
+    FactMatcherEntityLinking is a class that uses the entity linker model to search for entities in the dataset.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initialize FactMatcher
+
+        :param kwargs:
+        - bear_data_path [str]: Path to bear data directory.
+            This is the main directory where all the bear data is stored. It should contain the relation_info.json file
+            and the BEAR facts directory.
+
+        - bear_relation_info_path [Optional[str]]: Path to the BEAR relation info file.
+            This file contains the relation information for the BEAR data. If not provided, it will be set to
+            {bear_data_path}/relation_info.json.
+
+        - bear_facts_path [Optional[str]]: Path to the BEAR facts directory.
+            This is the directory where all the BEAR fact files (.jsonl) are stored. If not provided, it will be set to
+            {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
+            containing more facts.
+
+        - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
+            in the relation dictionary. The default is False.
+
+        - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
+            The default is False.
+
+        - gpu_id [Optional[int]]: GPU ID to use for the spacy entity linker.
+            The default is 0.
+
+        - entity_linker_model [str]: Entity linker model to use.
+            The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
+            Refer to https://spacy.io/models/en for more information.
+        """
+
+        bear_data_path = kwargs.get("bear_data_path")
+
+        self.entity_relation_info_dict: dict = utility.extract_entity_information(
+            bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
+            bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
+        )
+
+        self.save_file_content = kwargs.get("save_file_content", False)
+
+        self.sentencizer = English()
+
+        self.sentencizer.add_pipe("sentencizer")
+
+        if kwargs.get("require_gpu", False):
+            spacy.require_gpu(kwargs.get("gpu_id", 0))
+        else:
+            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
+
+        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
+
+        self.entity_linker.add_pipe("entityLinker", last=True)
+
+    def _get_entity_ids(self, content: str) -> set:
+        """
+        Get entity IDs from content.
+
+        :param content: Content to extract entity IDs from.
+        :return: Entity IDs
+        """
+        return self.entity_linker(content)._.linkedEntities
+
+    def create_fact_statistics(
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+    ) -> None:
+        """
+        Create fact statistics
+
+        This method will iterate over documents and extract sentences. The entity linker model is used to search for
+        entities in the sentence. The occurrences will be updated in the relation dictionary.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :return:
+        """
+        for file_content in tqdm(file_contents, desc="Processing dataset"):
+            content = utility.clean_string(file_content[text_key])
+            split_doc = self.sentencizer(content)
+            sentences = [sent.text for sent in split_doc.sents]
+            for sentence in sentences:
+                all_linked_entities = self._get_entity_ids(sentence)
+                entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
+                for entity_id in entity_ids:
+                    for _, relations in self.entity_relation_info_dict.items():
+                        try:
+                            if relations[entity_id]["obj_id"] in entity_ids:
+                                relations[entity_id]["occurrences"] += 1
+                                if self.save_file_content:
+                                    relations[entity_id]["sentences"].update([sentence])
+                        except KeyError:
+                            continue
+
+    def convert_relation_info_dict_to_json(self, file_path: str) -> None:
+        """
+        Convert relation info dictionary to json file.
+
+        :param file_path: Path to save the json file.
+        :return:
+        """
+        utility.save_json_dict(self.entity_relation_info_dict, file_path)

@@ -41,8 +41,8 @@ disable = [
     "R0913",  # Too many arguments
     "R0917",  # Too many positional arguments
     "R0902",  # Too many instance attributes
-    "W0718",  # Catching too general exception
     "R0914",  # Too many local variables
+    "R1702",  # Too many nested blocks
 ]
 
 [tool.black]
