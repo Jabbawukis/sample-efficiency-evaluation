@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 
 class SetEncoder(json.JSONEncoder):
@@ -64,6 +65,18 @@ def decorate_sentence_with_ids(sentence: str, linked_entities) -> str:
     """
     entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in linked_entities]
     return f"{sentence} [{' '.join(entity_ids)}]"
+
+
+def word_in_sentence(word: str, sentence: str) -> bool:
+    """
+    Check if word is in sentence.
+
+    :param word: word to check
+    :param sentence: sentence to check
+    :return: True if word is in sentence, False otherwise
+    """
+    pattern = re.compile(r"\b({0})\b".format(re.escape(word)), flags=re.IGNORECASE)
+    return bool(pattern.search(sentence))
 
 
 def extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
