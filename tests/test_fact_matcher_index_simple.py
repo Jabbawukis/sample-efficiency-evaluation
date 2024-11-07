@@ -8,7 +8,7 @@ from sample_efficiency_evaluation import FactMatcherIndexSimple
 from utility import utility
 
 
-class FactMatcherTestSimpleHeuristic(unittest.TestCase):
+class FactMatcherIndexSimpleTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_relation_info_dict = {

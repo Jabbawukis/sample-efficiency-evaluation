@@ -1,5 +1,8 @@
+import multiprocessing
+
 from abc import ABC, abstractmethod
 from typing import Union
+from more_itertools import windowed
 
 import spacy
 from datasets import DatasetDict, Dataset, IterableDatasetDict, IterableDataset
@@ -28,9 +31,11 @@ class FactMatcherBase(ABC):
 
         self.save_file_content = kwargs.get("save_file_content", False)
 
-        self.sentencizer = English()
+        self.nlp = English()
 
-        self.sentencizer.add_pipe("sentencizer")
+        self.tokenizer = self.nlp.tokenizer
+
+        self.nlp.add_pipe("sentencizer")
 
     def convert_relation_info_dict_to_json(self, file_path: str) -> None:
         """
@@ -51,12 +56,112 @@ class FactMatcherBase(ABC):
         Create fact statistics
         """
 
+class FactMatcherSimple(FactMatcherBase):
+    """
+    FactMatcherSimple is a class that uses a simple search by string heuristic to search for entities in the dataset.
+
+    kwargs:
+        - bear_data_path [str]: Path to bear data directory.
+            This is the main directory where all the bear data is stored. It should contain the relation_info.json file
+            and the BEAR facts directory.
+
+        - bear_relation_info_path [Optional[str]]: Path to the BEAR relation info file.
+            This file contains the relation information for the BEAR data. If not provided, it will be set to
+            {bear_data_path}/relation_info.json.
+
+        - bear_facts_path [Optional[str]]: Path to the BEAR facts directory.
+            This is the directory where all the BEAR fact files (.jsonl) are stored. If not provided, it will be set to
+            {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
+            containing more facts.
+
+        - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
+            in the relation dictionary. The default is False.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.relation_mapping_dict = self._create_mapped_relations()
+
+    def _create_mapped_relations(self) -> dict:
+        mapped_relations = {}
+        for relation_id, relation_info in self.entity_relation_info_dict.items():
+            for entity_id, entity_info in relation_info.items():
+                try:
+                    mapped_relations[entity_info["subj_label"].lower()]["Relations"].add(relation_id)
+                except KeyError:
+                    mapped_relations[entity_info["subj_label"].lower()] = {"subj_id": entity_id,
+                                                                   "Relations": {relation_id}}
+                for alias in entity_info["subj_aliases"]:
+                    try:
+                        mapped_relations[alias.lower()][relation_id]["Relations"].add(relation_id)
+                    except KeyError:
+                        mapped_relations[alias.lower()] = {"subj_id": entity_id,
+                                                   "Relations": {relation_id}}
+        return mapped_relations
+
+
+    def _add_occurrences(self, ngram: str, sentence: str) -> None:
+        try:
+            for relation_id in self.relation_mapping_dict[ngram.lower()]["Relations"]:
+                obj_label = self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["obj_label"]
+                obj_aliases = self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["obj_aliases"]
+                if obj_label.lower() in sentence.lower():
+                    self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["occurrences"] += 1
+                    if self.save_file_content:
+                        self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["sentences"].update([sentence])
+                    return
+                for alias in obj_aliases:
+                    if alias.lower() in sentence.lower():
+                        self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["occurrences"] += 1
+                        if self.save_file_content:
+                            self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram.lower()]["subj_id"]]["sentences"].update([sentence])
+                    return
+        except KeyError:
+            return
+
+    def process_file_content(self, file_content: str) -> None:
+        """
+        Process file content.
+
+        :param file_content: File content to process.
+        :return:
+        """
+        content = utility.clean_string(file_content)
+        split_doc = self.nlp(content)
+        sentences = [sent.text for sent in split_doc.sents]
+        for sentence in sentences:
+            tokens = [token.orth_ for token in self.tokenizer(sentence.lower())]
+            for ngram_size in range(1, len(tokens) + 1):
+                for ngram in windowed(tokens, ngram_size):
+                    ngram = " ".join(ngram)
+                    self._add_occurrences(ngram, sentence)
+
+    def create_fact_statistics(self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+                               text_key: str = "text") -> None:
+        """
+        Create fact statistics
+
+        This method will iterate over documents and extract sentences.
+        It will search for entities in the sentence.
+        The occurrences will be updated in the relation dictionary.
+        :param text_key: Key to extract text from file content.
+        Since the dataset is a list of dictionaries, we need to
+        specify the key to extract the file content.
+        That would be the case if we pass a huggingface dataset.
+        :param file_contents: List of dictionaries containing the file contents
+        :return:
+        """
+        processes = [multiprocessing.Process(target=self.process_file_content, args=(file_content[text_key],)) for file_content in file_contents]
+        [p.start() for p in tqdm(processes, desc="Processing dataset")]
+        [p.join() for p in processes]
+
 
 class FactMatcherEntityLinking(FactMatcherBase):
     """
     FactMatcherEntityLinking is a class that uses the entity linker model to search for entities in the dataset.
 
-    :param kwargs:
+    kwargs:
     - bear_data_path [str]: Path to bear data directory.
         This is the main directory where all the bear data is stored. It should contain the relation_info.json file
         and the BEAR facts directory.
@@ -116,11 +221,8 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 except KeyError:
                     continue
 
-    def create_fact_statistics(
-        self,
-        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-        text_key: str = "text",
-    ) -> None:
+    def create_fact_statistics(self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text") -> None:
         """
         Create fact statistics
 
@@ -135,7 +237,7 @@ class FactMatcherEntityLinking(FactMatcherBase):
         """
         for file_content in tqdm(file_contents, desc="Processing dataset"):
             content = utility.clean_string(file_content[text_key])
-            split_doc = self.sentencizer(content)
+            split_doc = self.nlp(content)
             sentences = [sent.text for sent in split_doc.sents]
             for sentence in sentences:
                 all_linked_entities = self._get_entity_ids(sentence)

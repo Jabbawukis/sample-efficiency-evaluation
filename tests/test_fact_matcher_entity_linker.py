@@ -6,7 +6,7 @@ from sample_efficiency_evaluation import FactMatcherEntityLinking
 from utility import utility
 
 
-class FactMatcherTestEntityLinking(unittest.TestCase):
+class FactMatcherEntityLinkingTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_relation_info_dict = {

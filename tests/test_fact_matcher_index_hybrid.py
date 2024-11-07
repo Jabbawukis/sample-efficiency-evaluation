@@ -7,7 +7,7 @@ from sample_efficiency_evaluation import FactMatcherIndexHybrid
 from utility import utility
 
 
-class FactMatcherTestHybrid(unittest.TestCase):
+class FactMatcherIndexHybridTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_relation_info_dict_obj_aliases = {
