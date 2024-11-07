@@ -48,9 +48,7 @@ def create_matcher():
     elif args.matcher_type == "entity_linker":
         return FactMatcherEntityLinking(
             bear_data_path=args.bear_data_path,
-            read_existing_index=args.read_existing_index,
             require_gpu=args.require_gpu,
-            file_index_dir=args.file_index_dir,
             entity_linker_model=args.entity_linker_model,
             save_file_content=args.save_file_content,
             gpu_id=args.gpu_id
@@ -88,9 +86,13 @@ print(f"Dataset: {args.dataset_path}"
 # Load dataset slice and process
 dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, split=f"train[{start_index}:{end_index}]")
 fact_matcher = create_matcher()
-fact_matcher.index_dataset(dataset_slice, text_key="text")  # Adjust "text" if needed
-fact_matcher.close()
-fact_matcher.create_fact_statistics()
+
+if args.matcher_type == "entity_linker":
+    fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
+else:
+    fact_matcher.index_dataset(dataset_slice, text_key="text")  # Adjust "text" if needed
+    fact_matcher.close()
+    fact_matcher.create_fact_statistics()
 
 # Save results
 output_path = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_info.json")

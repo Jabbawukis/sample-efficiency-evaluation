@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 from unittest.mock import patch, MagicMock
 
 from sample_efficiency_evaluation import FactMatcherEntityLinking
@@ -65,126 +64,100 @@ class FactMatcherTestEntityLinking(unittest.TestCase):
         }
         self.maxDiff = None
         self.test_resources_abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_resources"))
-        self.indexer_mocked = MagicMock()
-        self.writer_mocked = MagicMock()
-        self.test_index_dir = f"{self.test_resources_abs_path}/test_index_dir_entity_linking"
-        if os.path.exists(self.test_index_dir):
-            shutil.rmtree(self.test_index_dir)
-
-    def test_index_dataset_1(self):
-        with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
-            patch.object(
-                FactMatcherEntityLinking, "_initialize_index", return_value=(self.writer_mocked, self.indexer_mocked)
-            ),
-            patch.object(
-                FactMatcherEntityLinking,
-                "_extract_entity_information",
-                return_value=self.test_entity_relation_info_dict,
-            ),
-            patch.object(
-                FactMatcherEntityLinking,
-                "_index_file",
-            ) as mock_index_file,
-            patch.object(
-                FactMatcherEntityLinking,
-                "_get_entity_ids",
-            ) as get_entity_ids_mock
-        ):
-
-            fact_matcher = FactMatcherEntityLinking(
-                bear_data_path=f"{self.test_resources_abs_path}",
-                file_index_dir=self.test_index_dir,
-            )
-            fact_matcher.entity_linker = MagicMock()
-            entity_1 = MagicMock()
-            entity_1.get_id.return_value = 12525597
-            entity_2 = MagicMock()
-            entity_2.get_id.return_value = 194318
-            entity_3 = MagicMock()
-            entity_3.get_id.return_value = 664609
-            entity_4 = MagicMock()
-            entity_4.get_id.return_value = 193390
-            entity_5 = MagicMock()
-            entity_5.get_id.return_value = 197
-            entity_6 = MagicMock()
-            entity_6.get_id.return_value = 66
-            get_entity_ids_mock.side_effect = [[entity_1, entity_2, entity_3], [entity_4]]
-            fact_matcher.index_dataset(
-                [
-                    {"text": "I watched the Pirates of the Caribbean last silvester."},
-                    {"text": "I follow the New England Patriots"},
-                ],
-                text_key="text",
-            )
-
-            mock_index_file.assert_any_call("I watched the Pirates of the Caribbean last silvester. [Q12525597 Q194318 Q664609]")
-            mock_index_file.assert_any_call("I follow the New England Patriots [Q193390]")
-            self.assertEqual(mock_index_file.call_count, 2)
 
     def test_create_fact_statistics_good(self):
         with (
             patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
             patch.object(
-                FactMatcherEntityLinking,
-                "_extract_entity_information",
+                utility,
+                "extract_entity_information",
                 return_value=self.test_entity_relation_info_dict,
             ),
+            patch.object(
+                FactMatcherEntityLinking,
+                "_get_entity_ids",
+            ) as get_entity_ids_mock,
         ):
 
             fact_matcher = FactMatcherEntityLinking(
                 bear_data_path=f"{self.test_resources_abs_path}",
-                file_index_dir=self.test_index_dir,
                 save_file_content=True,
             )
 
-            fact_matcher.index_dataset(
-                [{"text": "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
+            fact_matcher.entity_linker = MagicMock()
+            entity_1 = MagicMock()
+            entity_1.get_id.return_value = 1519
+            entity_2 = MagicMock()
+            entity_2.get_id.return_value = 1059948
+            entity_3 = MagicMock()
+            entity_3.get_id.return_value = 399
+            entity_4 = MagicMock()
+            entity_4.get_id.return_value = 7035479
+            entity_5 = MagicMock()
+            entity_5.get_id.return_value = 837
+            entity_6 = MagicMock()
+            entity_6.get_id.return_value = 3195923
+            get_entity_ids_mock.side_effect = [[entity_1, entity_2], [], [entity_3, entity_4], [], [entity_5, entity_6]]
+
+            fact_matcher.create_fact_statistics(
+                [
+                    {"text": "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
                     {"text": "Abudhabi blah blah blah Khalifa bin Zayed Al Nahyan"},
                     {"text": "Armenia blah blah blah Nikol Pashinyan"},
                     {"text": "Free State of Fiume blah ducks blah Nikol Pashinyan Gabriele D'Annunzio"},
-                    {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"}],
-                text_key="text"
+                    {"text": "Nepal NPL is cool Khadga Prasad Sharma Oli"},
+                ],
+                text_key="text",
             )
-            fact_matcher.close()
-            fact_matcher.create_fact_statistics()
-            self.assertEqual(fact_matcher.entity_relation_info_dict, {'P6': {'Q1519': {'obj_aliases': set(),
-                  'obj_id': 'Q1059948',
-                  'obj_label': 'Khalifa bin Zayed Al Nahyan',
-                  'occurrences': 1,
-                  'sentences': {'Abu Dhabi blah blah blah Khalifa bin Zayed Al '
-                                'Nahyan [Q1519 Q1059948]'},
-                  'subj_aliases': {'Abudhabi', 'Abū Dhabi'},
-                  'subj_label': 'Abu Dhabi'},
-        'Q399': {'obj_aliases': set(),
-                 'obj_id': 'Q7035479',
-                 'obj_label': 'Nikol Pashinyan',
-                 'occurrences': 1,
-                 'sentences': {'Armenia blah blah blah Nikol Pashinyan [Q399 Q7035479]'},
-                 'subj_aliases': {'🇦🇲', 'AM', 'Republic of Armenia', 'ARM'},
-                 'subj_label': 'Armenia'},
-        'Q548114': {'obj_aliases': set(),
-                    'obj_id': 'Q193236',
-                    'obj_label': "Gabriele D'Annunzio",
-                    'occurrences': 0,
-                    'sentences': set(),
-                    'subj_aliases': set(),
-                    'subj_label': 'Free State of Fiume'},
-        'Q5626824': {'obj_aliases': set(),
-                     'obj_id': 'Q222',
-                     'obj_label': 'Albania',
-                     'occurrences': 0,
-                     'sentences': set(),
-                     'subj_aliases': set(),
-                     'subj_label': 'Gülcemal Sultan'},
-        'Q837': {'obj_aliases': set(),
-                 'obj_id': 'Q3195923',
-                 'obj_label': 'Khadga Prasad Sharma Oli',
-                 'occurrences': 0,
-                 'sentences': set(),
-                 'subj_aliases': {'Federal Democratic Republic of Nepal',
-                                  'NEP',
-                                  'NP',
-                                  'NPL',
-                                  '🇳🇵'},
-                 'subj_label': 'Nepal'}}})
+            self.assertEqual(
+                fact_matcher.entity_relation_info_dict,
+                {
+                    "P6": {
+                        "Q1519": {
+                            "obj_aliases": set(),
+                            "obj_id": "Q1059948",
+                            "obj_label": "Khalifa bin Zayed Al Nahyan",
+                            "occurrences": 1,
+                            "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan"},
+                            "subj_aliases": {"Abudhabi", "Abū Dhabi"},
+                            "subj_label": "Abu Dhabi",
+                        },
+                        "Q399": {
+                            "obj_aliases": set(),
+                            "obj_id": "Q7035479",
+                            "obj_label": "Nikol Pashinyan",
+                            "occurrences": 1,
+                            "sentences": {"Armenia blah blah blah Nikol Pashinyan"},
+                            "subj_aliases": {"🇦🇲", "AM", "Republic of Armenia", "ARM"},
+                            "subj_label": "Armenia",
+                        },
+                        "Q548114": {
+                            "obj_aliases": set(),
+                            "obj_id": "Q193236",
+                            "obj_label": "Gabriele D'Annunzio",
+                            "occurrences": 0,
+                            "sentences": set(),
+                            "subj_aliases": set(),
+                            "subj_label": "Free State of Fiume",
+                        },
+                        "Q5626824": {
+                            "obj_aliases": set(),
+                            "obj_id": "Q222",
+                            "obj_label": "Albania",
+                            "occurrences": 0,
+                            "sentences": set(),
+                            "subj_aliases": set(),
+                            "subj_label": "Gülcemal Sultan",
+                        },
+                        "Q837": {
+                            "obj_aliases": set(),
+                            "obj_id": "Q3195923",
+                            "obj_label": "Khadga Prasad Sharma Oli",
+                            "occurrences": 1,
+                            "sentences": {"Nepal NPL is cool Khadga Prasad Sharma Oli"},
+                            "subj_aliases": {"Federal Democratic Republic of Nepal", "NEP", "NP", "NPL", "🇳🇵"},
+                            "subj_label": "Nepal",
+                        },
+                    }
+                },
+            )
