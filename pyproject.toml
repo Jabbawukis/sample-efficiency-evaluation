@@ -44,6 +44,7 @@ disable = [
     "R0902",  # Too many instance attributes
     "R0914",  # Too many local variables
     "R0801",  # Similar lines in 2 files
+    "C0209",  # consider-using-f-string
 ]
 
 [tool.black]

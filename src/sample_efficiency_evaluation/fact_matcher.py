@@ -55,6 +55,7 @@ class FactMatcherBase(ABC):
         Create fact statistics
         """
 
+
 class FactMatcherSimple(FactMatcherBase):
     """
     FactMatcherSimple is a class that uses a simple search by string heuristic to search for entities in the dataset.
@@ -88,47 +89,42 @@ class FactMatcherSimple(FactMatcherBase):
         for relation_id, relation_info in self.entity_relation_info_dict.items():
             for entity_id, entity_info in relation_info.items():
                 try:
-                    mapped_relations[entity_info["subj_label"].lower()]["Relations"].add(relation_id)
-                    mapped_relations[entity_info["subj_label"].lower()]["subj_ids"].add(entity_id)
+                    mapped_relations[entity_info["subj_label"].lower()]["relations"].add((relation_id, entity_id))
                 except KeyError:
-                    mapped_relations[entity_info["subj_label"].lower()] = {"subj_ids": {entity_id},
-                                                                           "Relations": {relation_id}}
+                    mapped_relations[entity_info["subj_label"].lower()] = {"relations": {(relation_id, entity_id)}}
                 for alias in entity_info["subj_aliases"]:
                     try:
-                        mapped_relations[alias.lower()]["Relations"].add(relation_id)
-                        mapped_relations[alias.lower()]["subj_ids"].add(entity_id)
+                        mapped_relations[alias.lower()]["relations"].add((relation_id, entity_id))
                     except KeyError:
-                        mapped_relations[alias.lower()] = {"subj_ids": {entity_id},
-                                                   "Relations": {relation_id}}
+                        mapped_relations[alias.lower()] = {"relations": {(relation_id, entity_id)}}
         return mapped_relations
 
-
     def _add_occurrences(self, ngram: str, sentence: str) -> None:
-        if ngram not in self.relation_mapping_dict:
-            return
-        for relation_id in self.relation_mapping_dict[ngram]["Relations"]:
-            obj_label = self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram]["subj_id"]]["obj_label"]
-            obj_aliases = self.entity_relation_info_dict[relation_id][self.relation_mapping_dict[ngram]["subj_id"]]["obj_aliases"]
-            subj_id = self.relation_mapping_dict[ngram]["subj_id"]
+        for relation_subj_tuple in self.relation_mapping_dict[ngram]["relations"]:
+
+            relation_id = relation_subj_tuple[0]
+            subj_id = relation_subj_tuple[1]
+
+            obj_label = self.entity_relation_info_dict[relation_id][subj_id]["obj_label"]
+            obj_aliases = self.entity_relation_info_dict[relation_id][subj_id]["obj_aliases"]
+
             if word_in_sentence(obj_label, sentence):
                 try:
                     if sentence in self.relation_sentence_dict[subj_id][relation_id]:
-                        return
-                    else:
-                        self.relation_sentence_dict[subj_id][relation_id].update([sentence])
+                        continue
+                    self.relation_sentence_dict[subj_id][relation_id].update([sentence])
                 except KeyError:
                     self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
                 self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] += 1
                 if self.save_file_content:
                     self.entity_relation_info_dict[relation_id][subj_id]["sentences"].update([sentence])
-                return
+                continue
             for alias in obj_aliases:
                 if word_in_sentence(alias, sentence):
                     try:
                         if sentence in self.relation_sentence_dict[subj_id][relation_id]:
-                            return
-                        else:
-                            self.relation_sentence_dict[subj_id][relation_id].update([sentence])
+                            break
+                        self.relation_sentence_dict[subj_id][relation_id].update([sentence])
                     except KeyError:
                         self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
                     self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] += 1
@@ -150,10 +146,13 @@ class FactMatcherSimple(FactMatcherBase):
             for ngram_size in range(1, len(tokens) + 1):
                 for ngram in windowed(tokens, ngram_size):
                     ngram = " ".join(ngram)
+                    if ngram not in self.relation_mapping_dict:
+                        continue
                     self._add_occurrences(ngram, sentence)
 
-    def create_fact_statistics(self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-                               text_key: str = "text") -> None:
+    def create_fact_statistics(
+        self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
+    ) -> None:
         """
         Create fact statistics with multiprocessing .
 
@@ -166,6 +165,7 @@ class FactMatcherSimple(FactMatcherBase):
         """
         for file_content in tqdm(file_contents, desc="Processing dataset"):
             self._process_file_content(file_content[text_key])
+
 
 class FactMatcherEntityLinking(FactMatcherBase):
     """
@@ -231,8 +231,9 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 except KeyError:
                     continue
 
-    def create_fact_statistics(self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-        text_key: str = "text") -> None:
+    def create_fact_statistics(
+        self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
+    ) -> None:
         """
         Create fact statistics
 
