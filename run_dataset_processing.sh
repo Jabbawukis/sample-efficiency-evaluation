@@ -15,45 +15,45 @@
 #REMOVE_SENTENCES_IN_JOINED_OUTPUT="False"       # Pass as string
 
 # Create output directory if it doesn't exist
-#mkdir -p "$REL_INFO_OUTPUT_DIR"
-#
-#cleanup() {
-#    echo "Terminating all background processes..."
-#    pkill -P $$  # Kill all child processes of the current script
-#    exit 1
-#}
-#
-## Set up trap to catch SIGINT (Ctrl+C) and call the cleanup function
-#trap cleanup SIGINT
-#
-## Download the dataset
-#python3 -c "import datasets; datasets.load_dataset('${DATASET_PATH}', '${DATASET_NAME}', split='train')"
-#
-## Loop through each slice and assign a Python processing job
-#for (( i=0; i<NUM_SLICES; i++ )); do
-#    FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
-#
-#    # Run the slice processor in the background with the specified GPU
-#    CUDA_VISIBLE_DEVICES=$GPU_ID python3 slice_processor.py \
-#        --dataset_path "$DATASET_PATH" \
-#        --dataset_name "$DATASET_NAME" \
-#        --bear_data_path "$BEAR_DATA_PATH" \
-#        --rel_info_output_dir "$REL_INFO_OUTPUT_DIR" \
-#        --matcher_type "$MATCHER_TYPE" \
-#        --entity_linker_model "$ENTITY_LINKER_MODEL" \
-#        --gpu_id "$GPU_ID" \
-#        --total_slices $NUM_SLICES \
-#        --slice_num $((i)) \
-#        --file_index_dir "$FILE_INDEX_DIR" \
-#        --save_file_content "$SAVE_FILE_CONTENT" \
-#        --read_existing_index "$READ_EXISTING_INDEX" \
-#        --require_gpu "$REQUIRE_GPU" &
-#
-#done
-#
-## Wait for all background processes to finish
-#wait
-#echo "All slices processed."
+mkdir -p "$REL_INFO_OUTPUT_DIR"
+
+cleanup() {
+    echo "Terminating all background processes..."
+    pkill -P $$  # Kill all child processes of the current script
+    exit 1
+}
+
+# Set up trap to catch SIGINT (Ctrl+C) and call the cleanup function
+trap cleanup SIGINT
+
+# Download the dataset
+python3 -c "import datasets; datasets.load_dataset('${DATASET_PATH}', '${DATASET_NAME}', split='train')"
+
+# Loop through each slice and assign a Python processing job
+for (( i=0; i<NUM_SLICES; i++ )); do
+    FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
+
+    # Run the slice processor in the background with the specified GPU
+    CUDA_VISIBLE_DEVICES=$GPU_ID python3 slice_processor.py \
+        --dataset_path "$DATASET_PATH" \
+        --dataset_name "$DATASET_NAME" \
+        --bear_data_path "$BEAR_DATA_PATH" \
+        --rel_info_output_dir "$REL_INFO_OUTPUT_DIR" \
+        --matcher_type "$MATCHER_TYPE" \
+        --entity_linker_model "$ENTITY_LINKER_MODEL" \
+        --gpu_id "$GPU_ID" \
+        --total_slices $NUM_SLICES \
+        --slice_num $((i)) \
+        --file_index_dir "$FILE_INDEX_DIR" \
+        --save_file_content "$SAVE_FILE_CONTENT" \
+        --read_existing_index "$READ_EXISTING_INDEX" \
+        --require_gpu "$REQUIRE_GPU" &
+
+done
+
+# Wait for all background processes to finish
+wait
+echo "All slices processed."
 
 # Merge the slices
 python3 -c "from utility.utility import join_relation_info_json_files; join_relation_info_json_files('${REL_INFO_OUTPUT_DIR}', remove_sentences='${REMOVE_SENTENCES_IN_JOINED_OUTPUT}')"
