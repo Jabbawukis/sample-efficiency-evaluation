@@ -1,6 +1,9 @@
 import json
 import logging
+import os
 import re
+
+from tqdm import tqdm
 
 
 class SetEncoder(json.JSONEncoder):
@@ -114,3 +117,42 @@ def extract_entity_information(bear_data_path: str, bear_relation_info_path: str
                 except KeyError:
                     continue
     return relation_dict
+
+
+def join_relation_info_json_files(path_to_files: str, remove_sentences: bool = False) -> None:
+    """
+    Join relation info files
+    :param remove_sentences: Remove sentences from relation info files.
+    This is useful when final-joined json is too large to store in memory.
+    :param path_to_files: Path to relation info files
+    :return:
+    """
+    if isinstance(remove_sentences, str):
+        remove_sentences = remove_sentences.lower() == "true"
+    files: list = os.listdir(path_to_files)
+    files.sort()
+    first_file = load_json_dict(f"{path_to_files}/{files[0]}")
+    for file in tqdm(files[1:], desc="Joining relation info files"):
+        if file.endswith(".json"):
+            for relation_id, entities in load_json_dict(f"{path_to_files}/{file}").items():
+                for entity_id, fact in entities.items():
+                    first_file[relation_id][entity_id]["occurrences"] += fact["occurrences"]
+                    sentences = set(first_file[relation_id][entity_id]["sentences"] + fact["sentences"])
+                    first_file[relation_id][entity_id]["sentences"] = list(sentences)
+                    if (
+                        len(first_file[relation_id][entity_id]["sentences"])
+                        < first_file[relation_id][entity_id]["occurrences"]
+                    ):
+                        first_file[relation_id][entity_id]["occurrences"] = len(
+                            first_file[relation_id][entity_id]["sentences"]
+                        )
+                        logging.warning(
+                            "Mismatch in occurrences and sentences for %s, may contain duplicate occurrences. Correcting occurrences!",
+                            entity_id,
+                        )
+    if remove_sentences:
+        for _, entities in first_file.items():
+            for _, fact in entities.items():
+                fact.pop("sentences")
+    save_json_dict(first_file, f"{path_to_files}/joined_relation_info.json")
+    logging.info("Joined relation info files.")
