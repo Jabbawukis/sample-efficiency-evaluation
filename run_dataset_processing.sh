@@ -20,9 +20,6 @@ mkdir -p "$REL_INFO_OUTPUT_DIR"
 for (( i=0; i<NUM_SLICES; i++ )); do
     FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
 
-    # Ensure index directory exists
-    mkdir -p "$FILE_INDEX_DIR"
-
     # Run the slice processor in the background with the specified GPU
     CUDA_VISIBLE_DEVICES=$GPU_ID python3 slice_processor.py \
         --dataset_path "$DATASET_PATH" \
