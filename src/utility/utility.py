@@ -119,7 +119,7 @@ def extract_entity_information(bear_data_path: str, bear_relation_info_path: str
     return relation_dict
 
 
-def join_relation_info_json_files(path_to_files: str, remove_sentences: bool = False) -> None:
+def join_relation_info_json_files(path_to_files: str, remove_sentences: False) -> None:
     """
     Join relation info files
     :param remove_sentences: Remove sentences from relation info files.
