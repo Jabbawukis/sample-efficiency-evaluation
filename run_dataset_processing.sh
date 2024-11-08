@@ -16,6 +16,9 @@
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
 
+# Download the dataset
+python3 -c "import datasets; datasets.load_dataset('${DATASET_PATH}', '${DATASET_NAME}', split='train')"
+
 # Loop through each slice and assign a Python processing job
 for (( i=0; i<NUM_SLICES; i++ )); do
     FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
