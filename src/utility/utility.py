@@ -147,8 +147,9 @@ def join_relation_info_json_files(path_to_files: str, remove_sentences: False) -
                             first_file[relation_id][entity_id]["sentences"]
                         )
                         logging.warning(
-                            "Mismatch in occurrences and sentences for %s, may contain duplicate occurrences. Correcting occurrences!",
+                            "Mismatch in occurrences and sentences for %s (%s), may contain duplicate occurrences. Correcting occurrences!",
                             entity_id,
+                            relation_id,
                         )
     if remove_sentences:
         for _, entities in first_file.items():

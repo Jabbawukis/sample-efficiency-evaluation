@@ -86,6 +86,23 @@ class FactMatcherSimpleTest(unittest.TestCase):
             "usa": {"relations": {("P_00", "Q30")}},
             "rb": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903"), ("P_01", "Q2127993")}},
         }
+        self.test_entity_relation_info_dict_small = {
+            "P_00": {
+                "Q173017": {
+                    "subj_label": "Limpopo River",
+                    "subj_aliases": {"Limpopo"},
+                    "obj_id": "Q15",
+                    "obj_label": "Africa",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                }
+            }
+        }
+        self.test_relation_mapping_dict_small = {
+            "limpopo river": {"relations": {("P_00", "Q173017")}},
+            "limpopo": {"relations": {("P_00", "Q173017")}},
+        }
 
         self.maxDiff = None
         self.test_resources_abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_resources"))
@@ -139,7 +156,8 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 {
                     "text": "Publius blah blah blah the USA based in Washington, D.C blah."
                     " Hamilton blah blah blah United States of America."
-                    " US blah blah blah A. Ham"
+                    " US blah blah blah A. Ham."
+                    " United States of America (U.S.A.) blah blah blah Washington, D.C blah."
                 },
                 {
                     "text": "Rainer Herbert Georg Bernhardt blah blah blah the USA blah."
@@ -186,7 +204,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                                 "Alexander Hamilton blah blah blah the United States of America.",
                                 "Publius blah blah blah the USA based in Washington, D.C blah.",
                                 "Hamilton blah blah blah United States of America.",
-                                "US blah blah blah A. Ham",
+                                "US blah blah blah A. Ham.",
                             },
                         },
                     },
@@ -219,5 +237,61 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "sentences": set(),
                         },
                     },
+                },
+            )
+
+    def test_create_fact_statistics_good_2(self):
+        with (
+            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
+            patch.object(
+                utility,
+                "extract_entity_information",
+                return_value=self.test_entity_relation_info_dict_small,
+            ),
+            patch.object(
+                FactMatcherSimple,
+                "_create_mapped_relations",
+                return_value=self.test_relation_mapping_dict_small,
+            ),
+        ):
+            fact_matcher = FactMatcherSimple(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                save_file_content=True,
+            )
+
+            data = [
+                {
+                    "text": "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west."
+                },
+                {
+                    "text": "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.",
+                },
+                {"text": "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park."},
+                {
+                    "text": "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces."
+                },
+            ]
+
+            fact_matcher.create_fact_statistics(data, text_key="text")
+
+            self.assertEqual(
+                fact_matcher.entity_relation_info_dict,
+                {
+                    "P_00": {
+                        "Q173017": {
+                            "subj_label": "Limpopo River",
+                            "subj_aliases": {"Limpopo"},
+                            "obj_id": "Q15",
+                            "obj_label": "Africa",
+                            "obj_aliases": set(),
+                            "occurrences": 4,
+                            "sentences": {
+                                "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west.",
+                                "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.",
+                                "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park.",
+                                "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces.",
+                            },
+                        }
+                    }
                 },
             )

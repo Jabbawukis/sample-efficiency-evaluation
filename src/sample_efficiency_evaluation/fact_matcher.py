@@ -115,7 +115,9 @@ class FactMatcherSimple(FactMatcherBase):
                     self.relation_sentence_dict[subj_id][relation_id].update([sentence])
                 except KeyError:
                     self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
-                self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] += 1
+                self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
+                    self.relation_sentence_dict[subj_id][relation_id]
+                )
                 if self.save_file_content:
                     self.entity_relation_info_dict[relation_id][subj_id]["sentences"].update([sentence])
                 continue
@@ -127,7 +129,9 @@ class FactMatcherSimple(FactMatcherBase):
                         self.relation_sentence_dict[subj_id][relation_id].update([sentence])
                     except KeyError:
                         self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
-                    self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] += 1
+                    self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
+                        self.relation_sentence_dict[subj_id][relation_id]
+                    )
                     if self.save_file_content:
                         self.entity_relation_info_dict[relation_id][subj_id]["sentences"].update([sentence])
 
