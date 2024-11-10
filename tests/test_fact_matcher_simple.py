@@ -122,6 +122,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 save_file_content=True,
             )
             self.assertEqual(fact_matcher.relation_mapping_dict, self.test_relation_mapping_dict)
+            self.assertEqual(fact_matcher.max_ngram, 6)
 
     def test_create_fact_statistics_good(self):
         with (
@@ -142,6 +143,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 bear_data_path=f"{self.test_resources_abs_path}",
                 save_file_content=True,
             )
+            fact_matcher.max_ngram = 6
 
             data = [
                 {
@@ -167,6 +169,35 @@ class FactMatcherSimpleTest(unittest.TestCase):
             ]
 
             fact_matcher.create_fact_statistics(data, text_key="text")
+
+            self.assertEqual(
+                fact_matcher.relation_sentence_dict,
+                {
+                    "Q30": {
+                        "P_00": {
+                            "United States of America blah blah blah Washington, D.C blah.",
+                            "United States of America blah Alexander blah blah Washington, D.C blah.",
+                            "United States of America (U.S.A.) blah blah blah Washington, D.C blah.",
+                            "United of America (U.S.A.) blah blah blah Washington, D.C blah.",
+                            "Publius blah blah blah the USA based in Washington, D.C blah.",
+                        }
+                    },
+                    "Q178903": {
+                        "P_00": {
+                            "Alexander Hamilton blah blah blah the United States of America.",
+                            "Publius blah blah blah the USA based in Washington, D.C blah.",
+                            "Hamilton blah blah blah United States of America.",
+                            "US blah blah blah A. Ham.",
+                        }
+                    },
+                    "Q2127993": {
+                        "P_01": {
+                            "Rainer Herbert Georg Bernhardt blah blah blah the USA blah.",
+                            "Bernhardt blah blah blah United States of America.",
+                        }
+                    },
+                },
+            )
 
             self.assertEqual(
                 fact_matcher.entity_relation_info_dict,
@@ -258,6 +289,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 bear_data_path=f"{self.test_resources_abs_path}",
                 save_file_content=True,
             )
+            fact_matcher.max_ngram = 2
 
             data = [
                 {
@@ -273,6 +305,20 @@ class FactMatcherSimpleTest(unittest.TestCase):
             ]
 
             fact_matcher.create_fact_statistics(data, text_key="text")
+
+            self.assertEqual(
+                fact_matcher.relation_sentence_dict,
+                {
+                    "Q173017": {
+                        "P_00": {
+                            "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west.",
+                            "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.",
+                            "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park.",
+                            "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces.",
+                        }
+                    }
+                },
+            )
 
             self.assertEqual(
                 fact_matcher.entity_relation_info_dict,

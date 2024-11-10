@@ -76,11 +76,16 @@ class FactMatcherSimple(FactMatcherBase):
 
         - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
             in the relation dictionary. The default is False.
+
+        - max_allowed_ngram_length [Optional[int]]: Maximum allowed ngram length to search for entities. The sentences
+            will be split into ngrams of length 1 to max_allowed_ngram_length. The default is 10.
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.max_ngram = 0
+        self.max_allowed_ngram_length = kwargs.get("max_allowed_ngram_length", 10)
         self.relation_mapping_dict = self._create_mapped_relations()
         self.relation_sentence_dict = {}
 
@@ -88,11 +93,17 @@ class FactMatcherSimple(FactMatcherBase):
         mapped_relations = {}
         for relation_id, relation_info in self.entity_relation_info_dict.items():
             for entity_id, entity_info in relation_info.items():
+                tokens = [token.orth_ for token in self.tokenizer(entity_info["subj_label"].lower())]
+                if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
+                    self.max_ngram = len(tokens)
                 try:
                     mapped_relations[entity_info["subj_label"].lower()]["relations"].add((relation_id, entity_id))
                 except KeyError:
                     mapped_relations[entity_info["subj_label"].lower()] = {"relations": {(relation_id, entity_id)}}
                 for alias in entity_info["subj_aliases"]:
+                    tokens = [token.orth_ for token in self.tokenizer(alias.lower())]
+                    if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
+                        self.max_ngram = len(tokens)
                     try:
                         mapped_relations[alias.lower()]["relations"].add((relation_id, entity_id))
                     except KeyError:
@@ -147,9 +158,12 @@ class FactMatcherSimple(FactMatcherBase):
         sentences = [sent.text for sent in split_doc.sents]
         for sentence in sentences:
             tokens = [token.orth_ for token in self.tokenizer(sentence.lower())]
-            for ngram_size in range(1, len(tokens) + 1):
+            for ngram_size in range(1, self.max_ngram + 1):
                 for ngram in windowed(tokens, ngram_size):
-                    ngram = " ".join(ngram)
+                    try:
+                        ngram = " ".join(ngram)
+                    except TypeError:
+                        break
                     if ngram not in self.relation_mapping_dict:
                         continue
                     self._add_occurrences(ngram, sentence)
