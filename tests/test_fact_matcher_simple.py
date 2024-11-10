@@ -10,6 +10,7 @@ from utility import utility
 class FactMatcherSimpleTest(unittest.TestCase):
 
     def setUp(self) -> None:
+        os.environ["PYTHONHASHSEED"] = "0"
         self.test_relation_info_dict_obj_aliases = {
             "P_00": {"domains": ["stuff"]},
             "P_01": {"domains": ["hi"]},
@@ -71,20 +72,20 @@ class FactMatcherSimpleTest(unittest.TestCase):
         self.test_relation_mapping_dict = {
             "a. ham": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
             "alexander hamilton": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
-            "alexander hamilton, us treasury secretary": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
+            "alexander hamilton , us treasury secretary": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
             "america": {"relations": {("P_00", "Q30")}},
+            "bernhardt": {"relations": {("P_01", "Q2127993")}},
             "hamilton": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
             "publius": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
             "rainer bernhardt": {"relations": {("P_01", "Q2127993")}},
-            "bernhardt": {"relations": {("P_01", "Q2127993")}},
             "rainer herbert georg bernhardt": {"relations": {("P_01", "Q2127993")}},
+            "rb": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903"), ("P_01", "Q2127993")}},
             "the united states of america": {"relations": {("P_00", "Q30")}},
-            "u.s.": {"relations": {("P_00", "Q30")}},
-            "u.s.a.": {"relations": {("P_00", "Q30")}},
+            "u.s .": {"relations": {("P_00", "Q30")}},
+            "u.s.a .": {"relations": {("P_00", "Q30")}},
             "united states of america": {"relations": {("P_00", "Q30")}},
             "us": {"relations": {("P_00", "Q30")}},
             "usa": {"relations": {("P_00", "Q30")}},
-            "rb": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903"), ("P_01", "Q2127993")}},
         }
         self.test_entity_relation_info_dict_small = {
             "P_00": {
@@ -173,27 +174,27 @@ class FactMatcherSimpleTest(unittest.TestCase):
             self.assertEqual(
                 fact_matcher.relation_sentence_dict,
                 {
-                    "Q30": {
-                        "P_00": {
-                            "United States of America blah blah blah Washington, D.C blah.",
-                            "United States of America blah Alexander blah blah Washington, D.C blah.",
-                            "United States of America (U.S.A.) blah blah blah Washington, D.C blah.",
-                            "United of America (U.S.A.) blah blah blah Washington, D.C blah.",
-                            "Publius blah blah blah the USA based in Washington, D.C blah.",
-                        }
-                    },
                     "Q178903": {
                         "P_00": {
-                            "Alexander Hamilton blah blah blah the United States of America.",
-                            "Publius blah blah blah the USA based in Washington, D.C blah.",
-                            "Hamilton blah blah blah United States of America.",
-                            "US blah blah blah A. Ham.",
+                            "b64eaa32020333c76be1e83b584d32c33a7f250d0ecfe98f46dfc91bd2509fb6",
+                            "c973711103f7a50890ef1e3789133b954fc126dc757133dd829a83cd4145a913",
+                            "e2c4cbc00f366ee1edaab3a9e421e2c588a2ddc82d6ff426cf51ccfbf6426173",
+                            "f8a98d33b32b0c785b4114a9e2147c26f5cd3b4f921e40a725ff7f58eafde200",
                         }
                     },
                     "Q2127993": {
                         "P_01": {
-                            "Rainer Herbert Georg Bernhardt blah blah blah the USA blah.",
-                            "Bernhardt blah blah blah United States of America.",
+                            "404c6a14471986e2daf51c268da06a0534361c72814896837592c29da31aa946",
+                            "fe072923fdc442f126819371b4e387d2785c26c016bf73f5e2dffeefe5b64c8f",
+                        }
+                    },
+                    "Q30": {
+                        "P_00": {
+                            "66d4acf0e515e38c9873f3278900ef588a66cb188f6bfbf570364748369ac2e2",
+                            "ce961b44a5f5a0d170aac3b932441feba7760cebda91c640f6d071a491c9ab82",
+                            "e032b213f74e5e812ea4fd09501881c7bbd47d1a97f463e3a7b986abf00d4651",
+                            "e2c4cbc00f366ee1edaab3a9e421e2c588a2ddc82d6ff426cf51ccfbf6426173",
+                            "ff93c09726e841aa1e9be3cb8c7449955998f387a80eb7113cab44d4aafc62ee",
                         }
                     },
                 },
@@ -311,10 +312,10 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 {
                     "Q173017": {
                         "P_00": {
-                            "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west.",
-                            "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.",
-                            "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park.",
-                            "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces.",
+                            "08d8c790c82dbb48a1707ba13f410bbde8e91b5db2a83ed35cebec0064305373",
+                            "38012880db7aecd82513360bf492bea368f0ec2bda0ff343ca3d4d40696f5152",
+                            "71547cd430be3dc81d52f02dad956f08b96770b76f5ac0f9a293ed3872fb20e2",
+                            "b6431d6dca3c86ef3c8e2e72d54b8bdec2ca791ae69956e70729a156646330ec",
                         }
                     }
                 },

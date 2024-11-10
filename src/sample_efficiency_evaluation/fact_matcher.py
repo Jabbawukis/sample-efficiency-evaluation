@@ -1,3 +1,6 @@
+import hashlib
+import logging
+
 from abc import ABC, abstractmethod
 from typing import Union
 from more_itertools import windowed
@@ -8,7 +11,7 @@ from tqdm import tqdm
 from spacy.lang.en import English
 
 from utility import utility
-from utility.utility import word_in_sentence
+from utility.utility import word_in_sentence, get_tokens_from_sentence
 
 
 class FactMatcherBase(ABC):
@@ -93,26 +96,26 @@ class FactMatcherSimple(FactMatcherBase):
         mapped_relations = {}
         for relation_id, relation_info in self.entity_relation_info_dict.items():
             for entity_id, entity_info in relation_info.items():
-                tokens = [token.orth_ for token in self.tokenizer(entity_info["subj_label"].lower())]
+                tokens = get_tokens_from_sentence(entity_info["subj_label"], self.tokenizer)
                 if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
                     self.max_ngram = len(tokens)
                 try:
-                    mapped_relations[entity_info["subj_label"].lower()]["relations"].add((relation_id, entity_id))
+                    mapped_relations[" ".join(tokens)]["relations"].add((relation_id, entity_id))
                 except KeyError:
-                    mapped_relations[entity_info["subj_label"].lower()] = {"relations": {(relation_id, entity_id)}}
+                    mapped_relations[" ".join(tokens)] = {"relations": {(relation_id, entity_id)}}
                 for alias in entity_info["subj_aliases"]:
-                    tokens = [token.orth_ for token in self.tokenizer(alias.lower())]
+                    tokens = get_tokens_from_sentence(alias, self.tokenizer)
                     if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
                         self.max_ngram = len(tokens)
                     try:
-                        mapped_relations[alias.lower()]["relations"].add((relation_id, entity_id))
+                        mapped_relations[" ".join(tokens)]["relations"].add((relation_id, entity_id))
                     except KeyError:
-                        mapped_relations[alias.lower()] = {"relations": {(relation_id, entity_id)}}
+                        mapped_relations[" ".join(tokens)] = {"relations": {(relation_id, entity_id)}}
         return mapped_relations
 
     def _add_occurrences(self, ngram: str, sentence: str) -> None:
         for relation_subj_tuple in self.relation_mapping_dict[ngram]["relations"]:
-
+            sentence_hash = str(hashlib.sha256(sentence.encode()).hexdigest())
             relation_id = relation_subj_tuple[0]
             subj_id = relation_subj_tuple[1]
 
@@ -121,11 +124,11 @@ class FactMatcherSimple(FactMatcherBase):
 
             if word_in_sentence(obj_label, sentence):
                 try:
-                    if sentence in self.relation_sentence_dict[subj_id][relation_id]:
+                    if sentence_hash in self.relation_sentence_dict[subj_id][relation_id]:
                         continue
-                    self.relation_sentence_dict[subj_id][relation_id].update([sentence])
+                    self.relation_sentence_dict[subj_id][relation_id].update([sentence_hash])
                 except KeyError:
-                    self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
+                    self.relation_sentence_dict[subj_id] = {relation_id: {sentence_hash}}
                 self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
                     self.relation_sentence_dict[subj_id][relation_id]
                 )
@@ -135,11 +138,11 @@ class FactMatcherSimple(FactMatcherBase):
             for alias in obj_aliases:
                 if word_in_sentence(alias, sentence):
                     try:
-                        if sentence in self.relation_sentence_dict[subj_id][relation_id]:
+                        if sentence_hash in self.relation_sentence_dict[subj_id][relation_id]:
                             break
-                        self.relation_sentence_dict[subj_id][relation_id].update([sentence])
+                        self.relation_sentence_dict[subj_id][relation_id].update([sentence_hash])
                     except KeyError:
-                        self.relation_sentence_dict[subj_id] = {relation_id: {sentence}}
+                        self.relation_sentence_dict[subj_id] = {relation_id: {sentence_hash}}
                     self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
                         self.relation_sentence_dict[subj_id][relation_id]
                     )
@@ -157,7 +160,7 @@ class FactMatcherSimple(FactMatcherBase):
         split_doc = self.nlp(content)
         sentences = [sent.text for sent in split_doc.sents]
         for sentence in sentences:
-            tokens = [token.orth_ for token in self.tokenizer(sentence.lower())]
+            tokens = get_tokens_from_sentence(sentence, self.tokenizer)
             for ngram_size in range(1, self.max_ngram + 1):
                 for ngram in windowed(tokens, ngram_size):
                     try:
@@ -167,6 +170,7 @@ class FactMatcherSimple(FactMatcherBase):
                     if ngram not in self.relation_mapping_dict:
                         continue
                     self._add_occurrences(ngram, sentence)
+        logging.info("Processing file content done.")
 
     def create_fact_statistics(
         self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
@@ -272,3 +276,4 @@ class FactMatcherEntityLinking(FactMatcherBase):
                 all_linked_entities = self._get_entity_ids(sentence)
                 entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
                 self._add_occurrences(entity_ids, sentence)
+        logging.info("Processing file content done.")

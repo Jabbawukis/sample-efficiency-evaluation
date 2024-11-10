@@ -119,6 +119,16 @@ def extract_entity_information(bear_data_path: str, bear_relation_info_path: str
     return relation_dict
 
 
+def get_tokens_from_sentence(sentence: str, tokenizer) -> list[str]:
+    """
+    Get tokens from sentence.
+    :param sentence: Sentence
+    :param tokenizer: Tokenizer
+    :return: List of tokens
+    """
+    return [token.orth_ for token in tokenizer(sentence.lower())]
+
+
 def join_relation_info_json_files(path_to_files: str, remove_sentences: False) -> None:
     """
     Join relation info files
