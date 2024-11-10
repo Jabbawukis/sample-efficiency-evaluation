@@ -149,7 +149,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             data = [
                 {
                     "text": "United States of America blah blah blah Washington, D.C blah."
-                    " United States of America blah Alexander blah blah Washington, D.C blah."
+                    " United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C blah."
                     " United States of America (U.S.A.) blah blah blah Washington, D.C blah."
                 },
                 {
@@ -176,6 +176,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 {
                     "Q178903": {
                         "P_00": {
+                            "09b853a7a1bec5326b626ce745d5f1748b62cf8fbfc5af23c7d449d6ad6c5bc8",
                             "b64eaa32020333c76be1e83b584d32c33a7f250d0ecfe98f46dfc91bd2509fb6",
                             "c973711103f7a50890ef1e3789133b954fc126dc757133dd829a83cd4145a913",
                             "e2c4cbc00f366ee1edaab3a9e421e2c588a2ddc82d6ff426cf51ccfbf6426173",
@@ -190,8 +191,8 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     },
                     "Q30": {
                         "P_00": {
+                            "09b853a7a1bec5326b626ce745d5f1748b62cf8fbfc5af23c7d449d6ad6c5bc8",
                             "66d4acf0e515e38c9873f3278900ef588a66cb188f6bfbf570364748369ac2e2",
-                            "ce961b44a5f5a0d170aac3b932441feba7760cebda91c640f6d071a491c9ab82",
                             "e032b213f74e5e812ea4fd09501881c7bbd47d1a97f463e3a7b986abf00d4651",
                             "e2c4cbc00f366ee1edaab3a9e421e2c588a2ddc82d6ff426cf51ccfbf6426173",
                             "ff93c09726e841aa1e9be3cb8c7449955998f387a80eb7113cab44d4aafc62ee",
@@ -213,7 +214,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "occurrences": 5,
                             "sentences": {
                                 "United States of America blah blah blah Washington, D.C blah.",
-                                "United States of America blah Alexander blah blah Washington, D.C blah.",
+                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C blah.",
                                 "United States of America (U.S.A.) blah blah blah Washington, D.C blah.",
                                 "United of America (U.S.A.) blah blah blah Washington, D.C blah.",
                                 "Publius blah blah blah the USA based in Washington, D.C blah.",
@@ -231,12 +232,13 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_id": "Q30",
                             "obj_label": "United States of America",
                             "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
-                            "occurrences": 4,
+                            "occurrences": 5,
                             "sentences": {
                                 "Alexander Hamilton blah blah blah the United States of America.",
                                 "Publius blah blah blah the USA based in Washington, D.C blah.",
                                 "Hamilton blah blah blah United States of America.",
                                 "US blah blah blah A. Ham.",
+                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C blah.",
                             },
                         },
                     },
