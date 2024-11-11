@@ -5,6 +5,7 @@ import re
 from typing import Union
 
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 class SetEncoder(json.JSONEncoder):
@@ -128,6 +129,44 @@ def get_tokens_from_sentence(sentence: str, tokenizer) -> list[str]:
     :return: List of tokens
     """
     return [token.orth_ for token in tokenizer(sentence.lower())]
+
+
+def create_fact_occurrence_statistics(
+    path_to_rel_info_file: str, output_diagram_name: str = "occurrence_statistics"
+) -> None:
+    """
+    Create fact occurrence statistics and plot a histogram.
+    :param output_diagram_name: Name of the output diagram.
+    :param path_to_rel_info_file: Path to relation info file.
+    :return:
+    """
+    relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
+    occurrence_buckets = [0, 0, 0, 0, 0, 0]
+
+    for relations in relation_info_dict.values():
+        for fact in relations.values():
+            occurrences = fact["occurrences"]
+            if occurrences == 0:
+                occurrence_buckets[0] += 1
+            elif 1 <= occurrences <= 99:
+                occurrence_buckets[1] += 1
+            elif 100 <= occurrences <= 299:
+                occurrence_buckets[2] += 1
+            elif 300 <= occurrences <= 499:
+                occurrence_buckets[3] += 1
+            elif 500 <= occurrences <= 1000:
+                occurrence_buckets[4] += 1
+            else:
+                occurrence_buckets[5] += 1
+
+    x_labels = ["0", "1-99", "100-299", "300-499", "500-1000", ">1000"]
+    plt.bar(x_labels, occurrence_buckets)
+    for i, count in enumerate(occurrence_buckets):
+        plt.text(i, count, str(count), ha="center", va="bottom")
+    plt.xlabel("Occurrences")
+    plt.ylabel("Number of Entities")
+    plt.title("Entity Occurrence Histogram")
+    plt.savefig(os.path.join(os.path.dirname(path_to_rel_info_file), f"{output_diagram_name}.png"))
 
 
 def join_relation_info_json_files(

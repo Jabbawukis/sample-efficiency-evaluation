@@ -18,7 +18,8 @@ dependencies = [
     "spacy[cuda12x]",
     "spacy-entity-linker",
     "numpy",
-    "more-itertools"
+    "more-itertools",
+    "matplotlib",
 ]
 dynamic = ["version"]
 
