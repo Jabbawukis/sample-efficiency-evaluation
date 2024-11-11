@@ -121,14 +121,19 @@ def extract_entity_information(bear_data_path: str, bear_relation_info_path: str
     return relation_dict
 
 
-def get_tokens_from_sentence(sentence: str, tokenizer) -> list[str]:
+def get_tokens_from_sentence(
+    sentence: str, tokenizer, only_lower: bool = True
+) -> Union[list[str], tuple[list[str], list[str]]]:
     """
     Get tokens from sentence.
     :param sentence: Sentence
     :param tokenizer: Tokenizer
+    :param only_lower: Return only lower case tokens
     :return: List of tokens
     """
-    return [token.orth_ for token in tokenizer(sentence.lower())]
+    if only_lower:
+        return [token.orth_ for token in tokenizer(sentence.lower())]
+    return [token.orth_ for token in tokenizer(sentence)], [token.orth_ for token in tokenizer(sentence.lower())]
 
 
 def create_fact_occurrence_histogram(
