@@ -124,7 +124,7 @@ class UtilityTest(unittest.TestCase):
             ),
         ):
             load_json_dict.side_effect = [self.entity_relation_info_dict_1, self.entity_relation_info_dict_2]
-            utility.join_relation_info_json_files("output", remove_sentences=True)
+            utility.join_relation_info_json_files("output", correct_possible_duplicates=True, remove_sentences=True)
             save_json_dict.assert_called_once_with(
                 {
                     "P6": {
@@ -186,7 +186,7 @@ class UtilityTest(unittest.TestCase):
             ),
         ):
             load_json_dict.side_effect = [self.entity_relation_info_dict_1, self.entity_relation_info_dict_2]
-            utility.join_relation_info_json_files("output", remove_sentences="True")
+            utility.join_relation_info_json_files("output", correct_possible_duplicates=True, remove_sentences="True")
             save_json_dict.assert_called_once_with(
                 {
                     "P6": {

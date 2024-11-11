@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+from typing import Union
 
 from tqdm import tqdm
 
@@ -129,12 +130,15 @@ def get_tokens_from_sentence(sentence: str, tokenizer) -> list[str]:
     return [token.orth_ for token in tokenizer(sentence.lower())]
 
 
-def join_relation_info_json_files(path_to_files: str, remove_sentences: False) -> None:
+def join_relation_info_json_files(
+    path_to_files: str, correct_possible_duplicates: bool = False, remove_sentences: Union[str, bool] = False
+) -> None:
     """
     Join relation info files
-    :param remove_sentences: Remove sentences from relation info files.
+    :param path_to_files: Path to relation info files.
     This is useful when final-joined json is too large to store in memory.
-    :param path_to_files: Path to relation info files
+    :param correct_possible_duplicates: Correct possible duplicates in relation info files.
+    :param remove_sentences: Remove sentences from relation info files.
     :return:
     """
     if isinstance(remove_sentences, str):
@@ -150,16 +154,18 @@ def join_relation_info_json_files(path_to_files: str, remove_sentences: False) -
                     sentences = set(first_file[relation_id][entity_id]["sentences"] + fact["sentences"])
                     first_file[relation_id][entity_id]["sentences"] = list(sentences)
                     if (
-                        len(first_file[relation_id][entity_id]["sentences"])
+                        0
+                        < len(first_file[relation_id][entity_id]["sentences"])
                         < first_file[relation_id][entity_id]["occurrences"]
-                    ):
+                    ) and correct_possible_duplicates:
                         first_file[relation_id][entity_id]["occurrences"] = len(
                             first_file[relation_id][entity_id]["sentences"]
                         )
                         logging.warning(
-                            "Mismatch in occurrences and sentences for %s (%s), may contain duplicate occurrences. Correcting occurrences!",
+                            "Mismatch in occurrences and sentences for %s (%s), may contain duplicate occurrences. Correcting occurrences set to (%s)!",
                             entity_id,
                             relation_id,
+                            correct_possible_duplicates,
                         )
     if remove_sentences:
         for _, entities in first_file.items():
