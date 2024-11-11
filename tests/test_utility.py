@@ -113,6 +113,27 @@ class UtilityTest(unittest.TestCase):
             },
         }
 
+    def test_word_in_sentence(self):
+        self.assertTrue(
+            utility.word_in_sentence("zayed Al NAHYAn", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan.")
+        )
+        self.assertTrue(utility.word_in_sentence("khalifa", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))
+        self.assertTrue(utility.word_in_sentence("Armenia", "Armenia blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("armenia", "Armenia blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("Yerevan T.c.", "Yerevan t.c.! blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("U.S.A.", "Yerevan t.c.! U.S.A. blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("Nepal", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
+        self.assertTrue(utility.word_in_sentence("nepal", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
+        self.assertTrue(
+            utility.word_in_sentence(
+                "Washington, D.C.", "United States of America blah blah blah Washington, D.C. blah."
+            )
+        )
+
+        self.assertFalse(utility.word_in_sentence("Kathmandu", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
+        self.assertFalse(utility.word_in_sentence("Yerevan T.c.", "Armenia blah Yerevan T.c blah blah Nikol Pashinyan"))
+        self.assertFalse(utility.word_in_sentence("Dubai", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))
+
     def test_join_relation_info_json_files_good_1(self):
         with (
             patch.object(utility, "load_json_dict") as load_json_dict,

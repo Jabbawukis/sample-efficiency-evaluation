@@ -80,7 +80,7 @@ def word_in_sentence(word: str, sentence: str) -> bool:
     :param sentence: sentence to check
     :return: True if word is in sentence, False otherwise
     """
-    pattern = re.compile(r"\b({0})\b".format(re.escape(word)), flags=re.IGNORECASE)
+    pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)), flags=re.IGNORECASE)
     return bool(pattern.search(sentence))
 
 
@@ -131,7 +131,7 @@ def get_tokens_from_sentence(sentence: str, tokenizer) -> list[str]:
     return [token.orth_ for token in tokenizer(sentence.lower())]
 
 
-def create_fact_occurrence_statistics(
+def create_fact_occurrence_histogram(
     path_to_rel_info_file: str, output_diagram_name: str = "occurrence_statistics"
 ) -> None:
     """
@@ -170,7 +170,9 @@ def create_fact_occurrence_statistics(
 
 
 def join_relation_info_json_files(
-    path_to_files: str, correct_possible_duplicates: bool = False, remove_sentences: Union[str, bool] = False
+    path_to_files: str,
+    correct_possible_duplicates: Union[str, bool] = False,
+    remove_sentences: Union[str, bool] = False,
 ) -> None:
     """
     Join relation info files
@@ -182,6 +184,8 @@ def join_relation_info_json_files(
     """
     if isinstance(remove_sentences, str):
         remove_sentences = remove_sentences.lower() == "true"
+    if isinstance(correct_possible_duplicates, str):
+        correct_possible_duplicates = correct_possible_duplicates.lower() == "true"
     files: list = os.listdir(path_to_files)
     files.sort()
     first_file = load_json_dict(f"{path_to_files}/{files[0]}")
