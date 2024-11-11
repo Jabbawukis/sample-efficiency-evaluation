@@ -126,7 +126,7 @@ class UtilityTest(unittest.TestCase):
         self.assertTrue(utility.word_in_sentence("nepal", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
         self.assertTrue(
             utility.word_in_sentence(
-                "Washington, D.C.", "United States of America blah blah blah Washington, D.C. blah."
+                "Washington, D.C.", "United States of America blah blah blah Washington, D.C.! blah."
             )
         )
 
