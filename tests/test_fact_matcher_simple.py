@@ -52,34 +52,19 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "occurrences": 0,
                     "sentences": set(),
                 },
-                "Q178903": {
-                    "subj_label": "Alexander Hamilton",
-                    "subj_aliases": {
-                        "Publius",
-                        "Hamilton",
-                        "Alexander Hamilton, US Treasury secretary",
-                        "A. Ham",
-                        "RB",
-                    },
-                    "obj_id": "Q2127993",
-                    "obj_label": "Rainer Bernhardt",
-                    "obj_aliases": {"Rainer Herbert Georg Bernhardt", "Bernhardt", "RB"},
-                    "occurrences": 0,
-                    "sentences": set(),
-                },
             },
         }
         self.test_relation_mapping_dict = {
-            "a. ham": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
-            "alexander hamilton": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
-            "alexander hamilton , us treasury secretary": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
+            "a. ham": {"relations": {("P_00", "Q178903")}},
+            "alexander hamilton": {"relations": {("P_00", "Q178903")}},
+            "alexander hamilton , us treasury secretary": {"relations": {("P_00", "Q178903")}},
             "america": {"relations": {("P_00", "Q30")}},
             "bernhardt": {"relations": {("P_01", "Q2127993")}},
-            "hamilton": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
-            "publius": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903")}},
+            "hamilton": {"relations": {("P_00", "Q178903")}},
+            "publius": {"relations": {("P_00", "Q178903")}},
             "rainer bernhardt": {"relations": {("P_01", "Q2127993")}},
             "rainer herbert georg bernhardt": {"relations": {("P_01", "Q2127993")}},
-            "rb": {"relations": {("P_00", "Q178903"), ("P_01", "Q178903"), ("P_01", "Q2127993")}},
+            "rb": {"relations": {("P_00", "Q178903"), ("P_01", "Q2127993")}},
             "the united states of america": {"relations": {("P_00", "Q30")}},
             "u.s .": {"relations": {("P_00", "Q30")}},
             "u.s.a .": {"relations": {("P_00", "Q30")}},
@@ -165,6 +150,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 {
                     "text": "Rainer Herbert Georg Bernhardt blah blah blah the USA blah."
                     " Bernhardt blah blah blah United States of America."
+                    " RB blah blah blah the USA."
                 },
                 {"text": "Joachim Sauer and Merkel." " A. Merkel blah blah blah Joachim Sauer."},
             ]
@@ -177,6 +163,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "Q178903": {
                         "P_00": {
                             "09b853a7a1bec5326b626ce745d5f1748b62cf8fbfc5af23c7d449d6ad6c5bc8",
+                            "318ba27127e06e15dadb45df6c3f59c97f7c92a0b164c638cdd3ae4cd2bcc891",
                             "b64eaa32020333c76be1e83b584d32c33a7f250d0ecfe98f46dfc91bd2509fb6",
                             "c973711103f7a50890ef1e3789133b954fc126dc757133dd829a83cd4145a913",
                             "e2c4cbc00f366ee1edaab3a9e421e2c588a2ddc82d6ff426cf51ccfbf6426173",
@@ -185,6 +172,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     },
                     "Q2127993": {
                         "P_01": {
+                            "318ba27127e06e15dadb45df6c3f59c97f7c92a0b164c638cdd3ae4cd2bcc891",
                             "404c6a14471986e2daf51c268da06a0534361c72814896837592c29da31aa946",
                             "fe072923fdc442f126819371b4e387d2785c26c016bf73f5e2dffeefe5b64c8f",
                         }
@@ -232,13 +220,14 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_id": "Q30",
                             "obj_label": "United States of America",
                             "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
-                            "occurrences": 5,
+                            "occurrences": 6,
                             "sentences": {
                                 "Alexander Hamilton blah blah blah the United States of America.",
                                 "Publius blah blah blah the USA based in Washington, D.C blah.",
                                 "Hamilton blah blah blah United States of America.",
                                 "US blah blah blah A. Ham.",
                                 "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C blah.",
+                                "RB blah blah blah the USA.",
                             },
                         },
                     },
@@ -249,27 +238,13 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_id": "Q30",
                             "obj_label": "United States of America",
                             "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
-                            "occurrences": 2,
+                            "occurrences": 3,
                             "sentences": {
                                 "Rainer Herbert Georg Bernhardt blah blah blah the USA blah.",
                                 "Bernhardt blah blah blah United States of America.",
+                                "RB blah blah blah the USA.",
                             },
-                        },
-                        "Q178903": {
-                            "subj_label": "Alexander Hamilton",
-                            "subj_aliases": {
-                                "Publius",
-                                "Hamilton",
-                                "Alexander Hamilton, US Treasury secretary",
-                                "A. Ham",
-                                "RB",
-                            },
-                            "obj_id": "Q2127993",
-                            "obj_label": "Rainer Bernhardt",
-                            "obj_aliases": {"Rainer Herbert Georg Bernhardt", "Bernhardt", "RB"},
-                            "occurrences": 0,
-                            "sentences": set(),
-                        },
+                        }
                     },
                 },
             )
