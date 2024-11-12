@@ -39,14 +39,14 @@ def load_json_line_dict(json_line_file_path: str) -> list[dict]:
     return json_list
 
 
-def save_json_dict(json_dict: dict, json_file_path: str):
+def save_dict_as_json(dictionary: dict, json_output_file_path: str):
     """
-    Save json file.
-    :param json_dict: Dictionary containing information
-    :param json_file_path: Path to json file
+    Save dictionary as json file.
+    :param dictionary: Dictionary containing information
+    :param json_output_file_path: Path to json file
     """
-    with open(json_file_path, "w", encoding="utf-8") as f:
-        json.dump(json_dict, f, indent=4, ensure_ascii=False, cls=SetEncoder)
+    with open(json_output_file_path, "w", encoding="utf-8") as f:
+        json.dump(dictionary, f, indent=4, ensure_ascii=False, cls=SetEncoder)
 
 
 def clean_string(text: str) -> str:
@@ -82,6 +82,24 @@ def word_in_sentence(word: str, sentence: str) -> bool:
     """
     pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)), flags=re.IGNORECASE)
     return bool(pattern.search(sentence))
+
+
+def save_fact_statistics_dict_as_json(entity_relation_info_dict: dict, json_output_file_path: str) -> None:
+    """
+    Convert the entity_relation_info_dict to fact statistics and save as json file.
+
+    This file will only contain the facts and their occurrences.
+    :param entity_relation_info_dict: Dictionary containing the entity relation information.
+    :param json_output_file_path: Path to save the json file.
+    :return:
+    """
+    fact_statistics = {}
+    for relation_id, entities in entity_relation_info_dict.items():
+        for subj_id, fact in entities.items():
+            if relation_id not in fact_statistics:
+                fact_statistics[relation_id] = {}
+            fact_statistics[relation_id][subj_id] = {"occurrences": fact["occurrences"], "obj_id": fact["obj_id"]}
+    save_dict_as_json(fact_statistics, json_output_file_path)
 
 
 def extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
@@ -219,5 +237,5 @@ def join_relation_info_json_files(
         for _, entities in first_file.items():
             for _, fact in entities.items():
                 fact.pop("sentences")
-    save_json_dict(first_file, f"{path_to_files}/joined_relation_info.json")
+    save_dict_as_json(first_file, f"{path_to_files}/joined_relation_info.json")
     logging.info("Joined relation info files.")
