@@ -83,7 +83,7 @@ training_args = TrainingArguments(
     learning_rate=5e-4,
     save_steps=5_000,
     logging_steps=5_000,
-    evaluation_strategy="steps",  # Enable evaluation during training
+    eval_strategy="steps",  # Enable evaluation during training
     eval_steps=2_500,  # Evaluate every 2,500 steps
     fp16=True,  # Use mixed precision for faster training and reduced memory
 )
