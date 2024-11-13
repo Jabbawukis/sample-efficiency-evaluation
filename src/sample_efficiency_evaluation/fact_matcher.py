@@ -84,7 +84,7 @@ class FactMatcherSimple(FactMatcherBase):
 
         - min_entity_name_length [Optional[int]]: Minimum length of the entity name to search for case-insensitive.
             The default is 4. In cases where an entity name is shorter than the min, the search will be case-sensitive.
-            This is to avoid matching common words like "is" or "of" (e.g. "US" should not match "us").
+            This is to avoid matching common words like "is" or "of" (e.g. "US" should not match "us" in "us together").
     """
 
     def __init__(self, **kwargs):
