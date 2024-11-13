@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # Configuration
 #NUM_SLICES=4                                   # Number of slices to divide the dataset into
 #DATASET_PATH=""                                # Pass as string
@@ -34,7 +36,7 @@ for (( i=0; i<NUM_SLICES; i++ )); do
     FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
 
     # Run the slice processor in the background with the specified GPU
-    CUDA_VISIBLE_DEVICES=$GPU_ID python3 slice_processor.py \
+    CUDA_VISIBLE_DEVICES=$GPU_ID python3 ${CUR_DIR}/slice_processor.py \
         --dataset_path "$DATASET_PATH" \
         --dataset_name "$DATASET_NAME" \
         --bear_data_path "$BEAR_DATA_PATH" \

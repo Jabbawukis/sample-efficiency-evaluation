@@ -11,7 +11,7 @@ dependencies = [
     "setuptools",
     "wheel",
     "datasets",
-    "transformers",
+    "transformers>=4.38",
     "tqdm",
     "datasets",
     "spacy[cuda12x]",
