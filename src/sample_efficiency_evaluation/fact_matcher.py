@@ -82,9 +82,9 @@ class FactMatcherSimple(FactMatcherBase):
         - max_allowed_ngram_length [Optional[int]]: Maximum allowed ngram length to search for entities. The sentences
             will be split into ngrams of length 1 to max_allowed_ngram_length. The default is 10.
 
-        - min_entity_name_length [Optional[int]]: Minimum length of the entity name to consider. The default is 3.
-            In cases where an entity name is short, the search will be case-sensitive. This is to avoid matching
-            common words like "is" or "of" (e.g. "US" should not match "us").
+        - min_entity_name_length [Optional[int]]: Minimum length of the entity name to search for case-insensitive.
+            The default is 4. In cases where an entity name is shorter than the min, the search will be case-sensitive.
+            This is to avoid matching common words like "is" or "of" (e.g. "US" should not match "us").
     """
 
     def __init__(self, **kwargs):
@@ -92,7 +92,7 @@ class FactMatcherSimple(FactMatcherBase):
 
         self.max_ngram = 0
 
-        self.min_entity_name_length = kwargs.get("min_entity_name_length", 3)
+        self.min_entity_name_length = kwargs.get("min_entity_name_length", 4)
 
         self.max_allowed_ngram_length = kwargs.get("max_allowed_ngram_length", 10)
 
@@ -104,7 +104,7 @@ class FactMatcherSimple(FactMatcherBase):
             for entity_id, entity_info in relation_info.items():
                 tokens = get_tokens_from_sentence(entity_info["subj_label"], self.tokenizer)
                 tokenized_subj_label = " ".join(tokens)
-                if len(tokenized_subj_label) <= self.min_entity_name_length:
+                if len(tokenized_subj_label) < self.min_entity_name_length:
                     tokenized_subj_label = entity_info["subj_label"]
                 if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
                     self.max_ngram = len(tokens)
@@ -115,7 +115,7 @@ class FactMatcherSimple(FactMatcherBase):
                 for alias in entity_info["subj_aliases"]:
                     tokens = get_tokens_from_sentence(alias, self.tokenizer)
                     tokenized_subj_label = " ".join(tokens)
-                    if len(tokenized_subj_label) <= self.min_entity_name_length:
+                    if len(tokenized_subj_label) < self.min_entity_name_length:
                         tokenized_subj_label = alias
                     if self.max_allowed_ngram_length >= len(tokens) > self.max_ngram:
                         self.max_ngram = len(tokens)
@@ -126,6 +126,15 @@ class FactMatcherSimple(FactMatcherBase):
         return mapped_relations
 
     def _add_occurrences(self, ngram: str, sentence: str) -> None:
+        """
+        Add occurrences to the relation dictionary.
+
+        This method will search for the ngram in the relation dictionary and update the occurrences if the object label
+        is found in the sentence.
+        :param ngram: The ngram to search for.
+        :param sentence: The sentence where the ngram was found.
+        :return:
+        """
         for relation_subj_tuple in self.relation_mapping_dict[ngram]["relations"]:
 
             relation_id = relation_subj_tuple[0]
@@ -160,6 +169,8 @@ class FactMatcherSimple(FactMatcherBase):
         """
         Process file content.
 
+        This method will split the document into sentences and search for entities in the sentences.
+        The occurrences will be updated in the relation dictionary.
         :param file_content: File content to process.
         :return:
         """
@@ -172,7 +183,7 @@ class FactMatcherSimple(FactMatcherBase):
                 for ngram, ngram_lower in zip(windowed(tokens, ngram_size), windowed(tokens_lower, ngram_size)):
                     try:
                         joined_ngram = " ".join(ngram_lower)
-                        if len(joined_ngram) <= self.min_entity_name_length:
+                        if len(joined_ngram) < self.min_entity_name_length:
                             joined_ngram = " ".join(ngram)
                     except TypeError:
                         break
@@ -189,7 +200,7 @@ class FactMatcherSimple(FactMatcherBase):
         self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
     ) -> None:
         """
-        Create fact statistics with multiprocessing .
+        Create fact statistics.
 
         This method will iterate over documents and extract sentences.
         It will search for entities in the sentence.

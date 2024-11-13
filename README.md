@@ -20,7 +20,7 @@ This project aims to measure the sample efficiency of different language model a
     cd sample_efficiency_evaluation
     ```
 
-2. Install the required dependencies and model collagen base:
+2. Install the required dependencies and model knowledge base for entity linking:
     ```bash
     make install
     make download-knowledge-base
