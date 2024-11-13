@@ -9,8 +9,8 @@ from transformers import (
 from datasets import load_dataset, DatasetDict, load_from_disk
 
 import torch
-# torch.cuda.set_device('cuda:0')
 
+# torch.cuda.set_device('cuda:0')
 output = "./gpt2-wikipedia"
 # Load the dataset
 dataset = load_dataset("wikimedia/wikipedia", "20231101.en")
@@ -20,6 +20,8 @@ context_length = 128
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token  # Set pad token
 
+
+############################################################################################
 def tokenize(element):
     # Tokenize input, handling long sequences with `return_overflowing_tokens`
     outputs = tokenizer(
@@ -46,8 +48,9 @@ tokenized_datasets = dataset.map(tokenize, batched=True, remove_columns=dataset[
 
 # Save the tokenized dataset (optional)
 tokenized_datasets.save_to_disk("wikipedia_20231101_en/tokenized_ds")
+############################################################################################
 
-# Load the previously saved tokenized dataset and ignore the above steps for the dataset processing
+# Load the previously saved tokenized dataset and ignore the above steps encased in # for the dataset processing
 # tokenized_datasets = load_from_disk('wikipedia_20231101_en/tokenized_ds')
 
 # Split into train and eval (e.g., 90% train, 10% eval)
@@ -84,7 +87,7 @@ training_args = TrainingArguments(
     lr_scheduler_type="cosine",
     learning_rate=5e-4,
     save_steps=5_000,
-    fp16=True
+    fp16=True,
 )
 
 # Initialize the Trainer with both train and eval datasets
