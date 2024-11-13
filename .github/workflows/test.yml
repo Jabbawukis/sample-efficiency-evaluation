@@ -11,6 +11,8 @@ on:
     paths:
     - "tests/**"
     - "src/**"
+    - ".github/workflows/test.yml"
+    - "pyproject.toml"
 jobs:
   run:
     name: "Run Tests"
