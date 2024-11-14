@@ -13,7 +13,7 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
             "P6": {"domains": ["Political", "Biographical", "Historical"]},
             "P19": {"domains": ["Biographical"]},
         }
-        self.test_entity_relation_info_dict = {
+        self.test_entity_relation_occurrence_info_dict = {
             "P6": {
                 "Q1519": {
                     "subj_label": "Abu Dhabi",
@@ -71,7 +71,7 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
             patch.object(
                 utility,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_info_dict,
+                return_value=self.test_entity_relation_occurrence_info_dict,
             ),
             patch.object(
                 FactMatcherEntityLinking,
@@ -118,7 +118,7 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
                 text_key="text",
             )
             self.assertEqual(
-                fact_matcher.entity_relation_info_dict,
+                fact_matcher.entity_relation_occurrence_info_dict,
                 {
                     "P6": {
                         "Q1519": {

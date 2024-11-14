@@ -25,7 +25,7 @@ class FactMatcherBase(ABC):
 
         bear_data_path = kwargs.get("bear_data_path")
 
-        self.entity_relation_info_dict: dict = utility.extract_entity_information(
+        self.entity_relation_occurrence_info_dict: dict = utility.extract_entity_information(
             bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
@@ -38,14 +38,14 @@ class FactMatcherBase(ABC):
 
         self.nlp.add_pipe("sentencizer")
 
-    def convert_relation_info_dict_to_json(self, json_output_file_path: str) -> None:
+    def convert_relation_occurrence_info_dict_to_json(self, json_output_file_path: str) -> None:
         """
         Convert relation info dictionary to json file.
 
         :param json_output_file_path: Path to save the json file.
         :return:
         """
-        utility.save_dict_as_json(self.entity_relation_info_dict, json_output_file_path)
+        utility.save_dict_as_json(self.entity_relation_occurrence_info_dict, json_output_file_path)
 
     @abstractmethod
     def create_fact_statistics(
@@ -100,7 +100,7 @@ class FactMatcherSimple(FactMatcherBase):
 
     def _create_mapped_relations(self) -> dict:
         mapped_relations = {}
-        for relation_id, relation_info in self.entity_relation_info_dict.items():
+        for relation_id, relation_info in self.entity_relation_occurrence_info_dict.items():
             for entity_id, entity_info in relation_info.items():
                 tokens = get_tokens_from_sentence(entity_info["subj_label"], self.tokenizer)
                 tokenized_subj_label = " ".join(tokens)
@@ -140,29 +140,29 @@ class FactMatcherSimple(FactMatcherBase):
             relation_id = relation_subj_tuple[0]
             subj_id = relation_subj_tuple[1]
 
-            obj_label = self.entity_relation_info_dict[relation_id][subj_id]["obj_label"]
-            obj_aliases = self.entity_relation_info_dict[relation_id][subj_id]["obj_aliases"]
+            obj_label = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
+            obj_aliases = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
             if word_in_sentence(obj_label, sentence):
-                if sentence in self.entity_relation_info_dict[relation_id][subj_id]["sentences"]:
+                if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                     continue
 
-                self.entity_relation_info_dict[relation_id][subj_id]["sentences"].update([sentence])
+                self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].update([sentence])
 
-                self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
-                    self.entity_relation_info_dict[relation_id][subj_id]["sentences"]
+                self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = len(
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
                 )
 
             for alias in obj_aliases:
                 if word_in_sentence(alias, sentence):
 
-                    if sentence in self.entity_relation_info_dict[relation_id][subj_id]["sentences"]:
+                    if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                         continue
 
-                    self.entity_relation_info_dict[relation_id][subj_id]["sentences"].update([sentence])
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].update([sentence])
 
-                    self.entity_relation_info_dict[relation_id][subj_id]["occurrences"] = len(
-                        self.entity_relation_info_dict[relation_id][subj_id]["sentences"]
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = len(
+                        self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
                     )
 
     def _process_file_content(self, file_content: str) -> None:
@@ -191,7 +191,7 @@ class FactMatcherSimple(FactMatcherBase):
                         continue
                     self._add_occurrences(joined_ngram, sentence)
         if not self.save_file_content:
-            for _, entities in self.entity_relation_info_dict.items():
+            for _, entities in self.entity_relation_occurrence_info_dict.items():
                 for _, fact in entities.items():
                     fact["sentences"] = set()
         logging.info("Processing file content done.")
@@ -268,7 +268,7 @@ class FactMatcherEntityLinking(FactMatcherBase):
 
     def _add_occurrences(self, entity_ids: list[str], sentence: str) -> None:
         for entity_id in entity_ids:
-            for _, relations in self.entity_relation_info_dict.items():
+            for _, relations in self.entity_relation_occurrence_info_dict.items():
                 try:
                     if relations[entity_id]["obj_id"] in entity_ids:
                         relations[entity_id]["occurrences"] += 1

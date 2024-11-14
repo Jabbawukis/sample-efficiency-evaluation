@@ -78,4 +78,4 @@ fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
 
 # Save results
 relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_info.json")
-utility.save_dict_as_json(fact_matcher.entity_relation_info_dict, relation_info_output)
+utility.save_dict_as_json(fact_matcher.entity_relation_occurrence_info_dict, relation_info_output)

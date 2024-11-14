@@ -15,7 +15,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             "P_00": {"domains": ["stuff"]},
             "P_01": {"domains": ["hi"]},
         }
-        self.test_entity_relation_info_dict_filled_obj_aliases = {
+        self.test_entity_relation_occurrence_info_dict_filled_obj_aliases = {
             "P_00": {
                 "Q30": {
                     "subj_label": "United States of America",
@@ -86,7 +86,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             "US": {"relations": {("P_00", "Q30")}},
             "USA": {"relations": {("P_00", "Q30")}},
         }
-        self.test_entity_relation_info_dict_small = {
+        self.test_entity_relation_occurrence_info_dict_small = {
             "P_00": {
                 "Q173017": {
                     "subj_label": "Limpopo River",
@@ -113,7 +113,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             patch.object(
                 utility,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
+                return_value=self.test_entity_relation_occurrence_info_dict_filled_obj_aliases,
             ),
         ):
 
@@ -130,7 +130,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             patch.object(
                 utility,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_info_dict_filled_obj_aliases,
+                return_value=self.test_entity_relation_occurrence_info_dict_filled_obj_aliases,
             ),
             patch.object(
                 FactMatcherSimple,
@@ -175,7 +175,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             fact_matcher.create_fact_statistics(data, text_key="text")
 
             self.assertEqual(
-                fact_matcher.entity_relation_info_dict,
+                fact_matcher.entity_relation_occurrence_info_dict,
                 {
                     "P_00": {
                         "Q30": {
@@ -249,7 +249,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             patch.object(
                 utility,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_info_dict_small,
+                return_value=self.test_entity_relation_occurrence_info_dict_small,
             ),
             patch.object(
                 FactMatcherSimple,
@@ -279,7 +279,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             fact_matcher.create_fact_statistics(data, text_key="text")
 
             self.assertEqual(
-                fact_matcher.entity_relation_info_dict,
+                fact_matcher.entity_relation_occurrence_info_dict,
                 {
                     "P_00": {
                         "Q173017": {

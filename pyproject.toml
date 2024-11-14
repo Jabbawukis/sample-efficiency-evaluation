@@ -19,7 +19,8 @@ dependencies = [
     "numpy",
     "more-itertools",
     "matplotlib",
-    "tensorboard"
+    "tensorboard",
+    "lm-pub-quiz"
 ]
 dynamic = ["version"]
 
