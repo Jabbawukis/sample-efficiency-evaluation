@@ -216,7 +216,7 @@ def create_fact_occurrence_histogram(
     for i, count in enumerate(occurrence_buckets):
         plt.text(i, count, str(count), ha="center", va="bottom")
     plt.xticks(rotation=45, ha="right")
-    plt.xlabel("Occurrences")
+    plt.xlabel("Occurrence Buckets")
     plt.ylabel("Number of Subj/Obj Pairs")
     plt.title("Entity Pair Occurrence Histogram")
     plt.tight_layout()
