@@ -145,7 +145,7 @@ def get_tokens_from_sentence(
     """
     Get tokens from sentence.
     :param sentence: Sentence
-    :param tokenizer: Tokenizer
+    :param tokenizer: Tokenizer spacy object
     :param only_lower: Return only lower case tokens
     :return: List of tokens
     """
