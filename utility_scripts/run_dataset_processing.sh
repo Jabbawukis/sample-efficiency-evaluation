@@ -10,11 +10,10 @@ CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #REL_INFO_OUTPUT_DIR="output"
 #MATCHER_TYPE="simple"
 #ENTITY_LINKER_MODEL="en_core_web_trf"
-#SAVE_FILE_CONTENT="True"                       # Pass as string
-#READ_EXISTING_INDEX="False"                    # Pass as string
+#SAVE_FILE_CONTENT="True"                       # Pass as string (Should always be True)
 #REQUIRE_GPU="False"                            # Pass as string
 #GPU_ID=0                                       # Pass as int
-#REMOVE_SENTENCES_IN_JOINED_OUTPUT="False"       # Pass as string
+#REMOVE_SENTENCES_IN_JOINED_OUTPUT="False"      # Pass as string
 
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
@@ -33,7 +32,6 @@ python3 -c "import datasets; datasets.load_dataset('${DATASET_PATH}', '${DATASET
 
 # Loop through each slice and assign a Python processing job
 for (( i=0; i<NUM_SLICES; i++ )); do
-    FILE_INDEX_DIR=".index_dir_$((i + 1))"   # Unique index directory per slice
 
     # Run the slice processor in the background with the specified GPU
     CUDA_VISIBLE_DEVICES=$GPU_ID python3 ${CUR_DIR}/slice_processor.py \
@@ -46,9 +44,7 @@ for (( i=0; i<NUM_SLICES; i++ )); do
         --gpu_id "$GPU_ID" \
         --total_slices $NUM_SLICES \
         --slice_num $((i)) \
-        --file_index_dir "$FILE_INDEX_DIR" \
         --save_file_content "$SAVE_FILE_CONTENT" \
-        --read_existing_index "$READ_EXISTING_INDEX" \
         --require_gpu "$REQUIRE_GPU" &
 
 done
