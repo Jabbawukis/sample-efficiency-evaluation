@@ -189,14 +189,14 @@ def create_fact_occurrence_histogram(
     """
     relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
     occurrence_buckets = [
-            (1, 99),
-            (100, 299),
-            (300, 499),
-            (500, 699),
-            (700, 899),
-            (900, 999),
-            (1000, float("inf")),
-        ]
+        (1, 99),
+        (100, 299),
+        (300, 499),
+        (500, 699),
+        (700, 899),
+        (900, 999),
+        (1000, float("inf")),
+    ]
     relation_occurrence_info_dict = {}
     for occurrence in occurrence_buckets:
         relation_occurrence_info_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
