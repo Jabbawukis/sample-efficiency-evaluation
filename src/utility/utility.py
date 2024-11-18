@@ -155,20 +155,19 @@ def get_tokens_from_sentence(
 
 
 def create_fact_occurrence_accuracy_histogram(
-    elation_occurrence_info_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
+    relation_occurrence_info_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
 ) -> None:
     """
     Create fact occurrence accuracy statistics and plot a histogram.
-    :param elation_occurrence_info_dict:  Dictionary containing the entity relation information.
+    :param relation_occurrence_info_dict:  Dictionary containing the entity relation information.
     :param output_path:  Path to save the diagram.
     :param output_diagram_name:  Name of the output diagram.
     :return:
     """
 
-    x_labels = elation_occurrence_info_dict.keys()
-    accuracy_scores = [round(elation_occurrence_info_dict[x_label]["accuracy"], 2) for x_label in x_labels]
+    x_labels = relation_occurrence_info_dict.keys()
+    accuracy_scores = [round(relation_occurrence_info_dict[x_label]["accuracy"], 2) for x_label in x_labels]
     plt.bar(x_labels, accuracy_scores)
-
     for i, count in enumerate(accuracy_scores):
         plt.text(i, count, str(count), ha="center", va="bottom")
     plt.xticks(rotation=45, ha="right")
@@ -189,31 +188,37 @@ def create_fact_occurrence_histogram(
     :return:
     """
     relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
-    occurrence_buckets = [0, 0, 0, 0, 0, 0, 0, 0]
+    occurrence_buckets = [
+            (1, 99),
+            (100, 299),
+            (300, 499),
+            (500, 699),
+            (700, 899),
+            (900, 999),
+            (1000, float("inf")),
+        ]
+    relation_occurrence_info_dict = {}
+    for occurrence in occurrence_buckets:
+        relation_occurrence_info_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
+            "total_occurrence": 0,
+        }
+    relation_occurrence_info_dict["0"] = {"total_occurrence": 0}
 
     for relations in relation_info_dict.values():
         for fact in relations.values():
             occurrences = fact["occurrences"]
-            if occurrences == 0:
-                occurrence_buckets[0] += 1
-            elif 1 <= occurrences <= 99:
-                occurrence_buckets[1] += 1
-            elif 100 <= occurrences <= 299:
-                occurrence_buckets[2] += 1
-            elif 300 <= occurrences <= 499:
-                occurrence_buckets[3] += 1
-            elif 500 <= occurrences <= 699:
-                occurrence_buckets[4] += 1
-            elif 700 <= occurrences <= 899:
-                occurrence_buckets[5] += 1
-            elif 900 <= occurrences <= 999:
-                occurrence_buckets[6] += 1
-            else:
-                occurrence_buckets[7] += 1
+            for bucket in occurrence_buckets:
+                if occurrences == 0:
+                    relation_occurrence_info_dict["0"]["total_occurrence"] += 1
+                    break
+                if bucket[0] <= occurrences <= bucket[1]:
+                    relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total_occurrence"] += 1
+                    break
 
-    x_labels = ["0", "1-99", "100-299", "300-499", "500-699", "700-899", "900-999", "1000-inf"]
-    plt.bar(x_labels, occurrence_buckets)
-    for i, count in enumerate(occurrence_buckets):
+    x_labels = relation_occurrence_info_dict.keys()
+    occurrences = [relation_occurrence_info_dict[x_label]["total_occurrence"] for x_label in x_labels]
+    plt.bar(x_labels, occurrences)
+    for i, count in enumerate(occurrences):
         plt.text(i, count, str(count), ha="center", va="bottom")
     plt.xticks(rotation=45, ha="right")
     plt.xlabel("Occurrence Buckets")
