@@ -154,30 +154,6 @@ def get_tokens_from_sentence(
     return [token.orth_ for token in tokenizer(sentence)], [token.orth_ for token in tokenizer(sentence.lower())]
 
 
-def create_fact_occurrence_accuracy_histogram(
-    relation_occurrence_info_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
-) -> None:
-    """
-    Create fact occurrence accuracy statistics and plot a histogram.
-    :param relation_occurrence_info_dict:  Dictionary containing the entity relation information.
-    :param output_path:  Path to save the diagram.
-    :param output_diagram_name:  Name of the output diagram.
-    :return:
-    """
-
-    x_labels = relation_occurrence_info_dict.keys()
-    accuracy_scores = [round(relation_occurrence_info_dict[x_label]["accuracy"], 2) for x_label in x_labels]
-    plt.bar(x_labels, accuracy_scores)
-    for i, count in enumerate(accuracy_scores):
-        plt.text(i, count, str(count), ha="center", va="bottom")
-    plt.xticks(rotation=45, ha="right")
-    plt.xlabel("Occurrence Buckets")
-    plt.ylabel("Accuracy")
-    plt.title("Entity Pair Accuracy Histogram")
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
-
-
 def create_fact_occurrence_histogram(
     path_to_rel_info_file: str, output_diagram_name: str = "occurrence_statistics"
 ) -> None:
@@ -238,6 +214,7 @@ def join_relation_info_json_files(
     :param path_to_files: Path to relation info files.
     This is useful when final-joined json is too large to store in memory.
     :param correct_possible_duplicates: Correct possible duplicates in the relation info files.
+     Requires the sentences to be present in the relation info files.
     :param remove_sentences: Remove sentences from the joined relation info file.
     :return:
     """

@@ -1,11 +1,15 @@
+import os
+
 import numpy as np
+import matplotlib.pyplot as plt
 from lm_pub_quiz import Dataset, Evaluator, DatasetResults
+
 from utility import utility
 
 
 class KnowledgeProber:
-    def __init__(self, path_to_occurrence_file: str):
-        self.entity_relation_occurrence_info_dict = utility.load_json_dict(path_to_occurrence_file)
+    def __init__(self, path_to_relation_occurrence_info_file: str):
+        self.entity_relation_occurrence_info_dict = utility.load_json_dict(path_to_relation_occurrence_info_file)
         self.relation_occurrence_buckets = [
             (1, 99),
             (100, 299),
@@ -52,18 +56,41 @@ class KnowledgeProber:
         """
         self.bear_results = DatasetResults.from_path(path_to_bear_results)
 
+    def create_fact_accuracy_histogram(
+        self, relation_accuracy_scores_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
+    ) -> None:
+        """
+        Create fact accuracy statistics and plot a histogram.
+        :param relation_accuracy_scores_dict:  Dictionary containing the entity relation information.
+        :param output_path:  Path to save the diagram.
+        :param output_diagram_name:  Name of the output diagram.
+        :return:
+        """
+
+        x_labels = relation_accuracy_scores_dict.keys()
+        accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
+        plt.bar(x_labels, accuracy_scores)
+        for i, count in enumerate(accuracy_scores):
+            plt.text(i, count, str(count), ha="center", va="bottom")
+        plt.xticks(rotation=45, ha="right")
+        plt.xlabel("Occurrence Buckets")
+        plt.ylabel("Accuracy")
+        plt.title("Entity Pair Accuracy Histogram")
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
+
     def get_accuracy_scores_over_all_relations(self) -> dict:
         """
         Get the accuracy scores over all relations.
         :return: Dictionary containing the accuracy scores.
         """
-        relation_occurrence_info_dict = {}
+        relation_accuracy_scores_dict = {}
         for occurrence in self.relation_occurrence_buckets:
-            relation_occurrence_info_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
+            relation_accuracy_scores_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
                 "correct": 0,
                 "total": 0,
             }
-        relation_occurrence_info_dict["0"] = {"correct": 0, "total": 0}
+        relation_accuracy_scores_dict["0"] = {"correct": 0, "total": 0}
 
         for relation_id, relation_dict in self.entity_relation_occurrence_info_dict.items():
             relation_instance_table = self.bear_results[relation_id].instance_table
@@ -74,18 +101,18 @@ class KnowledgeProber:
                 occurrences = relation_dict[answer_row.sub_id]["occurrences"]
                 for bucket in self.relation_occurrence_buckets:
                     if occurrences == 0:
-                        relation_occurrence_info_dict["0"]["total"] += 1
+                        relation_accuracy_scores_dict["0"]["total"] += 1
                         if answer_row.correctly_predicted:
-                            relation_occurrence_info_dict["0"]["correct"] += 1
+                            relation_accuracy_scores_dict["0"]["correct"] += 1
                         break
                     if bucket[0] <= occurrences <= bucket[1]:
-                        relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
+                        relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
                         if answer_row.correctly_predicted:
-                            relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["correct"] += 1
+                            relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["correct"] += 1
                         break
-        for _, bucket in relation_occurrence_info_dict.items():
+        for _, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
                 bucket["accuracy"] = 0
             else:
                 bucket["accuracy"] = bucket["correct"] / bucket["total"]
-        return relation_occurrence_info_dict
+        return relation_accuracy_scores_dict
