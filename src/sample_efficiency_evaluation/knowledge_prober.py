@@ -44,6 +44,12 @@ class KnowledgeProber:
         evaluator.evaluate_dataset(dataset, save_path=result_save_path, batch_size=batch_size)
 
     def load_bear_results(self, path_to_bear_results: str) -> None:
+        """
+        Load the BEAR results.
+
+        :param path_to_bear_results: Path to the BEAR results.
+        :return:
+        """
         self.bear_results = DatasetResults.from_path(path_to_bear_results)
 
     def get_accuracy_scores_over_all_relations(self) -> dict:
