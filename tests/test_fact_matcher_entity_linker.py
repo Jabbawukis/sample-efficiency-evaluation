@@ -3,16 +3,11 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from sample_efficiency_evaluation import FactMatcherEntityLinking
-from utility import utility
 
 
 class FactMatcherEntityLinkingTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_relation_info_dict = {
-            "P6": {"domains": ["Political", "Biographical", "Historical"]},
-            "P19": {"domains": ["Biographical"]},
-        }
         self.test_entity_relation_occurrence_info_dict = {
             "P6": {
                 "Q1519": {
@@ -67,9 +62,8 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
 
     def test_create_fact_statistics_good(self):
         with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict),
             patch.object(
-                utility,
+                FactMatcherEntityLinking,
                 "extract_entity_information",
                 return_value=self.test_entity_relation_occurrence_info_dict,
             ),

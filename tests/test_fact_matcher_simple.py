@@ -4,18 +4,95 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from sample_efficiency_evaluation import FactMatcherSimple
-from utility import utility
 
 
 class FactMatcherSimpleTest(unittest.TestCase):
 
     def setUp(self) -> None:
         os.environ["PYTHONHASHSEED"] = "0"
-        self.test_relation_info_dict_obj_aliases = {
-            "P_00": {"domains": ["stuff"]},
-            "P_01": {"domains": ["hi"]},
+        self.test_entity_relation_info_dict = {
+            "P6": {
+                "Q1519": {
+                    "subj_label": "Abu Dhabi",
+                    "subj_aliases": {"Abū Dhabi", "Abudhabi"},
+                    "obj_id": "Q1059948",
+                    "obj_label": "Khalifa bin Zayed Al Nahyan",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+                "Q399": {
+                    "subj_label": "Armenia",
+                    "subj_aliases": {"Republic of Armenia", "🇦🇲", "ARM", "AM"},
+                    "obj_id": "Q7035479",
+                    "obj_label": "Nikol Pashinyan",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+                "Q548114": {
+                    "subj_label": "Free State of Fiume",
+                    "subj_aliases": set(),
+                    "obj_id": "Q193236",
+                    "obj_label": "Gabriele D'Annunzio",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+                "Q5626824": {
+                    "subj_label": "Gülcemal Sultan",
+                    "subj_aliases": set(),
+                    "obj_id": "Q222",
+                    "obj_label": "Albania",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+                "Q837": {
+                    "subj_label": "Nepal",
+                    "subj_aliases": {"NPL", "Federal Democratic Republic of Nepal", "NEP", "NP", "🇳🇵"},
+                    "obj_id": "Q3195923",
+                    "obj_label": "Khadga Prasad Sharma Oli",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+            }
         }
-        self.test_entity_relation_occurrence_info_dict_filled_obj_aliases = {
+        self.test_entity_relation_info_dict_filled_obj_aliases = {
+            "P_00": {
+                "Q30": {
+                    "subj_label": "United States of America",
+                    "subj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                    "obj_id": "Q61",
+                    "obj_label": "Washington, D.C.",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+                "Q178903": {
+                    "subj_label": "Alexander Hamilton",
+                    "subj_aliases": {"Publius", "Hamilton", "Alexander Hamilton, US Treasury secretary", "A. Ham"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                    "occurrences": 0,
+                    "sentences": set(),
+                },
+            },
+            "P_01": {
+                "Q2127993": {
+                    "subj_label": "Rainer Bernhardt",
+                    "subj_aliases": {"Rainer Herbert Georg Bernhardt"},
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                    "occurrences": 0,
+                    "sentences": set(),
+                }
+            },
+        }
+        self.test_entity_relation_occurrence_info_dict_obj_aliases_extended = {
             "P_00": {
                 "Q30": {
                     "subj_label": "United States of America",
@@ -107,13 +184,36 @@ class FactMatcherSimpleTest(unittest.TestCase):
         self.maxDiff = None
         self.test_resources_abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_resources"))
 
+    def test_extract_entity_information_good(self):
+        with (patch.object(logging, "error") as mock_error,):
+            fact_matcher = FactMatcherSimple(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                save_file_content=True,
+            )
+
+            self.assertEqual(fact_matcher.entity_relation_occurrence_info_dict, self.test_entity_relation_info_dict)
+            mock_error.assert_called_once()
+
+    def test_extract_entity_information_good_filled_obj_aliases(self):
+        with (patch.object(logging, "error") as mock_error,):
+            fact_matcher = FactMatcherSimple(
+                bear_data_path=f"{self.test_resources_abs_path}",
+                bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
+                save_file_content=True,
+            )
+
+            self.assertEqual(
+                fact_matcher.entity_relation_occurrence_info_dict,
+                self.test_entity_relation_info_dict_filled_obj_aliases,
+            )
+            mock_error.assert_not_called()
+
     def test_create_mapped_relations_good(self):
         with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
             patch.object(
-                utility,
+                FactMatcherSimple,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_occurrence_info_dict_filled_obj_aliases,
+                return_value=self.test_entity_relation_occurrence_info_dict_obj_aliases_extended,
             ),
         ):
 
@@ -126,11 +226,10 @@ class FactMatcherSimpleTest(unittest.TestCase):
 
     def test_create_fact_statistics_good(self):
         with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
             patch.object(
-                utility,
+                FactMatcherSimple,
                 "extract_entity_information",
-                return_value=self.test_entity_relation_occurrence_info_dict_filled_obj_aliases,
+                return_value=self.test_entity_relation_occurrence_info_dict_obj_aliases_extended,
             ),
             patch.object(
                 FactMatcherSimple,
@@ -245,9 +344,8 @@ class FactMatcherSimpleTest(unittest.TestCase):
 
     def test_create_fact_statistics_good_2(self):
         with (
-            patch.object(utility, "load_json_dict", return_value=self.test_relation_info_dict_obj_aliases),
             patch.object(
-                utility,
+                FactMatcherSimple,
                 "extract_entity_information",
                 return_value=self.test_entity_relation_occurrence_info_dict_small,
             ),

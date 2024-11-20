@@ -61,17 +61,6 @@ def clean_string(text: str) -> str:
     return text
 
 
-def decorate_sentence_with_ids(sentence: str, linked_entities) -> str:
-    """
-    Decorate entities with IDs.
-    :param sentence: List of entities
-    :param linked_entities: List of linked entities
-    :return: Dictionary containing entities with IDs
-    """
-    entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in linked_entities]
-    return f"{sentence} [{' '.join(entity_ids)}]"
-
-
 def word_in_sentence(word: str, sentence: str) -> bool:
     """
     Check if word is in sentence.
@@ -82,76 +71,6 @@ def word_in_sentence(word: str, sentence: str) -> bool:
     """
     pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)), flags=re.IGNORECASE)
     return bool(pattern.search(sentence))
-
-
-def save_fact_statistics_dict_as_json(entity_relation_info_dict: dict, json_output_file_path: str) -> None:
-    """
-    Convert the entity_relation_info_dict to fact statistics and save as json file.
-
-    This file will only contain the facts and their occurrences.
-    :param entity_relation_info_dict: Dictionary containing the entity relation information.
-    :param json_output_file_path: Path to save the json file.
-    :return:
-    """
-    fact_statistics = {}
-    for relation_id, entities in entity_relation_info_dict.items():
-        for subj_id, fact in entities.items():
-            if relation_id not in fact_statistics:
-                fact_statistics[relation_id] = {}
-            fact_statistics[relation_id][subj_id] = {"occurrences": fact["occurrences"], "obj_id": fact["obj_id"]}
-    save_dict_as_json(fact_statistics, json_output_file_path)
-
-
-def extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
-    """
-    Extract entity information from bear data.
-    :param bear_data_path: Path to bear facts directory.
-    :param bear_relation_info_path: Path to the BEAR relation info file.
-    :return: Relation dictionary
-    """
-    relation_dict: dict = {}
-    bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
-    for relation_key, _ in bear_relation_info_dict.items():
-        try:
-            fact_list: list[dict] = load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
-            relation_dict.update({relation_key: {}})
-        except FileNotFoundError:
-            logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
-            continue
-        for fact_dict in fact_list:
-            logging.info("Extracting entity information for %s", relation_key)
-            relation_dict[relation_key][fact_dict["sub_id"]] = {
-                "subj_label": fact_dict["sub_label"],
-                "subj_aliases": set(fact_dict["sub_aliases"]),
-                "obj_id": fact_dict["obj_id"],
-                "obj_label": fact_dict["obj_label"],
-                "obj_aliases": set(),
-                "occurrences": 0,
-                "sentences": set(),
-            }
-    for _, relations in relation_dict.items():
-        for _, fact in relations.items():
-            for _, relations_ in relation_dict.items():
-                try:
-                    fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
-                except KeyError:
-                    continue
-    return relation_dict
-
-
-def get_tokens_from_sentence(
-    sentence: str, tokenizer, only_lower: bool = True
-) -> Union[list[str], tuple[list[str], list[str]]]:
-    """
-    Get tokens from sentence.
-    :param sentence: Sentence
-    :param tokenizer: Tokenizer spacy object
-    :param only_lower: Return only lower case tokens
-    :return: List of tokens
-    """
-    if only_lower:
-        return [token.orth_ for token in tokenizer(sentence.lower())]
-    return [token.orth_ for token in tokenizer(sentence)], [token.orth_ for token in tokenizer(sentence.lower())]
 
 
 def create_fact_occurrence_histogram(

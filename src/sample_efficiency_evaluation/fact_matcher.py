@@ -10,7 +10,7 @@ from tqdm import tqdm
 from spacy.lang.en import English
 
 from utility import utility
-from utility.utility import word_in_sentence, get_tokens_from_sentence
+from utility.utility import word_in_sentence, load_json_dict, load_json_line_dict
 
 
 class FactMatcherBase(ABC):
@@ -25,7 +25,7 @@ class FactMatcherBase(ABC):
 
         bear_data_path = kwargs.get("bear_data_path")
 
-        self.entity_relation_occurrence_info_dict: dict = utility.extract_entity_information(
+        self.entity_relation_occurrence_info_dict: dict = self.extract_entity_information(
             bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
@@ -46,6 +46,58 @@ class FactMatcherBase(ABC):
         :return:
         """
         utility.save_dict_as_json(self.entity_relation_occurrence_info_dict, json_output_file_path)
+
+    def get_tokens_from_sentence(
+        self, sentence: str, only_lower: bool = True
+    ) -> Union[list[str], tuple[list[str], list[str]]]:
+        """
+        Get tokens from sentence.
+        :param sentence: Sentence
+        :param only_lower: Return only lower case tokens
+        :return: List of tokens
+        """
+        if only_lower:
+            return [token.orth_ for token in self.tokenizer(sentence.lower())]
+        return [token.orth_ for token in self.tokenizer(sentence)], [
+            token.orth_ for token in self.tokenizer(sentence.lower())
+        ]
+
+    @staticmethod
+    def extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
+        """
+        Extract entity information from bear data.
+        :param bear_data_path: Path to bear facts directory.
+        :param bear_relation_info_path: Path to the BEAR relation info file.
+        :return: Relation dictionary
+        """
+        relation_dict: dict = {}
+        bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
+        for relation_key, _ in bear_relation_info_dict.items():
+            try:
+                fact_list: list[dict] = load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
+                relation_dict.update({relation_key: {}})
+            except FileNotFoundError:
+                logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
+                continue
+            for fact_dict in fact_list:
+                logging.info("Extracting entity information for %s", relation_key)
+                relation_dict[relation_key][fact_dict["sub_id"]] = {
+                    "subj_label": fact_dict["sub_label"],
+                    "subj_aliases": set(fact_dict["sub_aliases"]),
+                    "obj_id": fact_dict["obj_id"],
+                    "obj_label": fact_dict["obj_label"],
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": set(),
+                }
+        for _, relations in relation_dict.items():
+            for _, fact in relations.items():
+                for _, relations_ in relation_dict.items():
+                    try:
+                        fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
+                    except KeyError:
+                        continue
+        return relation_dict
 
     @abstractmethod
     def create_fact_statistics(
@@ -102,7 +154,7 @@ class FactMatcherSimple(FactMatcherBase):
         mapped_relations = {}
         for relation_id, relation_info in self.entity_relation_occurrence_info_dict.items():
             for entity_id, entity_info in relation_info.items():
-                tokens = get_tokens_from_sentence(entity_info["subj_label"], self.tokenizer)
+                tokens = self.get_tokens_from_sentence(entity_info["subj_label"])
                 tokenized_subj_label = " ".join(tokens)
                 if len(tokenized_subj_label) < self.min_entity_name_length:
                     tokenized_subj_label = entity_info["subj_label"]
@@ -113,7 +165,7 @@ class FactMatcherSimple(FactMatcherBase):
                 except KeyError:
                     mapped_relations[tokenized_subj_label] = {"relations": {(relation_id, entity_id)}}
                 for alias in entity_info["subj_aliases"]:
-                    tokens = get_tokens_from_sentence(alias, self.tokenizer)
+                    tokens = self.get_tokens_from_sentence(alias)
                     tokenized_subj_label = " ".join(tokens)
                     if len(tokenized_subj_label) < self.min_entity_name_length:
                         tokenized_subj_label = alias
@@ -178,7 +230,7 @@ class FactMatcherSimple(FactMatcherBase):
         split_doc = self.nlp(content)
         sentences = [sent.text for sent in split_doc.sents]
         for sentence in sentences:
-            tokens, tokens_lower = get_tokens_from_sentence(sentence, self.tokenizer, only_lower=False)
+            tokens, tokens_lower = self.get_tokens_from_sentence(sentence, only_lower=False)
             for ngram_size in range(1, self.max_ngram + 1):
                 for ngram, ngram_lower in zip(windowed(tokens, ngram_size), windowed(tokens_lower, ngram_size)):
                     try:
