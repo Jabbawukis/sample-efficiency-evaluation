@@ -9,11 +9,8 @@ from transformers import (
 from datasets import load_dataset, DatasetDict, load_from_disk
 
 import torch
-
 # torch.cuda.set_device('cuda:0')
 output = "./gpt2-wikipedia"
-# Load the dataset
-dataset = load_dataset("wikimedia/wikipedia", "20231101.en")
 
 # Initialize the tokenizer
 context_length = 128
@@ -22,6 +19,8 @@ tokenizer.pad_token = tokenizer.eos_token  # Set pad token
 
 
 ############################################################################################
+# Load the dataset
+dataset = load_dataset("wikimedia/wikipedia", "20231101.en")
 def tokenize(element):
     # Tokenize input, handling long sequences with `return_overflowing_tokens`
     outputs = tokenizer(
@@ -44,18 +43,14 @@ def tokenize(element):
 
 
 # Tokenize the entire dataset and remove unnecessary columns
-tokenized_datasets = dataset.map(tokenize, batched=True, remove_columns=dataset["train"].column_names)
+tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=dataset["train"].column_names)
 
 # Save the tokenized dataset (optional)
-tokenized_datasets.save_to_disk("wikipedia_20231101_en/tokenized_ds")
+tokenized_dataset.save_to_disk("wikipedia_20231101_en/tokenized_ds")
 ############################################################################################
 
 # Load the previously saved tokenized dataset and ignore the above steps encased in # for the dataset processing
 # tokenized_datasets = load_from_disk('wikipedia_20231101_en/tokenized_ds')
-
-# Split into train and eval (e.g., 90% train, 10% eval)
-train_test_split = tokenized_datasets["train"].train_test_split(test_size=0.1, seed=42)
-tokenized_datasets = DatasetDict({"train": train_test_split["train"], "eval": train_test_split["test"]})
 
 # Data collator for causal language modeling
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
@@ -76,12 +71,9 @@ model = GPT2LMHeadModel(config)
 training_args = TrainingArguments(
     output_dir=output,  # Output directory
     per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
-    eval_strategy="steps",
-    eval_steps=5_000,
     logging_steps=5_000,
     gradient_accumulation_steps=8,
-    num_train_epochs=3,
+    num_train_epochs=1,
     weight_decay=0.1,
     warmup_steps=1_000,
     lr_scheduler_type="cosine",
@@ -95,8 +87,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=tokenized_datasets["train"],
-    eval_dataset=tokenized_datasets["eval"],
+    train_dataset=tokenized_dataset,
     tokenizer=tokenizer,
 )
 
