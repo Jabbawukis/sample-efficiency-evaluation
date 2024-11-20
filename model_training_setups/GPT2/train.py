@@ -50,7 +50,11 @@ tokenized_dataset.save_to_disk("wikipedia_20231101_en/tokenized_ds")
 ############################################################################################
 
 # Load the previously saved tokenized dataset and ignore the above steps encased in # for the dataset processing
-# tokenized_datasets = load_from_disk('wikipedia_20231101_en/tokenized_ds')
+# tokenized_dataset = load_from_disk('wikipedia_20231101_en/tokenized_ds')
+
+# Split into train and eval (e.g., 90% train, 10% eval)
+# train_test_split = tokenized_dataset["train"].train_test_split(test_size=0.1, seed=42)
+# tokenized_dataset = DatasetDict({"train": train_test_split["train"], "eval": train_test_split["test"]})
 
 # Data collator for causal language modeling
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
@@ -71,6 +75,9 @@ model = GPT2LMHeadModel(config)
 training_args = TrainingArguments(
     output_dir=output,  # Output directory
     per_device_train_batch_size=32,
+    # per_device_eval_batch_size=32,
+    # eval_strategy="steps",
+    # eval_steps=5_000,
     logging_steps=5_000,
     gradient_accumulation_steps=8,
     num_train_epochs=1,
@@ -88,6 +95,8 @@ trainer = Trainer(
     args=training_args,
     data_collator=data_collator,
     train_dataset=tokenized_dataset,
+    # train_dataset=tokenized_dataset["train"],
+    # eval_dataset=tokenized_dataset["eval"],
     tokenizer=tokenizer,
 )
 
