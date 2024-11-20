@@ -94,8 +94,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=tokenized_dataset,
-    # train_dataset=tokenized_dataset["train"],
+    train_dataset=tokenized_dataset["train"],
     # eval_dataset=tokenized_dataset["eval"],
     tokenizer=tokenizer,
 )
