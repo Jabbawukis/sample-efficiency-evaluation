@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser(description="Process a dataset slice.")
 parser.add_argument("--dataset_path", type=str, required=True)
 parser.add_argument("--dataset_name", type=str, default="")
 parser.add_argument("--bear_data_path", type=str, required=True)
+parser.add_argument("--bear_facts_path", type=str, required=True)
 parser.add_argument("--rel_info_output_dir", type=str, required=True)
 parser.add_argument("--matcher_type", type=str, choices=["simple", "hybrid", "entity_linker"], required=True)
 parser.add_argument("--entity_linker_model", type=str, required=True)
@@ -29,6 +30,7 @@ def create_matcher():
     if args.matcher_type == "entity_linker":
         return FactMatcherEntityLinking(
             bear_data_path=args.bear_data_path,
+            bear_facts_path=args.bear_facts_path,
             require_gpu=args.require_gpu,
             entity_linker_model=args.entity_linker_model,
             save_file_content=args.save_file_content,
@@ -37,6 +39,7 @@ def create_matcher():
     elif args.matcher_type == "simple":
         return FactMatcherSimple(
             bear_data_path=args.bear_data_path,
+            bear_facts_path=args.bear_facts_path,
             save_file_content=args.save_file_content,
         )
     else:
@@ -61,6 +64,7 @@ print(
     f"\nTotal slices: {args.total_slices}"
     f"\nSlice number: {args.slice_num + 1}"
     f"\nBear data path: {args.bear_data_path}"
+    f"\nBear facts path: {args.bear_facts_path}"
     f"\nMatcher type: {args.matcher_type}"
     f"\nOutput directory: {args.rel_info_output_dir}"
     f"\nEntity linker model: {args.entity_linker_model}"

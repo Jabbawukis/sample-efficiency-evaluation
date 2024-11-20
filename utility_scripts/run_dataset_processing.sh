@@ -7,6 +7,7 @@ CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #DATASET_PATH=""                                # Pass as string
 #DATASET_NAME=""                                # Optional
 #BEAR_DATA_PATH="BEAR"
+#BEAR_FACTS_PATH="BEAR-big"
 #REL_INFO_OUTPUT_DIR="output"
 #MATCHER_TYPE="simple"
 #ENTITY_LINKER_MODEL="en_core_web_trf"
@@ -38,6 +39,7 @@ for (( i=0; i<NUM_SLICES; i++ )); do
         --dataset_path "$DATASET_PATH" \
         --dataset_name "$DATASET_NAME" \
         --bear_data_path "$BEAR_DATA_PATH" \
+        --bear_facts_path "$BEAR_FACTS_PATH" \
         --rel_info_output_dir "$REL_INFO_OUTPUT_DIR" \
         --matcher_type "$MATCHER_TYPE" \
         --entity_linker_model "$ENTITY_LINKER_MODEL" \
