@@ -47,7 +47,7 @@ class KnowledgeProber:
         """
         Load the BEAR results.
 
-        :param path_to_bear_results: Path to the BEAR results.
+        :param path_to_bear_results: Path to the BEAR results.git stat
         :return:
         """
         self.bear_results = DatasetResults.from_path(path_to_bear_results)
