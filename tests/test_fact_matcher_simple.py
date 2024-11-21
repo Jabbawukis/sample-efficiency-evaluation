@@ -197,7 +197,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
     def test_extract_entity_information_good_filled_obj_aliases(self):
         with (patch.object(logging, "error") as mock_error,):
             fact_matcher = FactMatcherSimple(
-                bear_data_path=f"{self.test_resources_abs_path}",
+                bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
                 save_file_content=True,
             )
