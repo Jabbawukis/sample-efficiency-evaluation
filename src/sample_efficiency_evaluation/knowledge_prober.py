@@ -56,8 +56,9 @@ class KnowledgeProber:
         """
         self.bear_results = DatasetResults.from_path(path_to_bear_results)
 
+    @staticmethod
     def create_fact_accuracy_histogram(
-        self, relation_accuracy_scores_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
+        relation_accuracy_scores_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
     ) -> None:
         """
         Create fact accuracy statistics and plot a histogram.
