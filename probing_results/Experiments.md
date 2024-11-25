@@ -12,7 +12,7 @@
 ### 2. gpt2_from_scratch
 
 - Model: gpt2
-- repo: [J4bb4wukis/gpt2_wikipedia_en](https://huggingface.co/J4bb4wukis/gpt2_wikipedia_en_no_eval)
+- repo: [J4bb4wukis/gpt2_wikipedia_en](https://huggingface.co/J4bb4wukis/gpt2_wikipedia_en)
 - fact evaluation dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikipedia)
 - link to results: [gpt2_from_scratch](/probing_results/BEAR-big/gpt2_from_scratch)
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikipedia)
