@@ -16,3 +16,4 @@
 - fact evaluation dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikipedia)
 - link to results: [gpt2_from_scratch](/probing_results/BEAR-big/gpt2_from_scratch)
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikipedia)
+- training script: [train.py](../model_training_setups/GPT2/train.py)
