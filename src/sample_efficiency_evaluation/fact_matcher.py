@@ -26,7 +26,7 @@ class FactMatcherBase(ABC):
         bear_data_path = kwargs.get("bear_data_path")
 
         self.entity_relation_occurrence_info_dict: dict = self.extract_entity_information(
-            bear_data_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
+            bear_facts_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
         )
 
@@ -63,10 +63,10 @@ class FactMatcherBase(ABC):
         ]
 
     @staticmethod
-    def extract_entity_information(bear_data_path: str, bear_relation_info_path: str) -> dict:
+    def extract_entity_information(bear_facts_path: str, bear_relation_info_path: str) -> dict:
         """
         Extract entity information from bear data.
-        :param bear_data_path: Path to bear facts directory.
+        :param bear_facts_path: Path to bear facts directory.
         :param bear_relation_info_path: Path to the BEAR relation info file.
         :return: Relation dictionary
         """
@@ -74,10 +74,10 @@ class FactMatcherBase(ABC):
         bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
         for relation_key, _ in bear_relation_info_dict.items():
             try:
-                fact_list: list[dict] = load_json_line_dict(f"{bear_data_path}/{relation_key}.jsonl")
+                fact_list: list[dict] = load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
                 relation_dict.update({relation_key: {}})
             except FileNotFoundError:
-                logging.error("File not found: %s/%s.jsonl", bear_data_path, relation_key)
+                logging.error("File not found: %s/%s.jsonl", bear_facts_path, relation_key)
                 continue
             for fact_dict in fact_list:
                 logging.info("Extracting entity information for %s", relation_key)
