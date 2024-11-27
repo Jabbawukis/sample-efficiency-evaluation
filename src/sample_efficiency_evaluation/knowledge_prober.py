@@ -1,4 +1,5 @@
 import os
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,7 +9,16 @@ from utility import utility
 
 
 class KnowledgeProber:
+    """
+    KnowledgeProber class to probe the model with BEAR facts and analyze the results.
+    """
+
     def __init__(self, path_to_relation_occurrence_info_file: str):
+        """
+        Initialize the KnowledgeProber.
+
+        :param path_to_relation_occurrence_info_file: Path to the relation occurrence information file.
+        """
         self.entity_relation_occurrence_info_dict = utility.load_json_dict(path_to_relation_occurrence_info_file)
         self.relation_occurrence_buckets = [
             (1, 99),
@@ -94,7 +104,11 @@ class KnowledgeProber:
         relation_accuracy_scores_dict["0"] = {"correct": 0, "total": 0}
 
         for relation_id, relation_dict in self.entity_relation_occurrence_info_dict.items():
-            relation_instance_table = self.bear_results[relation_id].instance_table
+            try:
+                relation_instance_table = self.bear_results[relation_id].instance_table
+            except KeyError:
+                logging.warning("Relation (%s) not found in the BEAR results.", relation_id)
+                continue
             relation_instance_table["correctly_predicted"] = relation_instance_table.apply(
                 lambda row: row.answer_idx == np.argmax(row.pll_scores), axis=1
             )

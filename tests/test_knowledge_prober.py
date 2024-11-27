@@ -165,3 +165,96 @@ class KnowledgeProberTest(unittest.TestCase):
                     "500-inf": {"correct": 1, "total": 1, "accuracy": 1.0},
                 },
             )
+
+    def test_get_accuracy_scores_over_all_relations_good_3(self):
+        row_Q399 = MagicMock()
+        row_Q399.correctly_predicted = False
+        row_Q399.sub_id = "Q399"
+
+        row_Q548114 = MagicMock()
+        row_Q548114.correctly_predicted = True
+        row_Q548114.sub_id = "Q548114"
+
+        row_Q5626824 = MagicMock()
+        row_Q5626824.correctly_predicted = False
+        row_Q5626824.sub_id = "Q5626824"
+
+        row_Q837 = MagicMock()
+        row_Q837.correctly_predicted = True
+        row_Q837.sub_id = "Q837"
+
+        results_1 = MagicMock()
+        results_1_instance_table = MagicMock()
+        results_1_instance_table.apply.return_value = None
+        results_1_instance_table.itertuples.return_value = [row_Q399]
+        results_1.instance_table = results_1_instance_table
+
+        results_2 = MagicMock()
+        results_2_instance_table = MagicMock()
+        results_2_instance_table.apply.return_value = None
+        results_2_instance_table.itertuples.return_value = [row_Q548114, row_Q5626824, row_Q837]
+        results_2.instance_table = results_2_instance_table
+
+        bear_results = {
+            "P6": results_1,
+            "P2": results_2,
+        }
+
+        with patch.object(utility, "load_json_dict", return_value=self.entity_relation_result_info_dict):
+            prober = KnowledgeProber("test")
+            prober.bear_results = bear_results
+
+            self.assertEqual(
+                prober.get_accuracy_scores_over_all_relations(),
+                {
+                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
+                    "1-99": {"correct": 0, "total": 1, "accuracy": 0.0},
+                    "100-299": {"correct": 0, "total": 1, "accuracy": 0.0},
+                    "300-499": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "500-699": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "700-899": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "900-999": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "1000-inf": {"correct": 1, "total": 1, "accuracy": 1.0},
+                },
+            )
+
+    def test_get_accuracy_scores_over_all_relations_good_4(self):
+        row_Q548114 = MagicMock()
+        row_Q548114.correctly_predicted = True
+        row_Q548114.sub_id = "Q548114"
+
+        row_Q5626824 = MagicMock()
+        row_Q5626824.correctly_predicted = False
+        row_Q5626824.sub_id = "Q5626824"
+
+        row_Q837 = MagicMock()
+        row_Q837.correctly_predicted = True
+        row_Q837.sub_id = "Q837"
+
+        results_2 = MagicMock()
+        results_2_instance_table = MagicMock()
+        results_2_instance_table.apply.return_value = None
+        results_2_instance_table.itertuples.return_value = [row_Q548114, row_Q5626824, row_Q837]
+        results_2.instance_table = results_2_instance_table
+
+        bear_results = {
+            "P2": results_2,
+        }
+
+        with patch.object(utility, "load_json_dict", return_value=self.entity_relation_result_info_dict):
+            prober = KnowledgeProber("test")
+            prober.bear_results = bear_results
+
+            self.assertEqual(
+                prober.get_accuracy_scores_over_all_relations(),
+                {
+                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
+                    "1-99": {"correct": 0, "total": 1, "accuracy": 0.0},
+                    "100-299": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "300-499": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "500-699": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "700-899": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "900-999": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "1000-inf": {"correct": 1, "total": 1, "accuracy": 1.0},
+                },
+            )
