@@ -10,6 +10,7 @@ parser.add_argument("--dataset_path", type=str, required=True)
 parser.add_argument("--dataset_name", type=str, default="")
 parser.add_argument("--bear_data_path", type=str, required=True)
 parser.add_argument("--bear_facts_path", type=str, required=True)
+parser.add_argument("--path_to_alias_extensions", type=str, required=True)
 parser.add_argument("--rel_info_output_dir", type=str, required=True)
 parser.add_argument("--matcher_type", type=str, choices=["simple", "hybrid", "entity_linker"], required=True)
 parser.add_argument("--entity_linker_model", type=str, required=True)
@@ -24,6 +25,7 @@ args = parser.parse_args()
 # Set GPU environment
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
 
+alias_extensions_path = args.path_to_alias_extensions if args.path_to_alias_extensions != "" else None
 
 # Create the appropriate FactMatcher instance based on matcher type
 def create_matcher():
@@ -33,12 +35,14 @@ def create_matcher():
             bear_facts_path=args.bear_facts_path,
             require_gpu=args.require_gpu,
             entity_linker_model=args.entity_linker_model,
+            path_to_alias_extensions=alias_extensions_path,
             gpu_id=args.gpu_id,
         )
     elif args.matcher_type == "simple":
         return FactMatcherSimple(
             bear_data_path=args.bear_data_path,
-            bear_facts_path=args.bear_facts_path
+            bear_facts_path=args.bear_facts_path,
+            path_to_alias_extensions=alias_extensions_path,
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
