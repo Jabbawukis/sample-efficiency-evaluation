@@ -26,6 +26,7 @@ args = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
 
 alias_extensions_path = args.path_to_alias_extensions if args.path_to_alias_extensions != "" else None
+data_set_name = args.dataset_name if args.dataset_name != "" else None
 
 # Create the appropriate FactMatcher instance based on matcher type
 def create_matcher():
@@ -46,9 +47,6 @@ def create_matcher():
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
-
-
-data_set_name = args.dataset_name if args.dataset_name != "" else None
 
 full_dataset = datasets.load_dataset(args.dataset_path, data_set_name, split="train")
 dataset_len = len(full_dataset)
