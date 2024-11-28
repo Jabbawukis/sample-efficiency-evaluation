@@ -67,6 +67,7 @@ print(
     f"\nSlice number: {args.slice_num + 1}"
     f"\nBear data path: {args.bear_data_path}"
     f"\nBear facts path: {args.bear_facts_path}"
+    f"\nPath to alias extensions: {alias_extensions_path}"
     f"\nMatcher type: {args.matcher_type}"
     f"\nOutput directory: {args.rel_info_output_dir}"
     f"\nEntity linker model: {args.entity_linker_model}"
