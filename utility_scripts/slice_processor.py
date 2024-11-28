@@ -33,14 +33,12 @@ def create_matcher():
             bear_facts_path=args.bear_facts_path,
             require_gpu=args.require_gpu,
             entity_linker_model=args.entity_linker_model,
-            save_file_content=args.save_file_content,
             gpu_id=args.gpu_id,
         )
     elif args.matcher_type == "simple":
         return FactMatcherSimple(
             bear_data_path=args.bear_data_path,
-            bear_facts_path=args.bear_facts_path,
-            save_file_content=args.save_file_content,
+            bear_facts_path=args.bear_facts_path
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
@@ -78,7 +76,7 @@ print(
 dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, split=f"train[{start_index}:{end_index}]")
 fact_matcher = create_matcher()
 
-fact_matcher.create_fact_statistics(dataset_slice, text_key="text")
+fact_matcher.create_fact_statistics(dataset_slice, text_key="text", save_file_content=args.save_file_content)
 
 # Save results
 relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_info.json")

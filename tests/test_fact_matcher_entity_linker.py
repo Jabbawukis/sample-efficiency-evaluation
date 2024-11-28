@@ -73,10 +73,7 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
             ) as get_entity_ids_mock,
         ):
 
-            fact_matcher = FactMatcherEntityLinking(
-                bear_data_path=f"{self.test_resources_abs_path}",
-                save_file_content=True,
-            )
+            fact_matcher = FactMatcherEntityLinking(bear_data_path=f"{self.test_resources_abs_path}")
 
             fact_matcher.entity_linker = MagicMock()
             entity_1 = MagicMock()
@@ -110,6 +107,7 @@ class FactMatcherEntityLinkingTest(unittest.TestCase):
                     },
                 ],
                 text_key="text",
+                save_file_content=True,
             )
             self.assertEqual(
                 fact_matcher.entity_relation_occurrence_info_dict,

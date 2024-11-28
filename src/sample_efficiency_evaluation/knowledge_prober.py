@@ -114,12 +114,12 @@ class KnowledgeProber:
             )
             for answer_row in relation_instance_table.itertuples():
                 occurrences = relation_dict[answer_row.sub_id]["occurrences"]
+                if occurrences == 0:
+                    relation_accuracy_scores_dict["0"]["total"] += 1
+                    if answer_row.correctly_predicted:
+                        relation_accuracy_scores_dict["0"]["correct"] += 1
+                    continue
                 for bucket in self.relation_occurrence_buckets:
-                    if occurrences == 0:
-                        relation_accuracy_scores_dict["0"]["total"] += 1
-                        if answer_row.correctly_predicted:
-                            relation_accuracy_scores_dict["0"]["correct"] += 1
-                        break
                     if bucket[0] <= occurrences <= bucket[1]:
                         relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
                         if answer_row.correctly_predicted:

@@ -1,7 +1,7 @@
 import logging
 
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Optional
 from more_itertools import windowed
 
 import spacy
@@ -28,9 +28,8 @@ class FactMatcherBase(ABC):
         self.entity_relation_occurrence_info_dict: dict = self.extract_entity_information(
             bear_facts_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
+            path_to_alias_extensions=kwargs.get("path_to_alias_extensions", None),
         )
-
-        self.save_file_content = kwargs.get("save_file_content", False)
 
         self.nlp = English()
 
@@ -63,15 +62,22 @@ class FactMatcherBase(ABC):
         ]
 
     @staticmethod
-    def extract_entity_information(bear_facts_path: str, bear_relation_info_path: str) -> dict:
+    def extract_entity_information(
+        bear_facts_path: str, bear_relation_info_path: str, path_to_alias_extensions: Optional[str] = None
+    ) -> dict:
         """
         Extract entity information from bear data.
         :param bear_facts_path: Path to bear facts directory.
         :param bear_relation_info_path: Path to the BEAR relation info file.
+        :param path_to_alias_extensions: Path to alias extensions file. This file contains additional aliases for the
+        entities.
         :return: Relation dictionary
         """
         relation_dict: dict = {}
         bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
+        alias_extensions_dict: dict = {}
+        if path_to_alias_extensions:
+            alias_extensions_dict = load_json_dict(path_to_alias_extensions)
         for relation_key, _ in bear_relation_info_dict.items():
             try:
                 fact_list: list[dict] = load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
@@ -90,6 +96,15 @@ class FactMatcherBase(ABC):
                     "occurrences": 0,
                     "sentences": set(),
                 }
+                if path_to_alias_extensions:
+                    if fact_dict["sub_id"] in alias_extensions_dict:
+                        relation_dict[relation_key][fact_dict["sub_id"]]["subj_aliases"].update(
+                            alias_extensions_dict[fact_dict["sub_id"]]
+                        )
+                    if fact_dict["obj_id"] in alias_extensions_dict:
+                        relation_dict[relation_key][fact_dict["sub_id"]]["obj_aliases"].update(
+                            alias_extensions_dict[fact_dict["obj_id"]]
+                        )
         for _, relations in relation_dict.items():
             for _, fact in relations.items():
                 for _, relations_ in relation_dict.items():
@@ -104,6 +119,7 @@ class FactMatcherBase(ABC):
         self,
         file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
         text_key: str = "text",
+        save_file_content: bool = False,
     ) -> None:
         """
         Create fact statistics
@@ -128,8 +144,9 @@ class FactMatcherSimple(FactMatcherBase):
             {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
             containing more facts.
 
-        - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
-            in the relation dictionary. The default is False.
+        - path_to_alias_extensions [Optional[str]]: Path to alias extensions file. This file contains additional aliases
+            for the entities. The format of the file should be a dictionary with the entity id as the key and a list of
+            aliases as the value. The default is None.
 
         - max_allowed_ngram_length [Optional[int]]: Maximum allowed ngram length to search for entities. The sentences
             will be split into ngrams of length 1 to max_allowed_ngram_length. The default is 10.
@@ -217,7 +234,7 @@ class FactMatcherSimple(FactMatcherBase):
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
                     )
 
-    def _process_file_content(self, file_content: str) -> None:
+    def _process_file_content(self, file_content: str, save_file_content: bool) -> None:
         """
         Process file content.
 
@@ -242,14 +259,17 @@ class FactMatcherSimple(FactMatcherBase):
                     if joined_ngram not in self.relation_mapping_dict:
                         continue
                     self._add_occurrences(joined_ngram, sentence)
-        if not self.save_file_content:
+        if not save_file_content:
             for _, entities in self.entity_relation_occurrence_info_dict.items():
                 for _, fact in entities.items():
                     fact["sentences"] = set()
         logging.info("Processing file content done.")
 
     def create_fact_statistics(
-        self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        save_file_content: bool = False,
     ) -> None:
         """
         Create fact statistics.
@@ -259,10 +279,12 @@ class FactMatcherSimple(FactMatcherBase):
         The occurrences will be updated in the relation dictionary.
         :param text_key: Key to extract text from file content.
         :param file_contents: List of dictionaries containing the file contents.
+        :param save_file_content: If True, the content of the file where the entity is found will be saved
+        in the relation dictionary.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Processing dataset"):
-            self._process_file_content(file_content[text_key])
+            self._process_file_content(file_content[text_key], save_file_content)
 
 
 class FactMatcherEntityLinking(FactMatcherBase):
@@ -283,8 +305,9 @@ class FactMatcherEntityLinking(FactMatcherBase):
         {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
         containing more facts.
 
-    - save_file_content [Optional[bool]]: If True, the content of the file where the entity is found will be saved
-        in the relation dictionary. The default is False.
+    - path_to_alias_extensions [Optional[str]]: Path to alias extensions file. This file contains additional aliases
+        for the entities. The format of the file should be a dictionary with the entity id as the key and a list of
+        aliases as the value. The default is None.
 
     - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
         The default is False.
@@ -318,19 +341,22 @@ class FactMatcherEntityLinking(FactMatcherBase):
         """
         return self.entity_linker(content)._.linkedEntities
 
-    def _add_occurrences(self, entity_ids: list[str], sentence: str) -> None:
+    def _add_occurrences(self, entity_ids: list[str], sentence: str, save_file_content: bool) -> None:
         for entity_id in entity_ids:
             for _, relations in self.entity_relation_occurrence_info_dict.items():
                 try:
                     if relations[entity_id]["obj_id"] in entity_ids:
                         relations[entity_id]["occurrences"] += 1
-                        if self.save_file_content:
+                        if save_file_content:
                             relations[entity_id]["sentences"].update([sentence])
                 except KeyError:
                     continue
 
     def create_fact_statistics(
-        self, file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset], text_key: str = "text"
+        self,
+        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+        text_key: str = "text",
+        save_file_content: bool = False,
     ) -> None:
         """
         Create fact statistics
@@ -342,6 +368,8 @@ class FactMatcherEntityLinking(FactMatcherBase):
         specify the key to extract the file content.
         That would be the case if we pass a huggingface dataset.
         :param file_contents: List of dictionaries containing the file contents
+        :param save_file_content: If True, the content of the file where the entity is found will be saved
+        in the relation dictionary.
         :return:
         """
         for file_content in tqdm(file_contents, desc="Processing dataset"):
@@ -351,5 +379,5 @@ class FactMatcherEntityLinking(FactMatcherBase):
             for sentence in sentences:
                 all_linked_entities = self._get_entity_ids(sentence)
                 entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
-                self._add_occurrences(entity_ids, sentence)
+                self._add_occurrences(entity_ids, sentence, save_file_content)
         logging.info("Processing file content done.")

@@ -188,10 +188,27 @@ class FactMatcherSimpleTest(unittest.TestCase):
         with (patch.object(logging, "error") as mock_error,):
             fact_matcher = FactMatcherSimple(
                 bear_data_path=f"{self.test_resources_abs_path}",
-                save_file_content=True,
             )
 
             self.assertEqual(fact_matcher.entity_relation_occurrence_info_dict, self.test_entity_relation_info_dict)
+            mock_error.assert_called_once()
+
+    def test_extract_entity_information_good_alias_extension_1(self):
+        test_entity_relation_info_dict_alias_extended = self.test_entity_relation_info_dict.copy()
+        test_entity_relation_info_dict_alias_extended["P6"]["Q5626824"]["subj_aliases"].update(["G. Sultan", "Sultan"])
+        test_entity_relation_info_dict_alias_extended["P6"]["Q548114"]["obj_aliases"].update(
+            ["G. D'Annunzio", "D'Annunzio"]
+        )
+        with (patch.object(logging, "error") as mock_error,):
+            fact_matcher = FactMatcherSimple(
+                bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
+                bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
+                path_to_alias_extensions=f"{self.test_resources_abs_path}/aliases_extension_test.json",
+            )
+
+            self.assertEqual(
+                fact_matcher.entity_relation_occurrence_info_dict, test_entity_relation_info_dict_alias_extended
+            )
             mock_error.assert_called_once()
 
     def test_extract_entity_information_good_filled_obj_aliases(self):
@@ -199,7 +216,6 @@ class FactMatcherSimpleTest(unittest.TestCase):
             fact_matcher = FactMatcherSimple(
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
-                save_file_content=True,
             )
 
             self.assertEqual(
@@ -219,7 +235,6 @@ class FactMatcherSimpleTest(unittest.TestCase):
 
             fact_matcher = FactMatcherSimple(
                 bear_data_path=f"{self.test_resources_abs_path}",
-                save_file_content=True,
             )
             self.assertEqual(fact_matcher.relation_mapping_dict, self.test_relation_mapping_dict)
             self.assertEqual(fact_matcher.max_ngram, 6)
@@ -238,10 +253,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             ),
         ):
 
-            fact_matcher = FactMatcherSimple(
-                bear_data_path=f"{self.test_resources_abs_path}",
-                save_file_content=True,
-            )
+            fact_matcher = FactMatcherSimple(bear_data_path=f"{self.test_resources_abs_path}")
             fact_matcher.max_ngram = 6
 
             data = [
@@ -271,7 +283,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 },
             ]
 
-            fact_matcher.create_fact_statistics(data, text_key="text")
+            fact_matcher.create_fact_statistics(data, text_key="text", save_file_content=True)
 
             self.assertEqual(
                 fact_matcher.entity_relation_occurrence_info_dict,
@@ -355,10 +367,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 return_value=self.test_relation_mapping_dict_small,
             ),
         ):
-            fact_matcher = FactMatcherSimple(
-                bear_data_path=f"{self.test_resources_abs_path}",
-                save_file_content=True,
-            )
+            fact_matcher = FactMatcherSimple(bear_data_path=f"{self.test_resources_abs_path}")
             fact_matcher.max_ngram = 2
 
             data = [
@@ -374,7 +383,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 },
             ]
 
-            fact_matcher.create_fact_statistics(data, text_key="text")
+            fact_matcher.create_fact_statistics(data, text_key="text", save_file_content=True)
 
             self.assertEqual(
                 fact_matcher.entity_relation_occurrence_info_dict,
