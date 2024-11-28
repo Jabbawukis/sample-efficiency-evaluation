@@ -12,9 +12,9 @@ help:
 .PHONY: run-workflow
 run-workflow:
 	pip install .[dev]
+	black tests/
 	pytest tests/
 	black src/
-	black tests/
 	pylint src/
 
 ## install: Install the package locally.

@@ -28,6 +28,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
 alias_extensions_path = args.path_to_alias_extensions if args.path_to_alias_extensions != "" else None
 data_set_name = args.dataset_name if args.dataset_name != "" else None
 
+
 # Create the appropriate FactMatcher instance based on matcher type
 def create_matcher():
     if args.matcher_type == "entity_linker":
@@ -47,6 +48,7 @@ def create_matcher():
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
+
 
 full_dataset = datasets.load_dataset(args.dataset_path, data_set_name, split="train")
 dataset_len = len(full_dataset)
@@ -82,5 +84,5 @@ fact_matcher = create_matcher()
 fact_matcher.create_fact_statistics(dataset_slice, text_key="text", save_file_content=args.save_file_content)
 
 # Save results
-relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_info.json")
+relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_occurrence_info.json")
 utility.save_dict_as_json(fact_matcher.entity_relation_occurrence_info_dict, relation_info_output)

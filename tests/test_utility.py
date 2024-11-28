@@ -195,7 +195,7 @@ class UtilityTest(unittest.TestCase):
                         },
                     },
                 },
-                "output/joined_relation_info.json",
+                "output/joined_relation_occurrence_info.json",
             )
 
     def test_join_relation_info_json_files_good_2(self):
@@ -260,5 +260,5 @@ class UtilityTest(unittest.TestCase):
                         },
                     },
                 },
-                "output/joined_relation_info.json",
+                "output/joined_relation_occurrence_info.json",
             )

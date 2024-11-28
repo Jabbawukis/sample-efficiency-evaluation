@@ -233,6 +233,7 @@ class FactMatcherSimple(FactMatcherBase):
                     self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = len(
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
                     )
+                    break
 
     def _process_file_content(self, file_content: str, save_file_content: bool) -> None:
         """

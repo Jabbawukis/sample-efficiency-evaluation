@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-from typing import Union
+from typing import Union, Optional
 
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -74,14 +74,21 @@ def word_in_sentence(word: str, sentence: str) -> bool:
 
 
 def create_fact_occurrence_histogram(
-    path_to_rel_info_file: str, output_diagram_name: str = "occurrence_statistics"
+    path_to_rel_info_file: str,
+    output_diagram_name: str = "occurrence_statistics",
+    output_path: Optional[str] = None,
 ) -> None:
     """
     Create fact occurrence statistics and plot a histogram.
+
     :param output_diagram_name: Name of the output diagram.
     :param path_to_rel_info_file: Path to relation info file.
+    :param output_path: Path to save the diagram.
     :return:
     """
+    out = output_path
+    if output_path is None:
+        out = os.path.dirname(path_to_rel_info_file)
     relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
     occurrence_buckets = [
         (1, 99),
@@ -102,10 +109,10 @@ def create_fact_occurrence_histogram(
     for relations in relation_info_dict.values():
         for fact in relations.values():
             occurrences = fact["occurrences"]
+            if occurrences == 0:
+                relation_occurrence_info_dict["0"]["total_occurrence"] += 1
+                continue
             for bucket in occurrence_buckets:
-                if occurrences == 0:
-                    relation_occurrence_info_dict["0"]["total_occurrence"] += 1
-                    break
                 if bucket[0] <= occurrences <= bucket[1]:
                     relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total_occurrence"] += 1
                     break
@@ -120,7 +127,7 @@ def create_fact_occurrence_histogram(
     plt.ylabel("Number of Subj/Obj Pairs")
     plt.title("Entity Pair Occurrence Histogram")
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(path_to_rel_info_file), f"{output_diagram_name}.png"))
+    plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
 
 
 def join_relation_info_json_files(
@@ -169,5 +176,5 @@ def join_relation_info_json_files(
         for _, entities in first_file.items():
             for _, fact in entities.items():
                 fact.pop("sentences")
-    save_dict_as_json(first_file, f"{path_to_files}/joined_relation_info.json")
+    save_dict_as_json(first_file, f"{path_to_files}/joined_relation_occurrence_info.json")
     logging.info("Joined relation info files.")

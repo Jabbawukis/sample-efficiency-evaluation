@@ -1,6 +1,6 @@
 # Model Experiments
 
-## [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
+## Fact Matching Dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
 
 ### BEAR-big
 
@@ -9,6 +9,7 @@
 - Model: gpt2
 - repo: [openai-community/gpt2](https://huggingface.co/gpt2)
 - link to probing results: [probing results](/probing_results/BEAR-big/gpt2_off_the_shelve/)
+- trained on: pre-trained model
 
 #### 2. gpt2_from_scratch
 
@@ -25,6 +26,7 @@
 - Model: gpt2
 - repo: [openai-community/gpt2](https://huggingface.co/gpt2)
 - link to probing results: [probing results](/probing_results/BEAR-small/gpt2_off_the_shelve/)
+- trained on: pre-trained model
 
 #### 2. gpt2_from_scratch
 
