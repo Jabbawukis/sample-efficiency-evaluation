@@ -119,7 +119,6 @@ def create_fact_occurrence_histogram(
             for bucket in occurrence_buckets:
                 if bucket[0] <= occurrences <= bucket[1]:
                     relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total_occurrence"] += 1
-                    break
 
     x_labels = relation_occurrence_info_dict.keys()
     occurrences = [relation_occurrence_info_dict[x_label]["total_occurrence"] for x_label in x_labels]

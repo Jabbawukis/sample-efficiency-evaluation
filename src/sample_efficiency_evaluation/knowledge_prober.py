@@ -21,13 +21,17 @@ class KnowledgeProber:
         """
         self.entity_relation_occurrence_info_dict = utility.load_json_dict(path_to_relation_occurrence_info_file)
         self.relation_occurrence_buckets = [
-            (1, 99),
-            (100, 299),
-            (300, 499),
-            (500, 699),
-            (700, 899),
-            (900, 999),
-            (1000, float("inf")),
+            (1, 2),
+            (2, 4),
+            (4, 8),
+            (8, 16),
+            (16, 32),
+            (32, 64),
+            (64, 128),
+            (128, 256),
+            (256, 512),
+            (512, 1024),
+            (1024, float("inf")),
         ]
         self.bear_results = None
 
@@ -124,7 +128,6 @@ class KnowledgeProber:
                         relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
                         if answer_row.correctly_predicted:
                             relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["correct"] += 1
-                        break
         for _, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
                 bucket["accuracy"] = 0
