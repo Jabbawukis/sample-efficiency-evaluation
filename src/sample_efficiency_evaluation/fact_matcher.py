@@ -143,9 +143,9 @@ class FactMatcherSimple(FactMatcherBase):
             {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
             containing more facts.
 
-        - path_to_alias_extensions [Optional[str]]: Path to alias extensions file. This file contains additional aliases
-            for the entities. The format of the file should be a dictionary with the entity id as the key and a list of
-            aliases as the value. The default is None.
+        - path_to_alias_extensions [Optional[str]]: Path to alias extensions json file. This json contains additional
+            aliases for the entities. The format of the json should be a dictionary with the entity id as the key and a
+            list of aliases as the value.
 
         - max_allowed_ngram_length [Optional[int]]: Maximum allowed ngram length to search for entities. The sentences
             will be split into ngrams of length 1 to max_allowed_ngram_length. The default is 10.
