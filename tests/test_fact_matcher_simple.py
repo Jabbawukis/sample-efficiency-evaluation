@@ -9,7 +9,6 @@ from sample_efficiency_evaluation import FactMatcherSimple
 class FactMatcherSimpleTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        os.environ["PYTHONHASHSEED"] = "0"
         self.test_entity_relation_info_dict = {
             "P6": {
                 "Q1519": {
@@ -19,7 +18,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q399": {
                     "subj_label": "Armenia",
@@ -28,7 +27,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Nikol Pashinyan",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q548114": {
                     "subj_label": "Free State of Fiume",
@@ -37,7 +36,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Gabriele D'Annunzio",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q5626824": {
                     "subj_label": "Gülcemal Sultan",
@@ -46,7 +45,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Albania",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q837": {
                     "subj_label": "Nepal",
@@ -55,7 +54,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
             }
         }
@@ -68,7 +67,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -77,7 +76,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
             },
             "P_01": {
@@ -88,7 +87,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 }
             },
         }
@@ -101,7 +100,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Washington, D.C.",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q178903": {
                     "subj_label": "Alexander Hamilton",
@@ -116,7 +115,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
             },
             "P_01": {
@@ -127,7 +126,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "United States of America",
                     "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
                 "Q38": {
                     "subj_label": "Italy",
@@ -136,7 +135,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Italian",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 },
             },
         }
@@ -172,7 +171,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "obj_label": "Africa",
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": dict(),
                 }
             }
         }
@@ -295,13 +294,13 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_id": "Q61",
                             "obj_label": "Washington, D.C.",
                             "obj_aliases": set(),
-                            "occurrences": 5,
+                            "occurrences": 6,
                             "sentences": {
-                                "United States of America blah blah blah Washington, D.C. blah.",
-                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah.",
-                                "United States of America (U.S.A.) blah blah blah Washington, D.C. blah.",
-                                "United of America (U.S.A.) blah blah blah Washington, D.C. blah.",
-                                "Publius blah blah blah the USA based in Washington, D.C. blah.",
+                                "United States of America blah blah blah Washington, D.C. blah.": 1,
+                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah.": 1,
+                                "United States of America (U.S.A.) blah blah blah Washington, D.C. blah.": 2,
+                                "United of America (U.S.A.) blah blah blah Washington, D.C. blah.": 1,
+                                "Publius blah blah blah the USA based in Washington, D.C. blah.": 1,
                             },
                         },
                         "Q178903": {
@@ -318,12 +317,12 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                             "occurrences": 6,
                             "sentences": {
-                                "Alexander Hamilton blah blah blah the United States of America.",
-                                "Publius blah blah blah the USA based in Washington, D.C. blah.",
-                                "Hamilton blah blah blah United States of America.",
-                                "US blah blah blah A. Ham.",
-                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah.",
-                                "RB blah blah blah the USA.",
+                                "Alexander Hamilton blah blah blah the United States of America.": 1,
+                                "Publius blah blah blah the USA based in Washington, D.C. blah.": 1,
+                                "Hamilton blah blah blah United States of America.": 1,
+                                "US blah blah blah A. Ham.": 1,
+                                "United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah.": 1,
+                                "RB blah blah blah the USA.": 1,
                             },
                         },
                     },
@@ -336,9 +335,9 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
                             "occurrences": 3,
                             "sentences": {
-                                "Rainer Herbert Georg Bernhardt blah blah blah the USA blah.",
-                                "Bernhardt blah blah blah United States of America.",
-                                "RB blah blah blah the USA.",
+                                "Rainer Herbert Georg Bernhardt blah blah blah the USA blah.": 1,
+                                "Bernhardt blah blah blah United States of America.": 1,
+                                "RB blah blah blah the USA.": 1,
                             },
                         },
                         "Q38": {
@@ -348,7 +347,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_label": "Italian",
                             "obj_aliases": set(),
                             "occurrences": 1,
-                            "sentences": {"The Italian (IT) blah blah blah team."},
+                            "sentences": {"The Italian (IT) blah blah blah team.": 1},
                         },
                     },
                 },
@@ -397,12 +396,110 @@ class FactMatcherSimpleTest(unittest.TestCase):
                             "obj_aliases": set(),
                             "occurrences": 4,
                             "sentences": {
-                                "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west.",
-                                "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.",
-                                "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park.",
-                                "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces.",
+                                "kilometres (7,580 sq mi) in the provinces of Limpopo and Mpumalanga in northeastern South Africa, and extends 360 kilometres (220 mi) from north to south and 65 kilometres (40 mi) from east to west.": 1,
+                                "For two thousand years Arab merchants plied East Africa’s Indian Ocean shores, from Mogadishu (Somalia) to the mouth of the Limpopo River (Mozambique), arriving with the north easterly Kaskazi, departing on the south easterly Kusi.": 1,
+                                "Phalaborwa, Limpopo is the only town in South Africa that borders the Kruger National Park.": 1,
+                                "The park lies in the north-east of South Africa, in the eastern parts of Limpopo and Mpumalanga provinces.": 1,
                             },
                         }
                     }
+                },
+            )
+
+    def test_create_fact_statistics_good_3(self):
+        with (
+            patch.object(
+                FactMatcherSimple,
+                "extract_entity_information",
+                return_value=self.test_entity_relation_occurrence_info_dict_obj_aliases_extended,
+            ),
+            patch.object(
+                FactMatcherSimple,
+                "_create_mapped_relations",
+                return_value=self.test_relation_mapping_dict,
+            ),
+        ):
+
+            fact_matcher = FactMatcherSimple(bear_data_path=f"{self.test_resources_abs_path}")
+            fact_matcher.max_ngram = 6
+
+            data = [
+                {
+                    "text": "United States of America blah blah blah Washington, D.C. blah."
+                    " United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah."
+                    " United States of America (U.S.A.) blah blah blah Washington, D.C. blah."
+                },
+                {
+                    "text": "United of America (U.S.A.) blah blah blah Washington, D.C. blah."
+                    " Alexander Hamilton blah blah blah the United States of America."
+                },
+                {
+                    "text": "Publius blah blah blah the USA based in Washington, D.C. blah."
+                    " Hamilton blah blah blah United States of America."
+                    " US blah blah blah A. Ham."
+                    " United States of America (U.S.A.) blah blah blah Washington, D.C. blah."
+                },
+                {
+                    "text": "Rainer Herbert Georg Bernhardt blah blah blah the USA blah."
+                    " Bernhardt blah blah blah United States of America."
+                    " RB blah blah blah the USA."
+                    " The Italian (IT) blah blah blah team."
+                },
+                {
+                    "text": "In Austrian schools, French has already been overtaken by Italian as the second mostchildren at home, as it is the common language of the local labour markets.",
+                },
+            ]
+
+            fact_matcher.create_fact_statistics(data, text_key="text", save_file_content=False)
+
+            self.assertEqual(
+                fact_matcher.entity_relation_occurrence_info_dict,
+                {
+                    "P_00": {
+                        "Q30": {
+                            "subj_label": "United States of America",
+                            "subj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                            "obj_id": "Q61",
+                            "obj_label": "Washington, D.C.",
+                            "obj_aliases": set(),
+                            "occurrences": 6,
+                            "sentences": {},
+                        },
+                        "Q178903": {
+                            "subj_label": "Alexander Hamilton",
+                            "subj_aliases": {
+                                "Publius",
+                                "Hamilton",
+                                "Alexander Hamilton, US Treasury secretary",
+                                "A. Ham",
+                                "RB",
+                            },
+                            "obj_id": "Q30",
+                            "obj_label": "United States of America",
+                            "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                            "occurrences": 6,
+                            "sentences": {},
+                        },
+                    },
+                    "P_01": {
+                        "Q2127993": {
+                            "subj_label": "Rainer Bernhardt",
+                            "subj_aliases": {"Rainer Herbert Georg Bernhardt", "Bernhardt", "RB"},
+                            "obj_id": "Q30",
+                            "obj_label": "United States of America",
+                            "obj_aliases": {"the United States of America", "America", "U.S.A.", "USA", "U.S.", "US"},
+                            "occurrences": 3,
+                            "sentences": {},
+                        },
+                        "Q38": {
+                            "subj_label": "Italy",
+                            "subj_aliases": {"IT", "ITA", "Italia", "Italian Republic"},
+                            "obj_id": "Q652",
+                            "obj_label": "Italian",
+                            "obj_aliases": set(),
+                            "occurrences": 1,
+                            "sentences": {},
+                        },
+                    },
                 },
             )

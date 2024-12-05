@@ -1,7 +1,7 @@
 import argparse
 import os
 from utility import utility
-from sample_efficiency_evaluation.fact_matcher import FactMatcherEntityLinking, FactMatcherSimple
+from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
 import datasets
 
 # Argument parser
@@ -12,18 +12,12 @@ parser.add_argument("--bear_data_path", type=str, required=True)
 parser.add_argument("--bear_facts_path", type=str, required=True)
 parser.add_argument("--path_to_alias_extensions", type=str, required=True)
 parser.add_argument("--rel_info_output_dir", type=str, required=True)
-parser.add_argument("--matcher_type", type=str, choices=["simple", "hybrid", "entity_linker"], required=True)
-parser.add_argument("--entity_linker_model", type=str, required=True)
-parser.add_argument("--gpu_id", type=int, required=True)
+parser.add_argument("--matcher_type", type=str, required=True)
 parser.add_argument("--total_slices", type=int, required=True)
 parser.add_argument("--slice_num", type=int, required=True)
 parser.add_argument("--save_file_content", type=lambda x: x.lower() == "true", required=True)
-parser.add_argument("--require_gpu", type=lambda x: x.lower() == "true", required=True)
 
 args = parser.parse_args()
-
-# Set GPU environment
-os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
 
 alias_extensions_path = args.path_to_alias_extensions if args.path_to_alias_extensions != "" else None
 data_set_name = args.dataset_name if args.dataset_name != "" else None
@@ -31,16 +25,7 @@ data_set_name = args.dataset_name if args.dataset_name != "" else None
 
 # Create the appropriate FactMatcher instance based on matcher type
 def create_matcher():
-    if args.matcher_type == "entity_linker":
-        return FactMatcherEntityLinking(
-            bear_data_path=args.bear_data_path,
-            bear_facts_path=args.bear_facts_path,
-            require_gpu=args.require_gpu,
-            entity_linker_model=args.entity_linker_model,
-            path_to_alias_extensions=alias_extensions_path,
-            gpu_id=args.gpu_id,
-        )
-    elif args.matcher_type == "simple":
+    if args.matcher_type == "simple":
         return FactMatcherSimple(
             bear_data_path=args.bear_data_path,
             bear_facts_path=args.bear_facts_path,
@@ -70,10 +55,7 @@ print(
     f"\nPath to alias extensions: {alias_extensions_path}"
     f"\nMatcher type: {args.matcher_type}"
     f"\nOutput directory: {args.rel_info_output_dir}"
-    f"\nEntity linker model: {args.entity_linker_model}"
-    f"\nGPU ID: {args.gpu_id}"
     f"\nSave file content: {args.save_file_content}"
-    f"\nRequire GPU: {args.require_gpu}"
     "\n"
 )
 

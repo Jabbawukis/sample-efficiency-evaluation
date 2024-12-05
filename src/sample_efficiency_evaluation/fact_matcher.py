@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Union, Optional
 from more_itertools import windowed
 
-import spacy
 from datasets import DatasetDict, Dataset, IterableDatasetDict, IterableDataset
 from tqdm import tqdm
 from spacy.lang.en import English
@@ -94,7 +93,7 @@ class FactMatcherBase(ABC):
                     "obj_label": fact_dict["obj_label"],
                     "obj_aliases": set(),
                     "occurrences": 0,
-                    "sentences": set(),
+                    "sentences": {},
                 }
                 if path_to_alias_extensions:
                     if fact_dict["sub_id"] in alias_extensions_dict:
@@ -167,6 +166,8 @@ class FactMatcherSimple(FactMatcherBase):
 
         self.relation_mapping_dict = self._create_mapped_relations()
 
+        self.match_tracker: set[tuple] = set()
+
     def _create_mapped_relations(self) -> dict:
         mapped_relations = {}
         for relation_id, relation_info in self.entity_relation_occurrence_info_dict.items():
@@ -213,35 +214,39 @@ class FactMatcherSimple(FactMatcherBase):
             obj_aliases = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
             if word_in_sentence(obj_label, sentence):
-                if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
+                if (relation_id, subj_id) in self.match_tracker:
                     continue
+                if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
+                else:
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] = 1
 
-                self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].update([sentence])
-
-                self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = len(
-                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
-                )
+                count = sum(self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].values())
+                self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = count
+                self.match_tracker.add((relation_id, subj_id))
+                continue
 
             for alias in obj_aliases:
                 if word_in_sentence(alias, sentence):
-
+                    if (relation_id, subj_id) in self.match_tracker:
+                        break
                     if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
-                        continue
+                        self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
+                    else:
+                        self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] = 1
 
-                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].update([sentence])
-
-                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = len(
-                        self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]
-                    )
+                    count = sum(self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"].values())
+                    self.entity_relation_occurrence_info_dict[relation_id][subj_id]["occurrences"] = count
+                    self.match_tracker.add((relation_id, subj_id))
                     break
 
-    def _process_file_content(self, file_content: str, save_file_content: bool) -> None:
+    def _process_file_content(self, file_content: str) -> None:
         """
         Process file content.
 
         This method will split the document into sentences and search for entities in the sentences.
-        The occurrences will be updated in the relation dictionary.
-        :param file_content: File content to process.
+        The occurrences will be updated in the relation dictionary.clea
+        clear
         :return:
         """
         content = utility.clean_string(file_content)
@@ -260,11 +265,7 @@ class FactMatcherSimple(FactMatcherBase):
                     if joined_ngram not in self.relation_mapping_dict:
                         continue
                     self._add_occurrences(joined_ngram, sentence)
-        if not save_file_content:
-            for _, entities in self.entity_relation_occurrence_info_dict.items():
-                for _, fact in entities.items():
-                    fact["sentences"] = set()
-        logging.info("Processing file content done.")
+            self.match_tracker = set()
 
     def create_fact_statistics(
         self,
@@ -285,100 +286,8 @@ class FactMatcherSimple(FactMatcherBase):
         :return:
         """
         for file_content in tqdm(file_contents, desc="Processing dataset"):
-            self._process_file_content(file_content[text_key], save_file_content)
-
-
-class FactMatcherEntityLinking(FactMatcherBase):
-    """
-    FactMatcherEntityLinking is a class that uses the entity linker model to search for entities in the dataset.
-
-    kwargs:
-    - bear_data_path [str]: Path to bear data directory.
-        This is the main directory where all the bear data is stored. It should contain the relation_info.json file
-        and the BEAR facts directory.
-
-    - bear_relation_info_path [Optional[str]]: Path to the BEAR relation info file.
-        This file contains the relation information for the BEAR data. If not provided, it will be set to
-        {bear_data_path}/relation_info.json.
-
-    - bear_facts_path [Optional[str]]: Path to the BEAR facts directory.
-        This is the directory where all the BEAR fact files (.jsonl) are stored. If not provided, it will be set to
-        {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
-        containing more facts.
-
-    - path_to_alias_extensions [Optional[str]]: Path to alias extensions file. This file contains additional aliases
-        for the entities. The format of the file should be a dictionary with the entity id as the key and a list of
-        aliases as the value. The default is None.
-
-    - require_gpu [Optional[bool]]: If True, it will require a GPU for the spacy entity linker.
-        The default is False.
-
-    - gpu_id [Optional[int]]: GPU ID to use for the spacy entity linker.
-        The default is 0.
-
-    - entity_linker_model [str]: Entity linker model to use.
-        The default is "en_core_web_md", which is a medium-sized model optimized for cpu.
-        Refer to https://spacy.io/models/en for more information.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        if kwargs.get("require_gpu", False):
-            spacy.require_gpu(kwargs.get("gpu_id", 0))
-        else:
-            spacy.prefer_gpu(kwargs.get("gpu_id", 0))
-
-        self.entity_linker = spacy.load(kwargs.get("entity_linker_model", "en_core_web_md"))
-
-        self.entity_linker.add_pipe("entityLinker", last=True)
-
-    def _get_entity_ids(self, content: str) -> set:
-        """
-        Get entity IDs from content.
-
-        :param content: Content to extract entity IDs from.
-        :return: Entity IDs
-        """
-        return self.entity_linker(content)._.linkedEntities
-
-    def _add_occurrences(self, entity_ids: list[str], sentence: str, save_file_content: bool) -> None:
-        for entity_id in entity_ids:
-            for _, relations in self.entity_relation_occurrence_info_dict.items():
-                try:
-                    if relations[entity_id]["obj_id"] in entity_ids:
-                        relations[entity_id]["occurrences"] += 1
-                        if save_file_content:
-                            relations[entity_id]["sentences"].update([sentence])
-                except KeyError:
-                    continue
-
-    def create_fact_statistics(
-        self,
-        file_contents: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-        text_key: str = "text",
-        save_file_content: bool = False,
-    ) -> None:
-        """
-        Create fact statistics
-
-        This method will iterate over documents and extract sentences. The entity linker model is used to search for
-        entities in the sentence. The occurrences will be updated in the relation dictionary.
-        :param text_key: Key to extract text from file content.
-        Since the dataset is a list of dictionaries, we need to
-        specify the key to extract the file content.
-        That would be the case if we pass a huggingface dataset.
-        :param file_contents: List of dictionaries containing the file contents
-        :param save_file_content: If True, the content of the file where the entity is found will be saved
-        in the relation dictionary.
-        :return:
-        """
-        for file_content in tqdm(file_contents, desc="Processing dataset"):
-            content = utility.clean_string(file_content[text_key])
-            split_doc = self.nlp(content)
-            sentences = [sent.text for sent in split_doc.sents]
-            for sentence in sentences:
-                all_linked_entities = self._get_entity_ids(sentence)
-                entity_ids = [f"Q{str(linked_entity.get_id())}" for linked_entity in all_linked_entities]
-                self._add_occurrences(entity_ids, sentence, save_file_content)
-        logging.info("Processing file content done.")
+            self._process_file_content(file_content[text_key])
+        if not save_file_content:
+            for _, entities in self.entity_relation_occurrence_info_dict.items():
+                for _, fact in entities.items():
+                    fact["sentences"] = {}

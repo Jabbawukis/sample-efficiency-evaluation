@@ -11,11 +11,7 @@ CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #PATH_TO_ALIAS_EXTENSIONS="BEAR/alias_extensions.json"  # Optional (Pass as string)
 #REL_INFO_OUTPUT_DIR="output"
 #MATCHER_TYPE="simple"
-#ENTITY_LINKER_MODEL="en_core_web_trf"
-#SAVE_FILE_CONTENT="True"                       # Pass as string (Should always be True)
-#REQUIRE_GPU="False"                            # Pass as string
-#GPU_ID=0                                       # Pass as int
-#REMOVE_SENTENCES_IN_JOINED_OUTPUT="False"      # Pass as string
+#SAVE_FILE_CONTENT_IN_SLICE="True"                       # Pass as string (Should always be True)
 
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
@@ -36,7 +32,7 @@ python3 -c "import datasets; datasets.load_dataset('${DATASET_PATH}', '${DATASET
 for (( i=0; i<NUM_SLICES; i++ )); do
 
     # Run the slice processor in the background with the specified GPU
-    CUDA_VISIBLE_DEVICES=$GPU_ID python3 ${CUR_DIR}/slice_processor.py \
+    python3 ${CUR_DIR}/slice_processor.py \
         --dataset_path "$DATASET_PATH" \
         --dataset_name "$DATASET_NAME" \
         --bear_data_path "$BEAR_DATA_PATH" \
@@ -44,12 +40,9 @@ for (( i=0; i<NUM_SLICES; i++ )); do
         --path_to_alias_extensions "$PATH_TO_ALIAS_EXTENSIONS" \
         --rel_info_output_dir "$REL_INFO_OUTPUT_DIR" \
         --matcher_type "$MATCHER_TYPE" \
-        --entity_linker_model "$ENTITY_LINKER_MODEL" \
-        --gpu_id "$GPU_ID" \
         --total_slices $NUM_SLICES \
         --slice_num $((i)) \
-        --save_file_content "$SAVE_FILE_CONTENT" \
-        --require_gpu "$REQUIRE_GPU" &
+        --save_file_content "$SAVE_FILE_CONTENT_IN_SLICE" &
 
 done
 
@@ -58,7 +51,7 @@ wait
 echo "All slices processed."
 
 # Merge the slices
-python3 -c "from utility.utility import join_relation_info_json_files; join_relation_info_json_files('${REL_INFO_OUTPUT_DIR}', remove_sentences='${REMOVE_SENTENCES_IN_JOINED_OUTPUT}' , correct_possible_duplicates='${SAVE_FILE_CONTENT}')"
+python3 -c "from utility.utility import join_relation_info_json_files; join_relation_info_json_files('${REL_INFO_OUTPUT_DIR}')"
 
 # Create Diagram
 python3 -c "from utility.utility import create_fact_occurrence_histogram; create_fact_occurrence_histogram('${REL_INFO_OUTPUT_DIR}/joined_relation_occurrence_info.json')"

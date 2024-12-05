@@ -16,7 +16,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q1059948",
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "occurrences": 1,
-                    "sentences": ["Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan."],
+                    "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan.": 1},
                     "subj_aliases": ["Abudhabi", "Abū Dhabi"],
                     "subj_label": "Abu Dhabi",
                 },
@@ -25,7 +25,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q7035479",
                     "obj_label": "Nikol Pashinyan",
                     "occurrences": 1,
-                    "sentences": ["Armenia blah blah blah Nikol Pashinyan"],
+                    "sentences": {"Armenia blah blah blah Nikol Pashinyan": 1},
                     "subj_aliases": ["🇦🇲", "AM", "Republic of Armenia", "ARM"],
                     "subj_label": "Armenia",
                 },
@@ -36,7 +36,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q193236",
                     "obj_label": "Gabriele D'Annunzio",
                     "occurrences": 0,
-                    "sentences": [],
+                    "sentences": {},
                     "subj_aliases": [],
                     "subj_label": "Free State of Fiume",
                 },
@@ -45,7 +45,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q222",
                     "obj_label": "Albania",
                     "occurrences": 0,
-                    "sentences": [],
+                    "sentences": {},
                     "subj_aliases": [],
                     "subj_label": "Gülcemal Sultan",
                 },
@@ -54,7 +54,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q3195923",
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "occurrences": 1,
-                    "sentences": ["Nepal NPL is cool Khadga Prasad Sharma Oli"],
+                    "sentences": {"Nepal NPL is cool Khadga Prasad Sharma Oli": 1},
                     "subj_aliases": ["Federal Democratic Republic of Nepal", "NEP", "NP", "NPL", "🇳🇵"],
                     "subj_label": "Nepal",
                 },
@@ -67,7 +67,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q1059948",
                     "obj_label": "Khalifa bin Zayed Al Nahyan",
                     "occurrences": 1,
-                    "sentences": ["Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan."],
+                    "sentences": {"Abu Dhabi blah blah blah Khalifa bin Zayed Al " "Nahyan.": 1},
                     "subj_aliases": ["Abudhabi", "Abū Dhabi"],
                     "subj_label": "Abu Dhabi",
                 },
@@ -76,7 +76,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q7035479",
                     "obj_label": "Nikol Pashinyan",
                     "occurrences": 1,
-                    "sentences": ["Armenia blah blah blah Nikol Pashinyan blub"],
+                    "sentences": {"Armenia blah blah blah Nikol Pashinyan blub": 1},
                     "subj_aliases": ["🇦🇲", "AM", "Republic of Armenia", "ARM"],
                     "subj_label": "Armenia",
                 },
@@ -87,7 +87,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q193236",
                     "obj_label": "Gabriele D'Annunzio",
                     "occurrences": 0,
-                    "sentences": [],
+                    "sentences": {},
                     "subj_aliases": [],
                     "subj_label": "Free State of Fiume",
                 },
@@ -96,7 +96,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q222",
                     "obj_label": "Albania",
                     "occurrences": 2,
-                    "sentences": ["sentence 1", "sentence 2"],
+                    "sentences": {"sentence 1": 1, "sentence 2": 1},
                     "subj_aliases": [],
                     "subj_label": "Gülcemal Sultan",
                 },
@@ -105,7 +105,7 @@ class UtilityTest(unittest.TestCase):
                     "obj_id": "Q3195923",
                     "obj_label": "Khadga Prasad Sharma Oli",
                     "occurrences": 1,
-                    "sentences": ["Nepal NPL is cool Khadga Prasad Sharma Oli"],
+                    "sentences": {"Nepal NPL is cool Khadga Prasad Sharma Oli": 1},
                     "subj_aliases": ["Federal Democratic Republic of Nepal", "NEP", "NP", "NPL", "🇳🇵"],
                     "subj_label": "Nepal",
                 },
@@ -147,7 +147,7 @@ class UtilityTest(unittest.TestCase):
                 self.entity_relation_result_info_dict_1,
                 self.entity_relation_result_info_dict_2,
             ]
-            utility.join_relation_info_json_files("output", correct_possible_duplicates=True, remove_sentences=True)
+            utility.join_relation_info_json_files("output")
             save_dict_as_json.assert_called_once_with(
                 {
                     "P6": {
@@ -155,7 +155,7 @@ class UtilityTest(unittest.TestCase):
                             "obj_aliases": [],
                             "obj_id": "Q1059948",
                             "obj_label": "Khalifa bin Zayed Al Nahyan",
-                            "occurrences": 1,
+                            "occurrences": 2,
                             "subj_aliases": ["Abudhabi", "Abū Dhabi"],
                             "subj_label": "Abu Dhabi",
                         },
@@ -189,72 +189,7 @@ class UtilityTest(unittest.TestCase):
                             "obj_aliases": [],
                             "obj_id": "Q3195923",
                             "obj_label": "Khadga Prasad Sharma Oli",
-                            "occurrences": 1,
-                            "subj_aliases": ["Federal Democratic Republic of Nepal", "NEP", "NP", "NPL", "🇳🇵"],
-                            "subj_label": "Nepal",
-                        },
-                    },
-                },
-                "output/joined_relation_occurrence_info.json",
-            )
-
-    def test_join_relation_info_json_files_good_2(self):
-        with (
-            patch.object(utility, "load_json_dict") as load_json_dict,
-            patch.object(utility, "save_dict_as_json") as save_dict_as_json,
-            patch.object(
-                os,
-                "listdir",
-                return_value=["0_relation_info.json", "1_relation_info.json"],
-            ),
-        ):
-            load_json_dict.side_effect = [
-                self.entity_relation_result_info_dict_1,
-                self.entity_relation_result_info_dict_2,
-            ]
-            utility.join_relation_info_json_files("output", correct_possible_duplicates=True, remove_sentences="True")
-            save_dict_as_json.assert_called_once_with(
-                {
-                    "P6": {
-                        "Q1519": {
-                            "obj_aliases": [],
-                            "obj_id": "Q1059948",
-                            "obj_label": "Khalifa bin Zayed Al Nahyan",
-                            "occurrences": 1,
-                            "subj_aliases": ["Abudhabi", "Abū Dhabi"],
-                            "subj_label": "Abu Dhabi",
-                        },
-                        "Q399": {
-                            "obj_aliases": [],
-                            "obj_id": "Q7035479",
-                            "obj_label": "Nikol Pashinyan",
                             "occurrences": 2,
-                            "subj_aliases": ["🇦🇲", "AM", "Republic of Armenia", "ARM"],
-                            "subj_label": "Armenia",
-                        },
-                    },
-                    "P2": {
-                        "Q548114": {
-                            "obj_aliases": [],
-                            "obj_id": "Q193236",
-                            "obj_label": "Gabriele D'Annunzio",
-                            "occurrences": 0,
-                            "subj_aliases": [],
-                            "subj_label": "Free State of Fiume",
-                        },
-                        "Q5626824": {
-                            "obj_aliases": [],
-                            "obj_id": "Q222",
-                            "obj_label": "Albania",
-                            "occurrences": 2,
-                            "subj_aliases": [],
-                            "subj_label": "Gülcemal Sultan",
-                        },
-                        "Q837": {
-                            "obj_aliases": [],
-                            "obj_id": "Q3195923",
-                            "obj_label": "Khadga Prasad Sharma Oli",
-                            "occurrences": 1,
                             "subj_aliases": ["Federal Democratic Republic of Nepal", "NEP", "NP", "NPL", "🇳🇵"],
                             "subj_label": "Nepal",
                         },

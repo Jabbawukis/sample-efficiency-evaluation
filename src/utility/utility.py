@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-from typing import Union, Optional
+from typing import Optional
 
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -91,13 +91,17 @@ def create_fact_occurrence_histogram(
         out = os.path.dirname(path_to_rel_info_file)
     relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
     occurrence_buckets = [
-        (1, 99),
-        (100, 299),
-        (300, 499),
-        (500, 699),
-        (700, 899),
-        (900, 999),
-        (1000, float("inf")),
+        (1, 2),
+        (2, 4),
+        (4, 8),
+        (8, 16),
+        (16, 32),
+        (32, 64),
+        (64, 128),
+        (128, 256),
+        (256, 512),
+        (512, 1024),
+        (1024, float("inf")),
     ]
     relation_occurrence_info_dict = {}
     for occurrence in occurrence_buckets:
@@ -130,24 +134,13 @@ def create_fact_occurrence_histogram(
     plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
 
 
-def join_relation_info_json_files(
-    path_to_files: str,
-    correct_possible_duplicates: Union[str, bool] = False,
-    remove_sentences: Union[str, bool] = False,
-) -> None:
+def join_relation_info_json_files(path_to_files: str) -> None:
     """
     Join relation info files
     :param path_to_files: Path to relation info files.
     This is useful when final-joined json is too large to store in memory.
-    :param correct_possible_duplicates: Correct possible duplicates in the relation info files.
-     Requires the sentences to be present in the relation info files.
-    :param remove_sentences: Remove sentences from the joined relation info file.
     :return:
     """
-    if isinstance(remove_sentences, str):
-        remove_sentences = remove_sentences.lower() == "true"
-    if isinstance(correct_possible_duplicates, str):
-        correct_possible_duplicates = correct_possible_duplicates.lower() == "true"
     files: list = os.listdir(path_to_files)
     files.sort()
     first_file = load_json_dict(f"{path_to_files}/{files[0]}")
@@ -156,25 +149,8 @@ def join_relation_info_json_files(
             for relation_id, entities in load_json_dict(f"{path_to_files}/{file}").items():
                 for entity_id, fact in entities.items():
                     first_file[relation_id][entity_id]["occurrences"] += fact["occurrences"]
-                    sentences = set(first_file[relation_id][entity_id]["sentences"] + fact["sentences"])
-                    first_file[relation_id][entity_id]["sentences"] = list(sentences)
-                    if (
-                        0
-                        < len(first_file[relation_id][entity_id]["sentences"])
-                        < first_file[relation_id][entity_id]["occurrences"]
-                    ) and correct_possible_duplicates:
-                        first_file[relation_id][entity_id]["occurrences"] = len(
-                            first_file[relation_id][entity_id]["sentences"]
-                        )
-                        logging.warning(
-                            "Mismatch in occurrences and sentences for %s (%s), may contain duplicate occurrences. Correcting occurrences set to (%s)!",
-                            entity_id,
-                            relation_id,
-                            correct_possible_duplicates,
-                        )
-    if remove_sentences:
-        for _, entities in first_file.items():
-            for _, fact in entities.items():
-                fact.pop("sentences")
+    for _, entities in first_file.items():
+        for _, fact in entities.items():
+            fact.pop("sentences")
     save_dict_as_json(first_file, f"{path_to_files}/joined_relation_occurrence_info.json")
     logging.info("Joined relation info files.")
