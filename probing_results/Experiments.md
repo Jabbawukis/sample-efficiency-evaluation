@@ -3,6 +3,7 @@
 ## Fact Matching Dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
 
 ### BEAR-big
+- fact matching results: [fact_matching_results](/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en)
 
 #### 1. gpt2_off_the_shelve
 
@@ -20,6 +21,7 @@
 - training script: [train.py](../model_training_setups/GPT2/train.py)
 
 ### BEAR(-small)
+- fact matching results: [fact_matching_results](/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en)
 
 #### 1. gpt2_off_the_shelve
 
