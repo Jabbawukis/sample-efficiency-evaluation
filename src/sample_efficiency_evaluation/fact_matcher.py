@@ -27,7 +27,8 @@ class FactMatcherBase(ABC):
         self.entity_relation_occurrence_info_dict: dict = self.extract_entity_information(
             bear_facts_path=kwargs.get("bear_facts_path", f"{bear_data_path}/BEAR"),
             bear_relation_info_path=kwargs.get("bear_relation_info_path", f"{bear_data_path}/relation_info.json"),
-            path_to_alias_extensions=kwargs.get("path_to_alias_extensions", None),
+            path_to_all_entities=kwargs.get("path_to_all_entities", None),
+            exclude_aliases=kwargs.get("exclude_aliases", False),
         )
 
         self.nlp = English()
@@ -62,21 +63,34 @@ class FactMatcherBase(ABC):
 
     @staticmethod
     def extract_entity_information(
-        bear_facts_path: str, bear_relation_info_path: str, path_to_alias_extensions: Optional[str] = None
+        bear_facts_path: str,
+        bear_relation_info_path: str,
+        path_to_all_entities: Optional[str] = None,
+        exclude_aliases: bool = False,
     ) -> dict:
         """
         Extract entity information from bear data.
+
+        First, the method will load the relation info dictionary.
+        Then, it will iterate over the relation info dictionary and load the facts for each relation.
+        The entity information will be extracted and stored in a dictionary.
+        If the path to all entities is provided, the method will load the additional aliases for the entities
+         (for both subject and object).
+        Lastly, some more aliases are added to the object aliases by checking if the object id is a subject in another
+        relation (in the BEAR relation files e.g. "P6.jsonl", subjects have aliases provided).
+        This ensures that each entity has all the aliases from the BEAR data.
         :param bear_facts_path: Path to bear facts directory.
         :param bear_relation_info_path: Path to the BEAR relation info file.
-        :param path_to_alias_extensions: Path to alias extensions file. This file contains additional aliases for the
-        entities.
+        :param path_to_all_entities: Path to all entities file.
+        This file contains additional aliases for the entities.
+        :param exclude_aliases: If True, the aliases will not be included in the entity information.
         :return: Relation dictionary
         """
         relation_dict: dict = {}
         bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
-        alias_extensions_dict: dict = {}
-        if path_to_alias_extensions:
-            alias_extensions_dict = load_json_dict(path_to_alias_extensions)
+        all_entities_dict: dict = {}
+        if path_to_all_entities:
+            all_entities_dict = load_json_dict(path_to_all_entities)
         for relation_key, _ in bear_relation_info_dict.items():
             try:
                 fact_list: list[dict] = load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
@@ -88,29 +102,30 @@ class FactMatcherBase(ABC):
                 logging.info("Extracting entity information for %s", relation_key)
                 relation_dict[relation_key][fact_dict["sub_id"]] = {
                     "subj_label": fact_dict["sub_label"],
-                    "subj_aliases": set(fact_dict["sub_aliases"]),
+                    "subj_aliases": set([] if exclude_aliases else fact_dict["sub_aliases"]),
                     "obj_id": fact_dict["obj_id"],
                     "obj_label": fact_dict["obj_label"],
                     "obj_aliases": set(),
                     "occurrences": 0,
                     "sentences": {},
                 }
-                if path_to_alias_extensions:
-                    if fact_dict["sub_id"] in alias_extensions_dict:
+                if path_to_all_entities and not exclude_aliases:
+                    if fact_dict["sub_id"] in all_entities_dict:
                         relation_dict[relation_key][fact_dict["sub_id"]]["subj_aliases"].update(
-                            alias_extensions_dict[fact_dict["sub_id"]]
+                            all_entities_dict[fact_dict["sub_id"]]["aliases"]
                         )
-                    if fact_dict["obj_id"] in alias_extensions_dict:
+                    if fact_dict["obj_id"] in all_entities_dict:
                         relation_dict[relation_key][fact_dict["sub_id"]]["obj_aliases"].update(
-                            alias_extensions_dict[fact_dict["obj_id"]]
+                            all_entities_dict[fact_dict["obj_id"]]["aliases"]
                         )
-        for _, relations in relation_dict.items():
-            for _, fact in relations.items():
-                for _, relations_ in relation_dict.items():
-                    try:
-                        fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
-                    except KeyError:
-                        continue
+        if not exclude_aliases:
+            for _, relations in relation_dict.items():
+                for _, fact in relations.items():
+                    for _, relations_ in relation_dict.items():
+                        try:
+                            fact["obj_aliases"].update(relations_[fact["obj_id"]]["subj_aliases"])
+                        except KeyError:
+                            continue
         return relation_dict
 
     @abstractmethod
@@ -143,9 +158,11 @@ class FactMatcherSimple(FactMatcherBase):
             {bear_data_path}/BEAR. Note that the dataset provides a BEAR and a BEAR-big directory, with the latter
             containing more facts.
 
-        - path_to_alias_extensions [Optional[str]]: Path to alias extensions json file. This json contains additional
-            aliases for the entities. The format of the json should be a dictionary with the entity id as the key and a
-            list of aliases as the value.
+        - path_to_all_entities [Optional[str]]: Path to all entities extensions json file. This json contains additional
+            aliases for the entities. If not provided, it will be set to None (should be "all_entities.json").
+
+        - exclude_aliases [Optional[bool]]: If True, the aliases will not be included in the entity information. The
+            default is False.
 
         - max_allowed_ngram_length [Optional[int]]: Maximum allowed ngram length to search for entities. The sentences
             will be split into ngrams of length 1 to max_allowed_ngram_length. The default is 10.

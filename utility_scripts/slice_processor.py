@@ -10,7 +10,8 @@ parser.add_argument("--dataset_path", type=str, required=True)
 parser.add_argument("--dataset_name", type=str, default="")
 parser.add_argument("--bear_data_path", type=str, required=True)
 parser.add_argument("--bear_facts_path", type=str, required=True)
-parser.add_argument("--path_to_alias_extensions", type=str, required=True)
+parser.add_argument("--path_to_all_entities", type=str, required=True)
+parser.add_argument("--exclude_aliases", type=lambda x: x.lower() == "true", required=True)
 parser.add_argument("--rel_info_output_dir", type=str, required=True)
 parser.add_argument("--matcher_type", type=str, required=True)
 parser.add_argument("--total_slices", type=int, required=True)
@@ -19,7 +20,7 @@ parser.add_argument("--save_file_content", type=lambda x: x.lower() == "true", r
 
 args = parser.parse_args()
 
-alias_extensions_path = args.path_to_alias_extensions if args.path_to_alias_extensions != "" else None
+path_to_all_entities = args.path_to_all_entities if args.path_to_all_entities != "" else None
 data_set_name = args.dataset_name if args.dataset_name != "" else None
 
 
@@ -29,7 +30,8 @@ def create_matcher():
         return FactMatcherSimple(
             bear_data_path=args.bear_data_path,
             bear_facts_path=args.bear_facts_path,
-            path_to_alias_extensions=alias_extensions_path,
+            path_to_all_entities=path_to_all_entities,
+            exclude_aliases=args.exclude_aliases,
         )
     else:
         raise ValueError(f"Unknown matcher type: {args.matcher_type}")
@@ -52,7 +54,8 @@ print(
     f"\nSlice number: {args.slice_num + 1}"
     f"\nBear data path: {args.bear_data_path}"
     f"\nBear facts path: {args.bear_facts_path}"
-    f"\nPath to alias extensions: {alias_extensions_path}"
+    f"\nPath to all entities file: {path_to_all_entities}"
+    f"\nExclude aliases: {args.exclude_aliases}"
     f"\nMatcher type: {args.matcher_type}"
     f"\nOutput directory: {args.rel_info_output_dir}"
     f"\nSave file content: {args.save_file_content}"

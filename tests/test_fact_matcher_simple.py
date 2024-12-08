@@ -192,7 +192,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             self.assertEqual(fact_matcher.entity_relation_occurrence_info_dict, self.test_entity_relation_info_dict)
             mock_error.assert_called_once()
 
-    def test_extract_entity_information_good_alias_extension_1(self):
+    def test_extract_entity_information_good_alias_extension(self):
         test_entity_relation_info_dict_alias_extended = self.test_entity_relation_info_dict.copy()
         test_entity_relation_info_dict_alias_extended["P6"]["Q5626824"]["subj_aliases"].update(["G. Sultan", "Sultan"])
         test_entity_relation_info_dict_alias_extended["P6"]["Q548114"]["obj_aliases"].update(
@@ -202,7 +202,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
             fact_matcher = FactMatcherSimple(
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
-                path_to_alias_extensions=f"{self.test_resources_abs_path}/aliases_extension_test.json",
+                path_to_all_entities=f"{self.test_resources_abs_path}/all_entities.json",
             )
 
             self.assertEqual(
@@ -220,6 +220,53 @@ class FactMatcherSimpleTest(unittest.TestCase):
             self.assertEqual(
                 fact_matcher.entity_relation_occurrence_info_dict,
                 self.test_entity_relation_info_dict_filled_obj_aliases,
+            )
+            mock_error.assert_not_called()
+
+    def test_extract_entity_information_good_exclude_aliases(self):
+        test_entity_relation_info_dict_excluded_aliases = {
+            "P_00": {
+                "Q30": {
+                    "subj_label": "United States of America",
+                    "subj_aliases": set(),
+                    "obj_id": "Q61",
+                    "obj_label": "Washington, D.C.",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": dict(),
+                },
+                "Q178903": {
+                    "subj_label": "Alexander Hamilton",
+                    "subj_aliases": set(),
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": dict(),
+                },
+            },
+            "P_01": {
+                "Q2127993": {
+                    "subj_label": "Rainer Bernhardt",
+                    "subj_aliases": set(),
+                    "obj_id": "Q30",
+                    "obj_label": "United States of America",
+                    "obj_aliases": set(),
+                    "occurrences": 0,
+                    "sentences": dict(),
+                }
+            },
+        }
+        with patch.object(logging, "error") as mock_error:
+            fact_matcher = FactMatcherSimple(
+                bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
+                bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
+                exclude_aliases=True,
+            )
+
+            self.assertEqual(
+                fact_matcher.entity_relation_occurrence_info_dict,
+                test_entity_relation_info_dict_excluded_aliases,
             )
             mock_error.assert_not_called()
 

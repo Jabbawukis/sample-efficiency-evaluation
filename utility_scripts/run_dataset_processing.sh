@@ -8,7 +8,8 @@ CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #DATASET_NAME=""                                # Optional
 #BEAR_DATA_PATH="BEAR"
 #BEAR_FACTS_PATH="BEAR/BEAR-big"
-#PATH_TO_ALIAS_EXTENSIONS="BEAR/alias_extensions.json"  # Optional (Pass as string)
+#PATH_TO_ALL_ENTITIES="BEAR/all_entities.json"  # Optional (Pass as string)
+#EXCLUDE_ALIASES="False"                         # Optional (Pass as string)
 #REL_INFO_OUTPUT_DIR="output"
 #MATCHER_TYPE="simple"
 #SAVE_FILE_CONTENT_IN_SLICE="True"                       # Pass as string (Should always be True)
@@ -37,7 +38,8 @@ for (( i=0; i<NUM_SLICES; i++ )); do
         --dataset_name "$DATASET_NAME" \
         --bear_data_path "$BEAR_DATA_PATH" \
         --bear_facts_path "$BEAR_FACTS_PATH" \
-        --path_to_alias_extensions "$PATH_TO_ALIAS_EXTENSIONS" \
+        --path_to_all_entities "$PATH_TO_ALL_ENTITIES" \
+        --exclude_aliases "$EXCLUDE_ALIASES" \
         --rel_info_output_dir "$REL_INFO_OUTPUT_DIR" \
         --matcher_type "$MATCHER_TYPE" \
         --total_slices $NUM_SLICES \

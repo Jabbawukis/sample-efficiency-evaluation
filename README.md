@@ -20,10 +20,9 @@ This project aims to measure the sample efficiency of different language model a
     cd sample_efficiency_evaluation
     ```
 
-2. Install the required dependencies and model knowledge base for entity linking:
+2. Install the required dependencies:
     ```bash
     make install
-    make download-knowledge-base
     ```
 
 3. Download the BEAR dataset from the following link: [BEAR Dataset](https://github.com/lm-pub-quiz/BEAR)
