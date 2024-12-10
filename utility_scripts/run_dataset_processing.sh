@@ -17,6 +17,8 @@ CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
 
+mkdir -p "$REL_INFO_OUTPUT_DIR"/slice_infos
+
 cleanup() {
     echo "Terminating all background processes..."
     pkill -P $$  # Kill all child processes of the current script

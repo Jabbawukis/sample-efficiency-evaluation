@@ -62,8 +62,8 @@ slice_info = (
     "\n"
 )
 print(slice_info)
-
-with open(os.path.join(args.rel_info_output_dir, f"slice_{args.slice_num}_info.txt"), "a") as f:
+output = os.path.join(f"{args.rel_info_output_dir}/slice_infos", f"slice_{args.slice_num}_info.txt")
+with open(output, "w", encoding="utf-8") as f:
     f.write(slice_info)
 
 # Load dataset slice and process
