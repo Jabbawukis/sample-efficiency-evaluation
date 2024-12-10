@@ -118,10 +118,16 @@ print(f"% of instances with more matches having only object aliases: {percentage
 
 
 percentage_of_instances_with_matches_where_aliases_mattered = overall_matches_aliases / (
-        overall_matches_aliases + overall_matches_no_need_aliases
+    overall_matches_aliases + overall_matches_no_need_aliases
 )
-assert overall_matches_aliases == (overall_matches_aliases + overall_matches_no_need_aliases) * percentage_of_instances_with_matches_where_aliases_mattered
-print(f"% of instances overall with more matches due to aliases: {percentage_of_instances_with_matches_where_aliases_mattered}\n")
+assert (
+    overall_matches_aliases
+    == (overall_matches_aliases + overall_matches_no_need_aliases)
+    * percentage_of_instances_with_matches_where_aliases_mattered
+)
+print(
+    f"% of instances overall with more matches due to aliases: {percentage_of_instances_with_matches_where_aliases_mattered}\n"
+)
 
 avg_increase_in_matches = avg_increase_in_matches["sum"] / avg_increase_in_matches["count"]
 print(f"Average increase in matches due to aliases: {avg_increase_in_matches}\n")

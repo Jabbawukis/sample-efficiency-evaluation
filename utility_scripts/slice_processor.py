@@ -43,22 +43,24 @@ slice_size = dataset_len // args.total_slices
 start_index = args.slice_num * slice_size
 end_index = dataset_len + 1 if args.slice_num == args.total_slices - 1 else (args.slice_num + 1) * slice_size
 
-slice_info = f"Dataset: {args.dataset_path}"\
-             f"\nDataset name: {data_set_name}"\
-             f"\nDataset length: {dataset_len}"\
-             f"\nSlice size: {slice_size}"\
-             f"\nStart index: {start_index}"\
-             f"\nEnd index: {end_index}"\
-             f"\nTotal slices: {args.total_slices}"\
-             f"\nSlice number: {args.slice_num + 1}"\
-             f"\nBear data path: {args.bear_data_path}"\
-             f"\nBear facts path: {args.bear_facts_path}"\
-             f"\nPath to all entities file: {path_to_all_entities}"\
-             f"\nExclude aliases: {args.exclude_aliases}"\
-             f"\nMatcher type: {args.matcher_type}"\
-             f"\nOutput directory: {args.rel_info_output_dir}"\
-             f"\nSave file content: {args.save_file_content}"\
-             "\n"
+slice_info = (
+    f"Dataset: {args.dataset_path}"
+    f"\nDataset name: {data_set_name}"
+    f"\nDataset length: {dataset_len}"
+    f"\nSlice size: {slice_size}"
+    f"\nStart index: {start_index}"
+    f"\nEnd index: {end_index}"
+    f"\nTotal slices: {args.total_slices}"
+    f"\nSlice number: {args.slice_num + 1}"
+    f"\nBear data path: {args.bear_data_path}"
+    f"\nBear facts path: {args.bear_facts_path}"
+    f"\nPath to all entities file: {path_to_all_entities}"
+    f"\nExclude aliases: {args.exclude_aliases}"
+    f"\nMatcher type: {args.matcher_type}"
+    f"\nOutput directory: {args.rel_info_output_dir}"
+    f"\nSave file content: {args.save_file_content}"
+    "\n"
+)
 print(slice_info)
 
 with open(os.path.join(args.rel_info_output_dir, f"slice_{args.slice_num}_info.txt"), "a") as f:
