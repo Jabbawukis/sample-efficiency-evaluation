@@ -126,7 +126,7 @@ assert (
     * percentage_of_instances_with_matches_where_aliases_mattered
 )
 print(
-    f"% of instances overall with more matches due to aliases: {percentage_of_instances_with_matches_where_aliases_mattered}\n"
+    f"% of instances with more matches due to aliases (over all instances with matches): {percentage_of_instances_with_matches_where_aliases_mattered}\n"
 )
 
 avg_increase_in_matches = avg_increase_in_matches["sum"] / avg_increase_in_matches["count"]

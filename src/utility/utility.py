@@ -132,12 +132,38 @@ def create_fact_occurrence_histogram(
     plt.tight_layout()
     plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
 
-
-def join_relation_info_json_files(path_to_files: str) -> None:
+def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:
     """
-    Join relation info files
+    Count increasing occurrences in relation occurrences info files
+    :param path_to_files: Path to relation info occurrences files.
+    :return: Dictionary containing increasing occurrences in for each slice
+    """
+    files: list = os.listdir(path_to_files)
+    files.sort()
+    increasing_occurrences_in_slices = {}
+    for file in tqdm(files, desc="Counting increasing occurrences in slices"):
+        if file.endswith(".json"):
+            for relation_id, entities in load_json_dict(f"{path_to_files}/{file}").items():
+                for entity_id, fact in entities.items():
+                    if relation_id not in increasing_occurrences_in_slices:
+                        increasing_occurrences_in_slices[relation_id] = {}
+                    if entity_id not in increasing_occurrences_in_slices[relation_id]:
+                        increasing_occurrences_in_slices[relation_id][entity_id] = {
+                            "occurrences_increase": []
+                        }
+                    increase = sum(count["occurrences"] for count in increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"])
+                    increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"].append(
+                        {"Slice": files.index(file),
+                        "occurrences": fact['occurrences'],
+                        "total increase": increase}
+                    )
+    return increasing_occurrences_in_slices
+
+def join_relation_occurrences_info_json_files(path_to_files: str) -> None:
+    """
+    Join relation occurrences info files
     :param path_to_files: Path to relation info files.
-    This is useful when final-joined json is too large to store in memory.
+    This is useful when final-joined JSON is too large to store in memory.
     :return:
     """
     files: list = os.listdir(path_to_files)

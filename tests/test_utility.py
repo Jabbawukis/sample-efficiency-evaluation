@@ -147,7 +147,7 @@ class UtilityTest(unittest.TestCase):
                 self.entity_relation_result_info_dict_1,
                 self.entity_relation_result_info_dict_2,
             ]
-            utility.join_relation_info_json_files("output")
+            utility.join_relation_occurrences_info_json_files("output")
             save_dict_as_json.assert_called_once_with(
                 {
                     "P6": {

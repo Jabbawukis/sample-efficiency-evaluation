@@ -55,7 +55,7 @@ wait
 echo "All slices processed."
 
 # Merge the slices
-python3 -c "from utility.utility import join_relation_info_json_files; join_relation_info_json_files('${REL_INFO_OUTPUT_DIR}')"
+python3 -c "from utility.utility import join_relation_occurrences_info_json_files; join_relation_occurrences_info_json_files('${REL_INFO_OUTPUT_DIR}')"
 
 # Create Diagram
 python3 -c "from utility.utility import create_fact_occurrence_histogram; create_fact_occurrence_histogram('${REL_INFO_OUTPUT_DIR}/joined_relation_occurrence_info.json')"
