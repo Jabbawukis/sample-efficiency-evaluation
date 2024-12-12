@@ -1,10 +1,10 @@
 from utility.utility import load_json_dict
 
 match_dict_no_aliases = load_json_dict(
-    "../fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
 )
 match_dict_aliases = load_json_dict(
-    "../fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
 )
 
 
