@@ -132,6 +132,7 @@ def create_fact_occurrence_histogram(
     plt.tight_layout()
     plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
 
+
 def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:
     """
     Count increasing occurrences in relation occurrences info files
@@ -148,16 +149,16 @@ def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:
                     if relation_id not in increasing_occurrences_in_slices:
                         increasing_occurrences_in_slices[relation_id] = {}
                     if entity_id not in increasing_occurrences_in_slices[relation_id]:
-                        increasing_occurrences_in_slices[relation_id][entity_id] = {
-                            "occurrences_increase": []
-                        }
-                    increase = sum(count["occurrences"] for count in increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"])
+                        increasing_occurrences_in_slices[relation_id][entity_id] = {"occurrences_increase": []}
+                    increase = sum(
+                        count["occurrences"]
+                        for count in increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"]
+                    )
                     increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"].append(
-                        {"Slice": files.index(file),
-                        "occurrences": fact['occurrences'],
-                        "total increase": increase}
+                        {"Slice": files.index(file), "occurrences": fact["occurrences"], "total increase": increase}
                     )
     return increasing_occurrences_in_slices
+
 
 def join_relation_occurrences_info_json_files(path_to_files: str) -> None:
     """
