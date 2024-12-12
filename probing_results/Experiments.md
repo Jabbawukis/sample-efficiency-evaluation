@@ -1,9 +1,13 @@
-## Fact Matching Dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
+# Fact Matching Dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
+
+## Probing on the whole dataset:
+
+Train a model on the whole dataset and probe it after training.
 
 ### BEAR-big
 - fact matching results: [fact_matching_results](/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en)
 
-### Aliases Stats:
+#### Aliases Stats:
 
 - % of subjects with alias: 0.4271537429432166
 - % of objects with alias: 0.7703662182361734
@@ -18,7 +22,7 @@
 - % of instances with more matches due to aliases (over all instances with matches): 0.4630471859010802
 - Average increase in matches due to aliases: 187.09484346224679
 
-##### 1. gpt2_off_the_shelve
+##### 1. gpt2_off_the_shelve (for comparison)
 
 - Model: gpt2
 - repo: [openai-community/gpt2](https://huggingface.co/gpt2)
@@ -33,14 +37,10 @@
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
 - training script: [train.py](../model_training_setups/GPT2/wikimedia_wikipedia_20231101_en/train.py)
 
-#### 3. gpt2_from_scratch with probing on training data slices
-- Model: gpt2
-- dataset shuffle seed: 42
-
 ### BEAR(-small)
 - fact matching results: [fact_matching_results](/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en)
 
-### Aliases Stats:
+#### Aliases Stats:
 
 - % of subjects with alias: 0.5051875498802874
 - % of objects with alias: 0.8207317073170731
@@ -55,7 +55,7 @@
 - % of instances with more matches due to aliases (over all instances with matches): 0.5318081180811808
 - Average increase in matches due to aliases: 297.6960865945046
 
-#### 1. gpt2_off_the_shelve
+#### 1. gpt2_off_the_shelve (for comparison)
 
 - Model: gpt2
 - repo: [openai-community/gpt2](https://huggingface.co/gpt2)
@@ -69,3 +69,12 @@
 - link to probing results: [probing results](/probing_results/BEAR-small/gpt2_from_scratch/)
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
 - training script: [train.py](../model_training_setups/GPT2/wikimedia_wikipedia_20231101_en/train.py)
+
+## Probing on training data slices
+
+Train a model on the whole dataset and probe it after a slice of the training data has been processed.
+
+#### 1. gpt2_from_scratch
+- Model: gpt2
+- dataset shuffle seed: 42
+- number of slices: 42
