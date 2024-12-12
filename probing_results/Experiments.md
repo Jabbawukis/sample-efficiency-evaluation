@@ -1,11 +1,9 @@
-# Model Experiments
-
 ## Fact Matching Dataset: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
 
 ### BEAR-big
 - fact matching results: [fact_matching_results](/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en)
 
-#### 1. gpt2_off_the_shelve
+##### 1. gpt2_off_the_shelve
 
 - Model: gpt2
 - repo: [openai-community/gpt2](https://huggingface.co/gpt2)
@@ -18,7 +16,11 @@
 - repo: [J4bb4wukis/gpt2_wikipedia_en](https://huggingface.co/J4bb4wukis/gpt2_wikipedia_en)
 - link to probing results: [probing results](/probing_results/BEAR-big/gpt2_from_scratch/)
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
-- training script: [train.py](../model_training_setups/GPT2/train.py)
+- training script: [train.py](../model_training_setups/GPT2/wikimedia_wikipedia_20231101_en/train.py)
+
+#### 3. gpt2_from_scratch with probing on training data slices
+- Model: gpt2
+- dataset shuffle seed: 42
 
 ### BEAR(-small)
 - fact matching results: [fact_matching_results](/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en)
@@ -36,4 +38,4 @@
 - repo: [J4bb4wukis/gpt2_wikipedia_en](https://huggingface.co/J4bb4wukis/gpt2_wikipedia_en)
 - link to probing results: [probing results](/probing_results/BEAR-small/gpt2_from_scratch/)
 - trained on: [wikipedia_20231101_en](https://huggingface.co/datasets/wikimedia/wikipedia)
-- training script: [train.py](../model_training_setups/GPT2/train.py)
+- training script: [train.py](../model_training_setups/GPT2/wikimedia_wikipedia_20231101_en/train.py)
