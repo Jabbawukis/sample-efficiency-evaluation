@@ -1,5 +1,5 @@
 [project]
-name = "sample_efficiency_evaluation"
+name = "sample-efficiency-evaluation"
 description = ""
 authors = [
   { name="Daniel Christoph", email="christod@hu-berlin.de" },
@@ -15,7 +15,6 @@ dependencies = [
     "tqdm",
     "datasets",
     "spacy[cuda12x]",
-    "spacy-entity-linker",
     "numpy",
     "more-itertools",
     "matplotlib",
