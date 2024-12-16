@@ -81,7 +81,6 @@ class KnowledgeProber:
         :param output_diagram_name:  Name of the output diagram.
         :return:
         """
-
         x_labels = relation_accuracy_scores_dict.keys()
         accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
         plt.bar(x_labels, accuracy_scores)
@@ -93,6 +92,7 @@ class KnowledgeProber:
         plt.title("Entity Pair Accuracy Histogram")
         plt.tight_layout()
         plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
+        plt.clf()
 
     def get_accuracy_scores_over_all_relations(self) -> dict:
         """
