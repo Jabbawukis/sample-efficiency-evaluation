@@ -31,4 +31,4 @@ This project aims to measure the sample efficiency of different language model a
 
 ## Experiment Results
 
-See [sample_efficiency_evaluation_results](https://github.com/Jabbawukis/sample_efficiency_evaluation_results)
+See [sample-efficiency-evaluation-results](https://github.com/Jabbawukis/sample_efficiency_evaluation_results)

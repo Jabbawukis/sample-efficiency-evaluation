@@ -102,18 +102,11 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1-2": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "2-4": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "4-8": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "8-16": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "16-32": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "32-64": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "64-128": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "128-256": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "256-512": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "512-1024": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1024-inf": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "0": {"accuracy": 1.0},
+                    "8-16": {"accuracy": 0.0},
+                    "16-32": {"accuracy": 1.0},
+                    "128-256": {"accuracy": 0.0},
+                    "512-1024": {"accuracy": 1.0},
                 },
             )
 
@@ -163,10 +156,10 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1-99": {"correct": 1, "total": 2, "accuracy": 0.5},
-                    "100-299": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "500-inf": {"correct": 1, "total": 1, "accuracy": 1.0},
+                    "0": {"accuracy": 1.0},
+                    "1-99": {"accuracy": 0.5},
+                    "100-299": {"accuracy": 0.0},
+                    "500-inf": {"accuracy": 1.0},
                 },
             )
 
@@ -211,18 +204,10 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1-2": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "2-4": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "4-8": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "8-16": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "16-32": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "32-64": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "64-128": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "128-256": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "256-512": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "512-1024": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1024-inf": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "0": {"accuracy": 1.0},
+                    "8-16": {"accuracy": 0.0},
+                    "128-256": {"accuracy": 0.0},
+                    "512-1024": {"accuracy": 1.0},
                 },
             )
 
@@ -256,17 +241,8 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1-2": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "2-4": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "4-8": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "8-16": {"correct": 0, "total": 1, "accuracy": 0.0},
-                    "16-32": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "32-64": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "64-128": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "128-256": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "256-512": {"correct": 0, "total": 0, "accuracy": 0.0},
-                    "512-1024": {"correct": 1, "total": 1, "accuracy": 1.0},
-                    "1024-inf": {"correct": 0, "total": 0, "accuracy": 0.0},
+                    "0": {"accuracy": 1.0},
+                    "8-16": {"accuracy": 0.0},
+                    "512-1024": {"accuracy": 1.0},
                 },
             )

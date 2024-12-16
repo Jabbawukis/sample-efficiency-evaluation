@@ -128,9 +128,9 @@ class KnowledgeProber:
                         relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
                         if answer_row.correctly_predicted:
                             relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["correct"] += 1
-        for _, bucket in relation_accuracy_scores_dict.items():
+        accuracy_scores_output = {}
+        for key, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
-                bucket["accuracy"] = 0
-            else:
-                bucket["accuracy"] = bucket["correct"] / bucket["total"]
-        return relation_accuracy_scores_dict
+                continue
+            accuracy_scores_output[key] = {"accuracy": bucket["correct"] / bucket["total"]}
+        return accuracy_scores_output
