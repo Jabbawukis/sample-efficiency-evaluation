@@ -149,13 +149,16 @@ def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:
                     if relation_id not in increasing_occurrences_in_slices:
                         increasing_occurrences_in_slices[relation_id] = {}
                     if entity_id not in increasing_occurrences_in_slices[relation_id]:
-                        increasing_occurrences_in_slices[relation_id][entity_id] = {"occurrences_increase": []}
+                        increasing_occurrences_in_slices[relation_id][entity_id] = {
+                            "occurrences_increase": [],
+                            "obj_id": fact["obj_id"],
+                        }
                     increase = sum(
                         count["occurrences"]
                         for count in increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"]
                     )
                     increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"].append(
-                        {"Slice": files.index(file), "occurrences": fact["occurrences"], "total increase": increase}
+                        {"Slice": files.index(file), "occurrences": fact["occurrences"], "total": increase}
                     )
     return increasing_occurrences_in_slices
 
