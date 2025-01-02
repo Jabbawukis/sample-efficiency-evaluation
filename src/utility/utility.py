@@ -167,7 +167,6 @@ def join_relation_occurrences_info_json_files(path_to_files: str) -> None:
     """
     Join relation occurrences info files
     :param path_to_files: Path to relation info files.
-    This is useful when final-joined JSON is too large to store in memory.
     :return:
     """
     files: list = os.listdir(path_to_files)
