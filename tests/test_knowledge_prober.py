@@ -102,11 +102,11 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"accuracy": 1.0},
-                    "8-16": {"accuracy": 0.0},
-                    "16-32": {"accuracy": 1.0},
-                    "128-256": {"accuracy": 0.0},
-                    "512-1024": {"accuracy": 1.0},
+                    "0": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "128-256": {"accuracy": 0.0, "correct": 0, "total": 1},
+                    "16-32": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )
 
@@ -156,10 +156,10 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"accuracy": 1.0},
-                    "1-99": {"accuracy": 0.5},
-                    "100-299": {"accuracy": 0.0},
-                    "500-inf": {"accuracy": 1.0},
+                    "0": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "1-99": {"accuracy": 0.5, "correct": 1, "total": 2},
+                    "100-299": {"accuracy": 0.0, "correct": 0, "total": 1},
+                    "500-inf": {"accuracy": 1.0, "correct": 1, "total": 1},
                 },
             )
 
@@ -204,10 +204,10 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"accuracy": 1.0},
-                    "8-16": {"accuracy": 0.0},
-                    "128-256": {"accuracy": 0.0},
-                    "512-1024": {"accuracy": 1.0},
+                    "0": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "128-256": {"accuracy": 0.0, "correct": 0, "total": 1},
+                    "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )
 
@@ -241,8 +241,8 @@ class KnowledgeProberTest(unittest.TestCase):
             self.assertEqual(
                 prober.get_accuracy_scores_over_all_relations(),
                 {
-                    "0": {"accuracy": 1.0},
-                    "8-16": {"accuracy": 0.0},
-                    "512-1024": {"accuracy": 1.0},
+                    "0": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )

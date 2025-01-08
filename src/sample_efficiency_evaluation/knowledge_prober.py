@@ -81,7 +81,12 @@ class KnowledgeProber:
         :param output_diagram_name:  Name of the output diagram.
         :return:
         """
-        x_labels = relation_accuracy_scores_dict.keys()
+
+        def get_num(x: str) -> int:
+            number = x.split("-")[0]
+            return int(number)
+
+        x_labels = sorted(list(relation_accuracy_scores_dict.keys()), key=get_num)
         accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
         plt.bar(x_labels, accuracy_scores)
         for i, count in enumerate(accuracy_scores):
@@ -93,11 +98,12 @@ class KnowledgeProber:
         plt.tight_layout()
         plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
         plt.clf()
+        plt.close()
 
     def get_accuracy_scores_over_all_relations(self) -> dict:
         """
         Get the accuracy scores over all relations.
-        :return: Dictionary containing the accuracy scores.
+        :return: The Dictionary containing the accuracy scores.
         """
         relation_accuracy_scores_dict = {}
         for occurrence in self.relation_occurrence_buckets:
@@ -132,5 +138,9 @@ class KnowledgeProber:
         for key, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
                 continue
-            accuracy_scores_output[key] = {"accuracy": bucket["correct"] / bucket["total"]}
+            accuracy_scores_output[key] = {
+                "accuracy": bucket["correct"] / bucket["total"],
+                "correct": bucket["correct"],
+                "total": bucket["total"],
+            }
         return accuracy_scores_output

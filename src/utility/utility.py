@@ -120,7 +120,11 @@ def create_fact_occurrence_histogram(
                 if bucket[0] <= occurrences <= bucket[1]:
                     relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total_occurrence"] += 1
 
-    x_labels = relation_occurrence_info_dict.keys()
+    def get_num(x: str) -> int:
+        number = x.split("-")[0]
+        return int(number)
+
+    x_labels = sorted(list(relation_occurrence_info_dict.keys()), key=get_num)
     occurrences = [relation_occurrence_info_dict[x_label]["total_occurrence"] for x_label in x_labels]
     plt.bar(x_labels, occurrences)
     for i, count in enumerate(occurrences):
