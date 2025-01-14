@@ -80,6 +80,12 @@ for checkpoint, buckets in final_output.items():
 
 df = pd.DataFrame(data)
 
+max_accuracy = df["Accuracy"].max()
+max_occurrences = df["Total Occurrences"].max()
+
+# Round up the maximum occurrences for better scaling (e.g., to the nearest 1000)
+max_occurrences = math.ceil(max_occurrences / 1000) * 1000
+
 # Determine grid layout
 num_checkpoints = df["Checkpoint"].nunique()
 cols = 5
@@ -156,9 +162,8 @@ for i, checkpoint in enumerate(checkpoints):
     ax.set_xlabel("Occurrence Buckets")
     ax.set_title(f"Checkpoint {checkpoint}")
 
-    # # Add a combined legend for both Accuracy and Total Occurrences
-    # ax.legend(loc="upper left", bbox_to_anchor=(0, 1.1), fontsize=10)
-    # ax2.legend(loc="upper left", bbox_to_anchor=(1, 1.1), fontsize=10)
+    ax.set_ylim(0, max_accuracy)
+    ax2.set_ylim(0, max_occurrences)
 
 # Remove unused subplots
 for j in range(len(checkpoints), len(axes)):
