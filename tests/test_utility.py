@@ -119,8 +119,8 @@ class UtilityTest(unittest.TestCase):
         self.assertTrue(utility.word_in_sentence("khalifa", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))
         self.assertTrue(utility.word_in_sentence("Armenia", "Armenia blah blah blah Nikol Pashinyan"))
         self.assertTrue(utility.word_in_sentence("armenia", "Armenia blah blah blah Nikol Pashinyan"))
-        self.assertTrue(utility.word_in_sentence("Yerevan T.c.", "Yerevan t.c.! blah blah blah Nikol Pashinyan"))
-        self.assertTrue(utility.word_in_sentence("U.S.A.", "Yerevan t.c.! U.S.A. blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("Yerevan T.c.", "YeReVaN t.c.! blah blah blah Nikol Pashinyan"))
+        self.assertTrue(utility.word_in_sentence("U.S.A.", "Yerevan t.c.! (U.S.A.) blah blah blah Nikol Pashinyan"))
         self.assertTrue(utility.word_in_sentence("Nepal", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
         self.assertTrue(utility.word_in_sentence("nepal", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
         self.assertTrue(
@@ -129,7 +129,7 @@ class UtilityTest(unittest.TestCase):
             )
         )
 
-        self.assertFalse(utility.word_in_sentence("Kathmandu", "Nepal NPL is cool Khadga Prasad Sharma Oli"))
+        self.assertFalse(utility.word_in_sentence("Kathmandu", "Nepal NPL Kath mandu is cool Khadga Prasad Sharma Oli"))
         self.assertFalse(utility.word_in_sentence("Yerevan T.c.", "Armenia blah Yerevan T.c blah blah Nikol Pashinyan"))
         self.assertFalse(utility.word_in_sentence("Dubai", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))
 

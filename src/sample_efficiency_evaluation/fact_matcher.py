@@ -226,13 +226,13 @@ class FactMatcherSimple(FactMatcherBase):
 
             relation_id = relation_subj_tuple[0]
             subj_id = relation_subj_tuple[1]
+            if (relation_id, subj_id) in self.match_tracker:
+                continue
 
-            obj_label = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
-            obj_aliases = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
+            obj_label: str = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
+            obj_aliases: list[str] = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
             if word_in_sentence(obj_label, sentence):
-                if (relation_id, subj_id) in self.match_tracker:
-                    continue
                 if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                     self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                 else:
@@ -245,8 +245,6 @@ class FactMatcherSimple(FactMatcherBase):
 
             for alias in obj_aliases:
                 if word_in_sentence(alias, sentence):
-                    if (relation_id, subj_id) in self.match_tracker:
-                        break
                     if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                     else:
