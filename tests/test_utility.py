@@ -129,6 +129,8 @@ class UtilityTest(unittest.TestCase):
             )
         )
 
+        self.assertFalse(utility.word_in_sentence("US", "you and me and us", ignore_case=False))
+
         self.assertFalse(utility.word_in_sentence("Kathmandu", "Nepal NPL Kath mandu is cool Khadga Prasad Sharma Oli"))
         self.assertFalse(utility.word_in_sentence("Yerevan T.c.", "Armenia blah Yerevan T.c blah blah Nikol Pashinyan"))
         self.assertFalse(utility.word_in_sentence("Dubai", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))

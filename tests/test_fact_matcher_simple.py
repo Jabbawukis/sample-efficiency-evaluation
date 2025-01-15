@@ -307,6 +307,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                     "text": "United States of America blah blah blah Washington, D.C. blah."
                     " United States of America blah Alexander Hamilton, US Treasury secretary blah blah Washington, D.C. blah."
                     " United States of America (U.S.A.) blah blah blah Washington, D.C. blah."
+                    " Let's got to the Alexander Hamilton musical, just us."
                 },
                 {
                     "text": "United of America (U.S.A.) blah blah blah Washington, D.C. blah."

@@ -99,7 +99,6 @@ class FactMatcherBase(ABC):
                 logging.error("File not found: %s/%s.jsonl", bear_facts_path, relation_key)
                 continue
             for fact_dict in fact_list:
-                logging.info("Extracting entity information for %s", relation_key)
                 relation_dict[relation_key][fact_dict["sub_id"]] = {
                     "subj_label": fact_dict["sub_label"],
                     "subj_aliases": set([] if exclude_aliases else fact_dict["sub_aliases"]),
@@ -232,7 +231,8 @@ class FactMatcherSimple(FactMatcherBase):
             obj_label: str = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
             obj_aliases: list[str] = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
-            if word_in_sentence(obj_label, sentence):
+            ignore_case = len(obj_label) > self.min_entity_name_length
+            if word_in_sentence(obj_label, sentence, ignore_case):
                 if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                     self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                 else:
@@ -244,7 +244,8 @@ class FactMatcherSimple(FactMatcherBase):
                 continue
 
             for alias in obj_aliases:
-                if word_in_sentence(alias, sentence):
+                ignore_case = len(alias) > self.min_entity_name_length
+                if word_in_sentence(alias, sentence, ignore_case):
                     if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                     else:

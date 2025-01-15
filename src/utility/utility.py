@@ -61,15 +61,19 @@ def clean_string(text: str) -> str:
     return text
 
 
-def word_in_sentence(word: str, sentence: str) -> bool:
+def word_in_sentence(word: str, sentence: str, ignore_case: bool = True) -> bool:
     """
     Check if word is in sentence.
 
     :param word: word to check
     :param sentence: sentence to check
+    :param ignore_case: ignore case
     :return: True if word is in sentence, False otherwise
     """
-    pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)), flags=re.IGNORECASE)
+    if ignore_case:
+        pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)), flags=re.IGNORECASE)
+    else:
+        pattern = re.compile(r"(?<!\w)({0})(?!\w)".format(re.escape(word)))
     return bool(pattern.search(sentence))
 
 
