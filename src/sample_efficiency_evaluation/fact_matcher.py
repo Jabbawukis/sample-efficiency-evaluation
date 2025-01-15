@@ -231,8 +231,7 @@ class FactMatcherSimple(FactMatcherBase):
             obj_label: str = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
             obj_aliases: list[str] = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
-            ignore_case = len(obj_label) > self.min_entity_name_length
-            if word_in_sentence(obj_label, sentence, ignore_case):
+            if word_in_sentence(obj_label, sentence, len(obj_label) > self.min_entity_name_length):
                 if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                     self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                 else:
@@ -244,8 +243,7 @@ class FactMatcherSimple(FactMatcherBase):
                 continue
 
             for alias in obj_aliases:
-                ignore_case = len(alias) > self.min_entity_name_length
-                if word_in_sentence(alias, sentence, ignore_case):
+                if word_in_sentence(alias, sentence, len(alias) > self.min_entity_name_length):
                     if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                     else:
