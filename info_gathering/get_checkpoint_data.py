@@ -17,7 +17,8 @@ def get_num(x: str) -> int:
 checkpoints: list = os.listdir(path_to_checkpoints_probing_results)
 
 sorted_checkpoints = sorted(checkpoints, key=get_num)
-increasing_occurrences = count_increasing_occurrences_in_slices("../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices")
+increasing_occurrences = count_increasing_occurrences_in_slices(
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices")
 
 for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
     bear_results = DatasetResults.from_path(f"{path_to_checkpoints_probing_results}/{checkpoint}")

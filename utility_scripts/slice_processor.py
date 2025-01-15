@@ -62,7 +62,7 @@ slice_info = (
     "\n"
 )
 print(slice_info)
-output = os.path.join(f"{args.rel_info_output_dir}/slice_infos", f"slice_{args.slice_num}_info.txt")
+output = os.path.join(f"{args.rel_info_output_dir}/slice_infos", f"slice_{args.slice_num:02d}_info.txt")
 with open(output, "w", encoding="utf-8") as f:
     f.write(slice_info)
 
@@ -73,5 +73,5 @@ fact_matcher = create_matcher()
 fact_matcher.create_fact_statistics(dataset_slice, text_key="text", save_file_content=args.save_file_content)
 
 # Save results
-relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num}_relation_occurrence_info.json")
+relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num:02d}_relation_occurrence_info.json")
 utility.save_dict_as_json(fact_matcher.entity_relation_occurrence_info_dict, relation_info_output)
