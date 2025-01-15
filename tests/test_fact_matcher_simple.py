@@ -184,13 +184,13 @@ class FactMatcherSimpleTest(unittest.TestCase):
         self.test_resources_abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_resources"))
 
     def test_extract_entity_information_good(self):
-        with (patch.object(logging, "error") as mock_error,):
+        with (patch.object(logging, "warning") as mock_warning,):
             fact_matcher = FactMatcherSimple(
                 bear_data_path=f"{self.test_resources_abs_path}",
             )
 
             self.assertEqual(fact_matcher.entity_relation_occurrence_info_dict, self.test_entity_relation_info_dict)
-            mock_error.assert_called_once()
+            mock_warning.assert_called_once()
 
     def test_extract_entity_information_good_alias_extension(self):
         test_entity_relation_info_dict_alias_extended = self.test_entity_relation_info_dict.copy()
@@ -198,7 +198,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
         test_entity_relation_info_dict_alias_extended["P6"]["Q548114"]["obj_aliases"].update(
             ["G. D'Annunzio", "D'Annunzio"]
         )
-        with (patch.object(logging, "error") as mock_error,):
+        with (patch.object(logging, "warning") as mock_warning,):
             fact_matcher = FactMatcherSimple(
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info.json",
@@ -208,10 +208,10 @@ class FactMatcherSimpleTest(unittest.TestCase):
             self.assertEqual(
                 fact_matcher.entity_relation_occurrence_info_dict, test_entity_relation_info_dict_alias_extended
             )
-            mock_error.assert_called_once()
+            mock_warning.assert_called_once()
 
     def test_extract_entity_information_good_filled_obj_aliases(self):
-        with (patch.object(logging, "error") as mock_error,):
+        with (patch.object(logging, "warning") as mock_warning,):
             fact_matcher = FactMatcherSimple(
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
@@ -221,7 +221,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 fact_matcher.entity_relation_occurrence_info_dict,
                 self.test_entity_relation_info_dict_filled_obj_aliases,
             )
-            mock_error.assert_not_called()
+            mock_warning.assert_not_called()
 
     def test_extract_entity_information_good_exclude_aliases(self):
         test_entity_relation_info_dict_excluded_aliases = {
@@ -257,7 +257,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 }
             },
         }
-        with patch.object(logging, "error") as mock_error:
+        with patch.object(logging, "warning") as mock_warning:
             fact_matcher = FactMatcherSimple(
                 bear_facts_path=f"{self.test_resources_abs_path}/BEAR",
                 bear_relation_info_path=f"{self.test_resources_abs_path}/relation_info_obj_aliases.json",
@@ -268,7 +268,7 @@ class FactMatcherSimpleTest(unittest.TestCase):
                 fact_matcher.entity_relation_occurrence_info_dict,
                 test_entity_relation_info_dict_excluded_aliases,
             )
-            mock_error.assert_not_called()
+            mock_warning.assert_not_called()
 
     def test_create_mapped_relations_good(self):
         with (
