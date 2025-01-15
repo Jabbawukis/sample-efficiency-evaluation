@@ -96,7 +96,7 @@ class FactMatcherBase(ABC):
                 fact_list: list[dict] = load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
                 relation_dict.update({relation_key: {}})
             except FileNotFoundError:
-                logging.error("File not found: %s/%s.jsonl", bear_facts_path, relation_key)
+                logging.warning("File not found: %s/%s.jsonl", bear_facts_path, relation_key)
                 continue
             for fact_dict in fact_list:
                 relation_dict[relation_key][fact_dict["sub_id"]] = {
