@@ -1,10 +1,10 @@
 from utility.utility import load_json_dict
 
 match_dict_no_aliases = load_json_dict(
-    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
 )
 match_dict_aliases = load_json_dict(
-    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
 )
 
 
@@ -119,11 +119,6 @@ print(f"% of instances with more matches having only object aliases: {percentage
 
 percentage_of_instances_with_matches_where_aliases_mattered = overall_matches_aliases / (
     overall_matches_aliases + overall_matches_no_need_aliases
-)
-assert (
-    overall_matches_aliases
-    == (overall_matches_aliases + overall_matches_no_need_aliases)
-    * percentage_of_instances_with_matches_where_aliases_mattered
 )
 print(
     f"% of instances with more matches due to aliases (over all instances with matches): {percentage_of_instances_with_matches_where_aliases_mattered}\n"
