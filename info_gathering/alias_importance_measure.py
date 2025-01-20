@@ -1,10 +1,10 @@
 from utility.utility import load_json_dict
 
 match_dict_no_aliases = load_json_dict(
-    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
 )
 match_dict_aliases = load_json_dict(
-    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
+    "../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-small/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
 )
 
 
@@ -75,10 +75,12 @@ for relation_id, facts in match_dict_aliases.items():
         # matches where the fact without aliases the same number of occurrences as the fact with aliases
         elif aliases_fact["occurrences"] == no_aliases_fact["occurrences"] > 0:
             matches_overall["no need for alias"].add((relation_id, subj_id, no_aliases_fact["obj_id"]))
+            avg_increase_in_matches["count"] += 1
         # instances were the fact with and the fact without aliases has no matches
         elif aliases_fact["occurrences"] == no_aliases_fact["occurrences"] == 0:
             no_matches["with aliases"].add((relation_id, subj_id, aliases_fact["obj_id"]))
             no_matches["without aliases"].add((relation_id, subj_id, no_aliases_fact["obj_id"]))
+            avg_increase_in_matches["count"] += 1
         # instances were the fact with aliases has fewer occurrences than the fact without aliases (should not happen)
         elif aliases_fact["occurrences"] < no_aliases_fact["occurrences"]:
             raise ValueError("Error: fact with aliases has fewer occurrences than fact without aliases")
@@ -125,4 +127,4 @@ print(
 )
 
 avg_increase_in_matches = avg_increase_in_matches["sum"] / avg_increase_in_matches["count"]
-print(f"Average increase in matches due to aliases: {avg_increase_in_matches}\n")
+print(f"Average increase in matches (per fact) due to aliases: {avg_increase_in_matches}\n")
