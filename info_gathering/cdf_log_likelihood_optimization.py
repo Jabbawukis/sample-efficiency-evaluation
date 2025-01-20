@@ -107,7 +107,7 @@ for slice_id, slice_data in data_on_slices.items():
         print(f"Slice {slice_id}: Optimization was successful. Optimized lambda: {optimized_lambda}")
         optimized_lambdas.append({"slice": slice_id, "lambda": optimized_lambda})
     else:
-        logging.warn(f"Slice {slice_id}: Optimization failed:", result.message)
+        logging.warning(f"Slice {slice_id}: Optimization failed:", result.message)
 
 def plot_cdf_for_lambda(lambdas, occurrences_range):
     """
