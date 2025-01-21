@@ -1,6 +1,6 @@
 from transformers import (
-    AutoConfig,
-    GPT2LMHeadModel,
+    xLSTMConfig,
+    xLSTMForCausalLM,
     AutoTokenizer,
     Trainer,
     TrainingArguments,
@@ -11,11 +11,11 @@ from datasets import load_dataset, DatasetDict, load_from_disk
 # import os
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-output = "./gpt2-wikipedia"
+output = "./xlstm-wikipedia"
 
 # Initialize the tokenizer
 context_length = 128
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
+tokenizer = AutoTokenizer.from_pretrained("gpt2") # use GPT2 tokenizer for xLSTM
 tokenizer.pad_token = tokenizer.eos_token  # Set pad token
 
 
@@ -61,15 +61,18 @@ tokenized_dataset.save_to_disk("wikipedia_20231101_en/tokenized_ds")
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
 # Configure the model
-config = AutoConfig.from_pretrained(
-    "gpt2",
+config = xLSTMConfig(
     vocab_size=len(tokenizer),
     bos_token_id=tokenizer.bos_token_id,
     eos_token_id=tokenizer.eos_token_id,
+    pad_token_id=tokenizer.pad_token_id,
+    num_blocks=24,
+    num_heads=4,
+    embedding_dim=768,
 )
 
 # Initialize the model from scratch
-model = GPT2LMHeadModel(config)
+model = xLSTMForCausalLM(config)
 
 # Training arguments
 training_args = TrainingArguments(
