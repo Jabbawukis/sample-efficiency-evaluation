@@ -21,7 +21,7 @@ tokenizer.pad_token = tokenizer.eos_token  # Set pad token
 
 ############################################################################################
 # Load the dataset
-dataset = load_dataset("wikimedia/wikipedia", "20231101.en")
+dataset = load_dataset("wikimedia/wikipedia", "20231101.en").shuffle(seed=42)
 def tokenize(element):
     # Tokenize input, handling long sequences with `return_overflowing_tokens`
     outputs = tokenizer(
