@@ -13,7 +13,6 @@ dependencies = [
     "datasets",
     "transformers>=4.45",
     "tqdm",
-    "datasets",
     "spacy[cuda12x]",
     "numpy",
     "more-itertools",
