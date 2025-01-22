@@ -75,7 +75,7 @@ class KnowledgeProber:
         relation_accuracy_scores_dict: dict, output_path: str, output_diagram_name: str = "accuracy_statistics"
     ) -> None:
         """
-        Create fact accuracy statistics and plot a histogram.
+        Create fact accuracy statistics and plot a histogram with dual y-axes.
         :param relation_accuracy_scores_dict:  Dictionary containing the entity relation information.
         :param output_path:  Path to save the diagram.
         :param output_diagram_name:  Name of the output diagram.
@@ -88,15 +88,37 @@ class KnowledgeProber:
 
         x_labels = sorted(list(relation_accuracy_scores_dict.keys()), key=get_num)
         accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
-        plt.bar(x_labels, accuracy_scores)
-        for i, count in enumerate(accuracy_scores):
-            plt.text(i, count, str(count), ha="center", va="bottom")
+        total_values = [relation_accuracy_scores_dict[x_label]["total"] for x_label in x_labels]
+
+        fig, ax1 = plt.subplots(figsize=(12, 6))
+
+        bars1 = ax1.bar(x_labels, accuracy_scores, color="blue", alpha=0.7, label="Accuracy")
+        ax1.set_ylabel("Accuracy", color="blue")
+        ax1.tick_params(axis="y", labelcolor="blue")
+        ax1.set_xlabel("Occurrence Buckets")
+
+        for _bar in bars1:
+            height = _bar.get_height()
+            ax1.text(
+                _bar.get_x() + _bar.get_width() / 2, height, f"{height:.2f}", ha="center", va="bottom", color="blue"
+            )
+
+        ax2 = ax1.twinx()
+        bars2 = ax2.bar(x_labels, total_values, color="red", alpha=0.5, label="Total Occurrences", width=0.4)
+        ax2.set_ylabel("Total Occurrences", color="red")
+        ax2.tick_params(axis="y", labelcolor="red")
+
+        for _bar in bars2:
+            height = _bar.get_height()
+            ax2.text(_bar.get_x() + _bar.get_width() / 2, height, f"{height}", ha="center", va="bottom", color="red")
+
         plt.xticks(rotation=45, ha="right")
-        plt.xlabel("Occurrence Buckets")
-        plt.ylabel("Accuracy")
-        plt.title("Entity Pair Accuracy Histogram")
+        legend = fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.1), fontsize=10, ncol=2)
+        plt.title("Entity Pair Accuracy and Total Occurrences Histogram")
         plt.tight_layout()
-        plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
+        plt.savefig(
+            os.path.join(output_path, f"{output_diagram_name}.png"), bbox_extra_artists=(legend,), bbox_inches="tight"
+        )
         plt.clf()
         plt.close()
 
