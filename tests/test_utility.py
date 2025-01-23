@@ -135,7 +135,107 @@ class UtilityTest(unittest.TestCase):
         self.assertFalse(utility.word_in_sentence("Yerevan T.c.", "Armenia blah Yerevan T.c blah blah Nikol Pashinyan"))
         self.assertFalse(utility.word_in_sentence("Dubai", "Abu Dhabi blah blah blah Khalifa bin Zayed Al Nahyan."))
 
-    def test_join_relation_info_json_files_good_1(self):
+    def test_count_increasing_occurrences_in_slices(self):
+        with (
+            patch.object(utility, "load_json_dict") as load_json_dict,
+            patch.object(utility, "save_dict_as_json") as save_dict_as_json,
+            patch.object(
+                os,
+                "listdir",
+                return_value=["00_relation_info.json", "01_relation_info.json"],
+            ),
+        ):
+            load_json_dict.side_effect = [
+                self.entity_relation_result_info_dict_1,
+                self.entity_relation_result_info_dict_2,
+            ]
+            out = utility.count_increasing_occurrences_in_slices("output")
+            self.assertEqual(
+                {
+                    "P6": {
+                        "Q1519": {
+                            "occurrences_increase": [
+                                {
+                                    "Slice": 0,
+                                    "occurrences": 1,
+                                    "total": 1,
+                                },
+                                {
+                                    "Slice": 1,
+                                    "occurrences": 1,
+                                    "total": 2,
+                                },
+                            ],
+                            "obj_id": "Q1059948",
+                        },
+                        "Q399": {
+                            "occurrences_increase": [
+                                {
+                                    "Slice": 0,
+                                    "occurrences": 1,
+                                    "total": 1,
+                                },
+                                {
+                                    "Slice": 1,
+                                    "occurrences": 1,
+                                    "total": 2,
+                                },
+                            ],
+                            "obj_id": "Q7035479",
+                        },
+                    },
+                    "P2": {
+                        "Q548114": {
+                            "occurrences_increase": [
+                                {
+                                    "Slice": 0,
+                                    "occurrences": 0,
+                                    "total": 0,
+                                },
+                                {
+                                    "Slice": 1,
+                                    "occurrences": 0,
+                                    "total": 0,
+                                },
+                            ],
+                            "obj_id": "Q193236",
+                        },
+                        "Q5626824": {
+                            "occurrences_increase": [
+                                {
+                                    "Slice": 0,
+                                    "occurrences": 0,
+                                    "total": 0,
+                                },
+                                {
+                                    "Slice": 1,
+                                    "occurrences": 2,
+                                    "total": 2,
+                                },
+                            ],
+                            "obj_id": "Q222",
+                        },
+                        "Q837": {
+                            "occurrences_increase": [
+                                {
+                                    "Slice": 0,
+                                    "occurrences": 1,
+                                    "total": 1,
+                                },
+                                {
+                                    "Slice": 1,
+                                    "occurrences": 1,
+                                    "total": 2,
+                                },
+                            ],
+                            "obj_id": "Q3195923",
+                        },
+                    },
+                },
+                out,
+            )
+
+    def test_join_relation_info_json_files(self):
         with (
             patch.object(utility, "load_json_dict") as load_json_dict,
             patch.object(utility, "save_dict_as_json") as save_dict_as_json,

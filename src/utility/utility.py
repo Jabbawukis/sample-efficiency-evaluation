@@ -162,10 +162,10 @@ def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:
                             "obj_id": fact["obj_id"],
                         }
                     try:
-                        total = increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"][-1][
-                            "total"
-                        ]
-                        total = total + fact["occurrences"]
+                        total_old = increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"][
+                            -1
+                        ]["total"]
+                        total = total_old + fact["occurrences"]
                     except IndexError:
                         total = fact["occurrences"]
                     increasing_occurrences_in_slices[relation_id][entity_id]["occurrences_increase"].append(

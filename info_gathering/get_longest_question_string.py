@@ -7,12 +7,14 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
 bear_path = "../BEAR"
 
+
 def tokenize(element):
     outputs = tokenizer(
         element,
         return_length=True,
     )
     return outputs["input_ids"]
+
 
 fact_matcher = FactMatcherSimple(
     bear_data_path=bear_path,
@@ -56,7 +58,7 @@ print(max_subj_token_length)
 print(max_obj_token_length)
 print(relation_id_of_longest_fact)
 
-templates =  load_json_dict(f"{bear_path}/BEAR-big/metadata_relations.json")[relation_id_of_longest_fact]["templates"]
+templates = load_json_dict(f"{bear_path}/BEAR-big/metadata_relations.json")[relation_id_of_longest_fact]["templates"]
 
 max_tokens_sentence = {"sentence": "", "length": 0}
 for template in templates:
@@ -66,4 +68,3 @@ for template in templates:
         max_tokens_sentence["length"] = tokens
         max_tokens_sentence["sentence"] = sentence
 print(max_tokens_sentence)
-

@@ -20,9 +20,11 @@ path_to_checkpoints = "../../sample_efficiency_evaluation_results/probing_result
 path_to_increasing_occurrences_in_slices = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/xlstm_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 final_diagram_output_path = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/xlstm_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
 
+
 def get_num(x: str) -> int:
     number = x.split("-")[-1]
     return int(number)
+
 
 checkpoints: list = os.listdir(path_to_checkpoints)
 sorted_checkpoints = sorted(checkpoints, key=get_num)
@@ -57,9 +59,11 @@ for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Creating Diagram
     for key, bucket in relation_accuracy_scores_dict.items():
         if bucket["total"] == 0:
             continue
-        accuracy_scores_output[key] = {"accuracy": bucket["correct"] / bucket["total"],
-                                       "correct": bucket["correct"],
-                                       "total": bucket["total"]}
+        accuracy_scores_output[key] = {
+            "accuracy": bucket["correct"] / bucket["total"],
+            "correct": bucket["correct"],
+            "total": bucket["total"],
+        }
     final_output[checkpoint] = accuracy_scores_output
 
 import pandas as pd
@@ -71,12 +75,14 @@ import math
 data = []
 for checkpoint, buckets in final_output.items():
     for bucket, stats in buckets.items():
-        data.append({
-            "Checkpoint": checkpoint,
-            "Occurrence Buckets": bucket,
-            "Accuracy": stats["accuracy"],
-            "Total Occurrences": stats["total"]
-        })
+        data.append(
+            {
+                "Checkpoint": checkpoint,
+                "Occurrence Buckets": bucket,
+                "Accuracy": stats["accuracy"],
+                "Total Occurrences": stats["total"],
+            }
+        )
 
 df = pd.DataFrame(data)
 
@@ -108,25 +114,14 @@ for i, checkpoint in enumerate(checkpoints):
 
     # Plot accuracy on the primary y-axis
     accuracy_plot = sns.barplot(
-        data=checkpoint_data,
-        x="Occurrence Buckets",
-        y="Accuracy",
-        ax=ax,
-        color="blue",
-        label="Accuracy"
+        data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy"
     )
 
     # Annotate accuracy bars
     for p in accuracy_plot.patches:
         value = f"{p.get_height():.2f}"
         ax.text(
-            p.get_x() + p.get_width() / 2,
-            p.get_height(),
-            value,
-            ha="center",
-            va="bottom",
-            color="blue",
-            fontsize=8
+            p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="blue", fontsize=8
         )
 
     # Plot total occurrences on the secondary y-axis
@@ -137,20 +132,14 @@ for i, checkpoint in enumerate(checkpoints):
         ax=ax2,
         color="red",
         alpha=0.5,
-        label="Total Occurrences"
+        label="Total Occurrences",
     )
 
     # Annotate total occurrences bars
     for p in occurrences_plot.patches:
         value = f"{int(p.get_height())}"  # Total occurrences is an integer
         ax2.text(
-            p.get_x() + p.get_width() / 2,
-            p.get_height(),
-            value,
-            ha="center",
-            va="bottom",
-            color="red",
-            fontsize=8
+            p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="red", fontsize=8
         )
 
     # Rotate x-tick labels
@@ -173,6 +162,3 @@ for j in range(len(checkpoints), len(axes)):
 fig.tight_layout()
 plt.savefig(final_diagram_output_path)
 # plt.show()
-
-
-
