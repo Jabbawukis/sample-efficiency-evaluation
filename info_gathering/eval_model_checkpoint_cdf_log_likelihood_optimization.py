@@ -8,8 +8,8 @@ from scipy.optimize import minimize
 
 from utility.utility import load_json_dict
 
-path_to_checkpoints_probing_results = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/xlstm_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-path_to_increasing_occurrences_in_slices = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/xlstm_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+path_to_checkpoints_probing_results = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/gpt2_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+path_to_increasing_occurrences_in_slices = "../../sample_efficiency_evaluation_results/probing_results/BEAR-big/gpt2_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
 
 def get_num(x: str) -> int:
@@ -23,16 +23,18 @@ checkpoints = os.listdir(path_to_checkpoints_probing_results)
 sorted_checkpoints = sorted(checkpoints, key=get_num)
 increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
 data_on_slices = {}
-
+abs_min_acc = 1.0
 for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Get results in slices")):
     # Load checkpoint metadata
     metadata = load_json_dict(f"{path_to_checkpoints_probing_results}/{checkpoint}/metadata_results.json")
     occurrences_list = []
     answer_list = []
+    answer_space = []
 
     for relation_id, entity_dict in increasing_occurrences.items():
         # Get number of possible answers for this relation
         num_possible_answers = len(metadata[relation_id]["answer_space_labels"])
+        abs_min_acc = min(abs_min_acc, 1/num_possible_answers)
         for entity_id, occurrences_increase in entity_dict.items():
             slice_info = occurrences_increase["occurrences_increase"][idx]
 
@@ -46,9 +48,10 @@ for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Get results in s
 
             occurrences_list.append(occurrences)
             answer_list.append(T)
+            answer_space.append(1/num_possible_answers)
 
     # Sum scores for the current slice
-    data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list}
+    data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list, "answer_space": answer_space}
 
 initial_slice_len = len(data_on_slices["0"]["occurrences"])
 for slice_id in data_on_slices.keys():
@@ -57,12 +60,13 @@ for slice_id in data_on_slices.keys():
     assert len(data_on_slices[slice_id]["occurrences"]) == initial_slice_len
 
 
-def cumulative_distribution_function(lambd, x):
-    return 1 - np.exp(-lambd * x) if x >= 0 else 0
+def cumulative_distribution_function(lambd, x, max_ac, min_ac):
+    prob = 1 - np.exp(-lambd * x)
+    return min_ac + (max_ac - min_ac) * prob
 
 
 # Vectorize the CDF to handle arrays
-vectorized_cdf = np.vectorize(cumulative_distribution_function, excluded=["lambd"])
+vectorized_cdf = np.vectorize(cumulative_distribution_function, excluded=["lambd", "max_ac"])
 
 
 # Define the log-likelihood function
@@ -76,15 +80,16 @@ def compute_log_likelihood(t, p_i):
 
 
 # Define the negative log-likelihood loss
-def negative_log_likelihood(lambd, _occurrences, _outcomes):
+def negative_log_likelihood(params, _occurrences, _outcomes, _min_acc):
     """
     Compute the negative log-likelihood for a given lambda.
 
-    lambd: float, the parameter to optimize
+    params: lambd value and x_max
     occurrences: array-like, number of occurrences of each fact
     outcomes: array-like, binary outcomes (1 for correct, 0 for incorrect)
     """
-    p_i = vectorized_cdf(lambd, _occurrences)
+    lambd, max_ac = params
+    p_i = vectorized_cdf(lambd, _occurrences, max_ac, _min_acc)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
@@ -92,29 +97,32 @@ def negative_log_likelihood(lambd, _occurrences, _outcomes):
 
 
 # Initial guess for lambda
-initial_lambda = np.array(0.1)
+initial_params = np.array([0.1, 1.0])
+bounds = [(1e-5, None), (0.0, 1.0)]
 optimized_lambdas = []
 for slice_id, slice_data in data_on_slices.items():
     occurrences = np.array(slice_data["occurrences"])
     outcomes = np.array(slice_data["answers"])
+    min_acc = np.array(slice_data["answer_space"])
 
     # Minimize the negative log-likelihood
     result = minimize(
         negative_log_likelihood,
-        x0=initial_lambda,
-        args=(occurrences, outcomes),
-        bounds=[(1e-5, None)],  # Lambda must be positive
+        x0=initial_params,
+        args=(occurrences, outcomes, min_acc),
+        bounds=bounds,  # Lambda must be positive
         method="L-BFGS-B",
     )
 
     # Optimized lambda
-    optimized_lambda = result.x[0]
+    optimized_lambda, optimized_max_acc = result.x
     print(f"Slice {slice_id}: Optimized lambda: {optimized_lambda}")
+    print(f"Slice {slice_id}: Optimized optimized_max_acc: {optimized_max_acc}")
 
     # Check the result
     if result.success:
         print(f"Slice {slice_id}: Optimization was successful. Optimized lambda: {optimized_lambda}")
-        optimized_lambdas.append({"slice": slice_id, "lambda": optimized_lambda})
+        optimized_lambdas.append({"slice": slice_id, "lambda": optimized_lambda, "optimized_max_acc": optimized_max_acc})
     else:
         logging.warning(f"Slice {slice_id}: Optimization failed:", result.message)
 
@@ -128,8 +136,13 @@ def plot_cdf_for_lambda(lambdas, occurrences_range):
     """
     plt.figure(figsize=(24, 18))
     for lambd in lambdas:
-        probabilities = [cumulative_distribution_function(lambd["lambda"], x) for x in occurrences_range]
-        plt.plot(occurrences_range, probabilities, label=f"Lambda = {lambd['lambda']:.4f} Slice {lambd['slice']}")
+        probabilities = [
+            cumulative_distribution_function(lambd["lambda"], x, lambd["optimized_max_acc"], abs_min_acc) for x in occurrences_range
+        ]
+        plt.plot(
+            occurrences_range,
+            probabilities,
+            label=f"Lambda = {lambd['lambda']:.4f}; " f"Slice {lambd['slice']}; " f"optimized_max_acc = {lambd['optimized_max_acc']:.4f}")
 
     plt.title("CDF for Optimized Lambdas")
     plt.xlabel("Occurrences")
@@ -138,7 +151,22 @@ def plot_cdf_for_lambda(lambdas, occurrences_range):
     plt.grid()
     plt.show()
 
+def plot_lambdas(lambdas):
+    """
+    Plot the lambda values over the slices.
+    """
+    plt.figure(figsize=(24, 18))
+    x = [lambd["slice"] for lambd in lambdas]
+    y = [lambd["lambda"] for lambd in lambdas]
+    plt.plot(x, y, marker="o", linestyle="-", color="b")
+    plt.title("Optimized Lambda Values")
+    plt.xlabel("Slice")
+    plt.ylabel("Lambda")
+    plt.grid()
+    plt.show()
+
 
 # Plot the log-likelihood scores over the checkpoints
 max_occurrence = 1024
-plot_cdf_for_lambda(optimized_lambdas, np.linspace(0, max_occurrence, 100))
+# plot_cdf_for_lambda(optimized_lambdas, np.linspace(0, max_occurrence, 100))
+plot_lambdas(optimized_lambdas)
