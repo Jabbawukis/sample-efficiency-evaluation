@@ -9,6 +9,7 @@ from scipy.optimize import minimize
 import utility.utility
 from utility.utility import load_json_dict
 
+
 def get_num(x: str) -> int:
     """Extract numerical suffix from a string."""
     number = x.split("-")[-1]
@@ -31,7 +32,7 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
         for relation_id, entity_dict in increasing_occurrences.items():
             # Get number of possible answers for this relation
             num_possible_answers = len(metadata[relation_id]["answer_space_labels"])
-            abs_min_acc = min(abs_min_acc, 1/num_possible_answers)
+            abs_min_acc = min(abs_min_acc, 1 / num_possible_answers)
             for entity_id, occurrences_increase in entity_dict.items():
                 slice_info = occurrences_increase["occurrences_increase"][idx]
 
@@ -44,10 +45,14 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
 
                 occurrences_list.append(slice_info["total"])
                 answer_list.append(T)
-                answer_space.append(1/num_possible_answers)
+                answer_space.append(1 / num_possible_answers)
 
         # Sum scores for the current slice
-        data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list, "answer_space": answer_space}
+        data_on_slices[f"{idx}"] = {
+            "occurrences": occurrences_list,
+            "answers": answer_list,
+            "answer_space": answer_space,
+        }
 
     initial_slice_len = len(data_on_slices["0"]["occurrences"])
     for slice_id in data_on_slices.keys():
@@ -93,6 +98,7 @@ def negative_log_likelihood(params, _occurrences, _outcomes, _min_acc):
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
     return -np.sum(log_likelihood)
 
+
 def optimize_lambdas(data_slice_info):
     # Initial guess for lambda
     initial_params = np.array([0.1, 1.0])
@@ -120,7 +126,9 @@ def optimize_lambdas(data_slice_info):
         # Check the result
         if result.success:
             print(f"Slice {slice_id}: Optimization was successful. Optimized lambda: {optimized_lambda}")
-            optimized_lambdas.append({"slice": slice_id, "lambda": optimized_lambda, "optimized_max_acc": optimized_max_acc})
+            optimized_lambdas.append(
+                {"slice": slice_id, "lambda": optimized_lambda, "optimized_max_acc": optimized_max_acc}
+            )
         else:
             logging.warning(f"Slice {slice_id}: Optimization failed:", result.message)
     return optimized_lambdas
@@ -136,12 +144,16 @@ def plot_cdf_for_lambda(lambdas, occurrences_range, abs_min_acc):
     plt.figure(figsize=(24, 18))
     for lambd in lambdas:
         probabilities = [
-            cumulative_distribution_function(lambd["lambda"], x, lambd["optimized_max_acc"], abs_min_acc) for x in occurrences_range
+            cumulative_distribution_function(lambd["lambda"], x, lambd["optimized_max_acc"], abs_min_acc)
+            for x in occurrences_range
         ]
         plt.plot(
             occurrences_range,
             probabilities,
-            label=f"Lambda = {lambd['lambda']:.4f}; " f"Slice {lambd['slice']}; " f"optimized_max_acc = {lambd['optimized_max_acc']:.4f}")
+            label=f"Lambda = {lambd['lambda']:.4f}; "
+            f"Slice {lambd['slice']}; "
+            f"optimized_max_acc = {lambd['optimized_max_acc']:.4f}",
+        )
 
     plt.title("CDF for Optimized Lambdas")
     plt.xlabel("Occurrences")
@@ -167,18 +179,18 @@ def plot_lambdas(lambdas_of_models: list):
 
         # Calculate and plot the average line
         avg_lambda = float(np.mean(y))
-        plt.axhline(y=avg_lambda, color='r', linestyle='--', alpha=0.7)
+        plt.axhline(y=avg_lambda, color="r", linestyle="--", alpha=0.7)
 
         # Annotate the average line with model name and value
         plt.text(
             x[-1],  # Place the text near the last x-value
             avg_lambda,
             f"{_model_lambdas['Model']}; Avg. Lambda: {avg_lambda:.4f}",
-            color='red',
+            color="red",
             fontsize=12,
-            ha='right',
-            va='bottom',
-            bbox=dict(facecolor='white', alpha=0.7, edgecolor='red', boxstyle='round,pad=0.3')
+            ha="right",
+            va="bottom",
+            bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
         )
 
     # Add titles, labels, and legend
@@ -201,11 +213,15 @@ for model in models:
     path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
     path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-    slice_data, abs_min_accuracy = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+    slice_data, abs_min_accuracy = get_slice_data(
+        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+    )
 
     optimized_lambdas.append({"Model": model, "Lambdas": optimize_lambdas(slice_data)})
 
 for model in optimized_lambdas:
-    utility.utility.save_dict_as_json(model,
-                                      f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json")
+    utility.utility.save_dict_as_json(
+        model,
+        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+    )
 plot_lambdas(optimized_lambdas)
