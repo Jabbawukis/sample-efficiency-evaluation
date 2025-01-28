@@ -17,7 +17,10 @@ relation_occurrence_buckets = [
     (128, 256),
     (256, 512),
     (512, 1024),
-    (1024, float("inf")),
+    (1024, 2048),
+    (2048, 4096),
+    (4096, 8192),
+    (8192, float("inf")),
 ]
 
 
@@ -161,7 +164,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
     plt.savefig(_final_diagram_output_path)
 
 
-models = ["gpt2"]
+models = ["gpt2", "mamba2", "xlstm"]
 
 for model in models:
     path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"

@@ -31,7 +31,10 @@ class KnowledgeProber:
             (128, 256),
             (256, 512),
             (512, 1024),
-            (1024, float("inf")),
+            (1024, 2048),
+            (2048, 4096),
+            (4096, 8192),
+            (8192, float("inf")),
         ]
         self.bear_results = None
 
@@ -113,6 +116,7 @@ class KnowledgeProber:
             ax2.text(_bar.get_x() + _bar.get_width() / 2, height, f"{height}", ha="center", va="bottom", color="red")
 
         plt.xticks(rotation=45, ha="right")
+        ax1.set_xticklabels(x_labels, rotation=45, ha="right")
         legend = fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.1), fontsize=10, ncol=2)
         plt.title("Entity Pair Accuracy and Total Occurrences Histogram")
         plt.tight_layout()
