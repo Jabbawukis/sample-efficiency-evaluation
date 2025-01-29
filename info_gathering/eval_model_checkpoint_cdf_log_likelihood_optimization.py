@@ -207,11 +207,11 @@ def plot_lambdas(lambdas_of_models: list):
 # plot_cdf_for_lambda(optimized_lambdas, np.linspace(0, max_occurrence, 100))
 
 optimized_lambdas = []
-models = ["gpt2", "mamba2", "xlstm"]
+models = ["gpt2_124m", "mamba2_172m", "xlstm_247m"]
 
 for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
     slice_data, abs_min_accuracy = get_slice_data(
         path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
@@ -222,6 +222,6 @@ for model in models:
 for model in optimized_lambdas:
     utility.utility.save_dict_as_json(
         model,
-        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
     )
 plot_lambdas(optimized_lambdas)

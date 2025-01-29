@@ -56,9 +56,9 @@ class FactMatcherBase(ABC):
         :return: List of tokens
         """
         if only_lower:
-            return [token.orth_ for token in self.tokenizer(sentence.lower())]
+            return [token.orth_.lower() for token in self.tokenizer(sentence)]
         return [token.orth_ for token in self.tokenizer(sentence)], [
-            token.orth_ for token in self.tokenizer(sentence.lower())
+            token.orth_.lower() for token in self.tokenizer(sentence)
         ]
 
     @staticmethod

@@ -38,11 +38,11 @@ def get_model_checkpoint_answer_for_occurrences_in_slices_data(
     save_dict_as_json(increasing_occurrences, output_path_increasing_occurrences_in_slices)
 
 
-models = ["gpt2", "mamba2", "xlstm"]
+models = ["gpt2_124m", "mamba2_172m", "xlstm_247m"]
 
 for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    output_path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}_from_scratch/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+    output_path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
     get_model_checkpoint_answer_for_occurrences_in_slices_data(
         path_to_checkpoints_probing_results, output_path_to_increasing_occurrences_in_slices
     )
