@@ -96,7 +96,7 @@ def optimize_alphas(data_slice_info):
             negative_log_likelihood,
             x0=initial_params,
             args=(occurrences, outcomes),
-            bounds=bounds,  # Lambda must be positive
+            bounds=bounds,
             method="L-BFGS-B",
         )
 
@@ -118,41 +118,34 @@ def optimize_alphas(data_slice_info):
     return _optimized_alphas
 
 
-def plot_slf(alphas_of_models, occurrences_range):
-    plt.figure(figsize=(24, 18))
-    for _model_alpha in alphas_of_models:
-        for alpha in _model_alpha["Alphas"]:
-            probabilities = [scaling_law_function(alpha["alpha"], x) for x in occurrences_range]
-            plt.plot(
-                occurrences_range, probabilities, label=f"Alpha = {alpha['alpha']:.4f}; " f"Slice {alpha['slice']}; "
-            )
-
-    plt.title("Optimized Alphas")
-    plt.xlabel("Occurrences")
-    plt.ylabel("Probability")
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-def plot_alphas(alphas_of_models: list):
+def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: str):
     plt.figure(figsize=(24, 18))
 
-    for _model_alpha in alphas_of_models:
-        x = [alpha["slice"] for alpha in _model_alpha["Alphas"]]
-        y = [alpha["alpha"] for alpha in _model_alpha["Alphas"]]
+    # Find the union of all x values and convert them to integers for proper sorting
+    all_slices = sorted(
+        set(int(slice_val) for model in alphas_of_models for slice_val in [alpha["slice"] for alpha in model["Alphas"]])
+    )
 
-        plt.plot(x, y, marker="o", linestyle="-", label=f"{_model_alpha['Model']}")
+    for _model_alphas in alphas_of_models:
 
-        # Calculate and plot the average line
-        avg_alpha = float(np.mean(y))
+        model_slices = {alpha["slice"]: alpha["alpha"] for alpha in _model_alphas["Alphas"]}
+
+        # Get available x and y values (excluding NaNs)
+        x_available = np.array([x for x in model_slices.keys()])
+        y_available = np.array([model_slices[str(x)] for x in x_available])
+
+        plt.plot(x_available, y_available, marker="o", linestyle="-", label=f"{_model_alphas['Model']}")
+
+        # Exclude NaN values from mean calculation
+        avg_alpha = float(np.nanmean(y_available))
+
         plt.axhline(y=avg_alpha, color="r", linestyle="--", alpha=0.7)
 
         # Annotate the average line with model name and value
         plt.text(
-            x[-1],  # Place the text near the last x-value
+            all_slices[-1],  # Place the text near the last x-value
             avg_alpha,
-            f"{_model_alpha['Model']}; Avg. Alpha: {avg_alpha:.4f}",
+            f"{_model_alphas['Model']}; Avg. Alpha: {avg_alpha:.4f}",
             color="red",
             fontsize=12,
             ha="right",
@@ -160,20 +153,23 @@ def plot_alphas(alphas_of_models: list):
             bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
         )
 
+    # Ensure all x-axis values are shown
+    plt.xticks(all_slices)
+
     # Add titles, labels, and legend
     plt.title("Optimized Alpha Values", fontsize=16)
     plt.xlabel("Slice", fontsize=14)
     plt.ylabel("Alpha", fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(alpha=0.5)
-    plt.show()
+    plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
+    plt.clf()
+    plt.close()
 
-
-# Plot the log-likelihood scores over the checkpoints
-max_occurrence = 8192
 
 optimized_alphas = []
-models = ["gpt2_124m", "mamba2_172m", "xlstm_247m"]
+output_path = "../../sample_efficiency_evaluation_results/"
+models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
 
 for model in models:
     path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
@@ -188,5 +184,22 @@ for model in optimized_alphas:
         model,
         f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/optimized_alphas.json",
     )
-# plot_slf(optimized_alphas, np.linspace(1, max_occurrence, 300))
-plot_alphas(optimized_alphas)
+plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_big")
+
+
+#############################################################################################
+optimized_alphas = []
+for model in models:
+    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+
+    slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+
+    optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
+
+for model in optimized_alphas:
+    utility.utility.save_dict_as_json(
+        model,
+        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/optimized_alphas.json",
+    )
+plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_small")

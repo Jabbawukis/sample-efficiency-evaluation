@@ -13,8 +13,3 @@ The model checkpoints answers are evaluated for each fact.
 
 For each checkpoint, the model is probed and the accuracy is calculated for each occurrence bucket. The results are plotted
 and saved as a .png file.
-
-## 3. Evaluate the model checkpoint correct answer probability (requires step 1.)
-
-For each checkpoint, the model's correct answer probability given the number of occurrences of the fact in the training
-data up until the slice seen by the model at said checkpoint is calculated.

@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -64,14 +65,22 @@ class KnowledgeProber:
         evaluator = Evaluator.from_model(model, model_type=model_type, device=device)
         evaluator.evaluate_dataset(dataset, save_path=result_save_path, batch_size=batch_size)
 
-    def load_bear_results(self, path_to_bear_results: str) -> None:
+    def load_bear_results(self, path_to_bear_results: str, subset_indices: Optional[str] = None) -> None:
         """
         Load the BEAR results.
 
-        :param path_to_bear_results: Path to the BEAR results.git stat
+        :param path_to_bear_results: Path to the BEAR results jsonl files
+        :param subset_indices: Indices of the subset to load.
+        When probing a model on BEAR-big, the results can be used
+        to evaluate the model answers on BEAR(-small) by providing the indices of the subset to load.
+        The file in the dataset is called "bear_lite_indices.json".
         :return:
         """
-        self.bear_results = DatasetResults.from_path(path_to_bear_results)
+        if subset_indices:
+            subset_indices_dict: dict = utility.load_json_dict(subset_indices)
+            self.bear_results = DatasetResults.from_path(path_to_bear_results).filter_subset(subset_indices_dict)
+        else:
+            self.bear_results = DatasetResults.from_path(path_to_bear_results)
 
     @staticmethod
     def create_fact_accuracy_histogram(
