@@ -174,6 +174,7 @@ for model in models:
     data = get_checkpoint_accuracy(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
     plot_checkpoint_accuracy(data, final_diagram_output_path)
 
+#############################################################################################
 for model in models:
     path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
     path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
