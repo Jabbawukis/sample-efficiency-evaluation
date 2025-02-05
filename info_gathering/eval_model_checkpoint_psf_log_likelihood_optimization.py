@@ -6,8 +6,7 @@ import logging
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
-import utility.utility
-from utility.utility import load_json_dict
+from utility.utility import load_json_dict, save_dict_as_json
 
 
 def get_num(x: str) -> int:
@@ -59,11 +58,11 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
     return data_on_slices
 
 
-def scaling_law_function(alpha, x):
+def power_scaling_function(alpha, x):
     return 1 - np.power(1 / x, alpha)
 
 
-vectorized_slf = np.vectorize(scaling_law_function, excluded=["alpha"])
+vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha"])
 
 
 # Define the log-likelihood function
@@ -74,7 +73,7 @@ def compute_log_likelihood(t, p_i):
 # Define the negative log-likelihood loss
 def negative_log_likelihood(params, _occurrences, _outcomes):
     alpha = params
-    p_i = vectorized_slf(alpha, _occurrences)
+    p_i = vectorized_psf(alpha, _occurrences)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
@@ -167,39 +166,42 @@ def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: 
     plt.close()
 
 
-optimized_alphas = []
-output_path = "../../sample_efficiency_evaluation_results/"
-models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+def run_eval():
+    optimized_alphas = []
+    output_path = "../../sample_efficiency_evaluation_results/"
+    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
 
-for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    for model in models:
+        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-    slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
-    optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
+        optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
 
-for model in optimized_alphas:
-    utility.utility.save_dict_as_json(
-        model,
-        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/optimized_alphas.json",
-    )
-plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_big")
+    for model in optimized_alphas:
+        save_dict_as_json(
+            model,
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/psf_optimized_alphas.json",
+        )
+    plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_big")
+
+    #############################################################################################
+    optimized_alphas = []
+    for model in models:
+        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+
+        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+
+        optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
+
+    for model in optimized_alphas:
+        save_dict_as_json(
+            model,
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/psf_optimized_alphas.json",
+        )
+    plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_small")
 
 
-#############################################################################################
-optimized_alphas = []
-for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
-
-    slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
-
-    optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
-
-for model in optimized_alphas:
-    utility.utility.save_dict_as_json(
-        model,
-        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/optimized_alphas.json",
-    )
-plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_small")
+# run_eval()

@@ -6,8 +6,7 @@ import logging
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
-import utility.utility
-from utility.utility import load_json_dict
+from utility.utility import load_json_dict, save_dict_as_json
 
 
 def get_num(x: str) -> int:
@@ -171,38 +170,42 @@ def plot_lambdas(lambdas_of_models: list, _output_path: str, output_diagram_name
     plt.close()
 
 
-optimized_lambdas = []
-output_path = "../../sample_efficiency_evaluation_results/"
-models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+def run_eval():
+    optimized_lambdas = []
+    output_path = "../../sample_efficiency_evaluation_results/"
+    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
 
-for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    for model in models:
+        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-    slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
-    optimized_lambdas.append({"Model": model, "Lambdas": optimize_lambdas(slice_data)})
+        optimized_lambdas.append({"Model": model, "Lambdas": optimize_lambdas(slice_data)})
 
-for model in optimized_lambdas:
-    utility.utility.save_dict_as_json(
-        model,
-        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
-    )
-plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_big")
+    for model in optimized_lambdas:
+        save_dict_as_json(
+            model,
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+        )
+    plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_big")
 
-#############################################################################################
-optimized_lambdas = []
-for model in models:
-    path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-    path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    #############################################################################################
+    optimized_lambdas = []
+    for model in models:
+        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-    slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
-    optimized_lambdas.append({"Model": model, "Lambdas": optimize_lambdas(slice_data)})
+        optimized_lambdas.append({"Model": model, "Lambdas": optimize_lambdas(slice_data)})
 
-for model in optimized_lambdas:
-    utility.utility.save_dict_as_json(
-        model,
-        f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
-    )
-plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_small")
+    for model in optimized_lambdas:
+        save_dict_as_json(
+            model,
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+        )
+    plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_small")
+
+
+# run_eval()
