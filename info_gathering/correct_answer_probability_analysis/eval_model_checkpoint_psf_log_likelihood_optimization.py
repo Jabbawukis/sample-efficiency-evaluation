@@ -182,7 +182,7 @@ def run_eval():
     for model in optimized_alphas:
         save_dict_as_json(
             model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/psf_optimized_alphas.json",
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
         )
     plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_big")
 
@@ -199,7 +199,7 @@ def run_eval():
     for model in optimized_alphas:
         save_dict_as_json(
             model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/psf_optimized_alphas.json",
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
         )
     plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_small")
 

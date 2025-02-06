@@ -186,7 +186,7 @@ def run_eval():
     for model in optimized_lambdas:
         save_dict_as_json(
             model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/cdf_optimized_lambdas.json",
         )
     plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_big")
 
@@ -203,7 +203,7 @@ def run_eval():
     for model in optimized_lambdas:
         save_dict_as_json(
             model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/cdf_optimized_lambdas.json",
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/cdf_optimized_lambdas.json",
         )
     plot_lambdas(optimized_lambdas, output_path, output_diagram_name="cdf_optimized_lambdas_bear_small")
 

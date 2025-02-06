@@ -5,10 +5,18 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from utility.utility import load_json_dict, save_dict_as_json
-from info_gathering.eval_model_checkpoint_psf_log_likelihood_optimization import vectorized_psf
-from info_gathering.eval_model_checkpoint_psf_log_likelihood_optimization import get_slice_data as get_slice_data_psf
-from info_gathering.eval_model_checkpoint_cdf_log_likelihood_optimization import vectorized_cdf
-from info_gathering.eval_model_checkpoint_cdf_log_likelihood_optimization import get_slice_data as get_slice_data_cdf
+from info_gathering.correct_answer_probability_analysis.eval_model_checkpoint_psf_log_likelihood_optimization import (
+    vectorized_psf,
+)
+from info_gathering.correct_answer_probability_analysis.eval_model_checkpoint_psf_log_likelihood_optimization import (
+    get_slice_data as get_slice_data_psf,
+)
+from info_gathering.correct_answer_probability_analysis.eval_model_checkpoint_cdf_log_likelihood_optimization import (
+    vectorized_cdf,
+)
+from info_gathering.correct_answer_probability_analysis.eval_model_checkpoint_cdf_log_likelihood_optimization import (
+    get_slice_data as get_slice_data_cdf,
+)
 
 
 def compute_log_likelihood(t, p_i):
@@ -28,9 +36,9 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     for _model, _functions in model_nll_dict.items():
         for _function in _functions:
 
-            nlls = np.array([value["NLL_value"] for value in _function["NLL"]])
+            nlls = np.array([value["value"] for value in _function["NLL_values"]])
 
-            slices = np.array([value["Slice"] for value in _function["NLL"]])
+            slices = np.array([value["slice"] for value in _function["NLL_values"]])
 
             plt.plot(slices, nlls, marker="o", linestyle="-", label=f"{_model} - {_function['Function']}")
 
@@ -80,7 +88,7 @@ for bear_size in bear_sizes:
             )
 
             optimized_params_dict = load_json_dict(
-                f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/{function['file_name']}"
+                f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/{function['file_name']}"
             )
             list_of_optimized_params: list[dict] = optimized_params_dict[function["Params"]]
 
@@ -103,25 +111,23 @@ for bear_size in bear_sizes:
 
                 nll_sums.append(
                     {
-                        "Slice": slice_id,
-                        "NLL_value": negative_log_likelihood(
+                        "slice": slice_id,
+                        "value": negative_log_likelihood(
                             optimized_param, function["function_method"], occurrences, outcomes
                         ),
                     }
                 )
 
-            model_dict[model].append({"Function": function["function_name"], "NLL": nll_sums})
+            model_dict[model].append({"Function": function["function_name"], "NLL_values": nll_sums})
         nll_on_slices.append(model_dict)
-
-    results = {"NLL_values": nll_on_slices}
 
     for model in nll_on_slices:
         plot_nll(
             model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/",
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/",
             f"nll_on_slices_bear_{bear_size}",
         )
-
-    save_dict_as_json(
-        results, f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/nll_on_slices.json"
-    )
+        save_dict_as_json(
+            model,
+            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/nll_on_slices.json",
+        )
