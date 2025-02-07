@@ -5,7 +5,7 @@ from utility.utility import load_json_dict
 context_length = 128
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
-bear_path = "../BEAR"
+bear_path = "../../BEAR"
 
 
 def tokenize(element):

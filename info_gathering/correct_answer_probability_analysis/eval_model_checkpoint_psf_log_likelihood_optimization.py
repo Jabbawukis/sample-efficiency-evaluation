@@ -170,38 +170,23 @@ def run_eval():
     optimized_alphas = []
     output_path = "../../sample_efficiency_evaluation_results/"
     models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+    bear_sizes = ["big", "small"]
 
-    for model in models:
-        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    for bear_size in bear_sizes:
+        for model in models:
+            path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+            path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+            slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
-        optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
+            optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
 
-    for model in optimized_alphas:
-        save_dict_as_json(
-            model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
-        )
-    plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_big")
-
-    #############################################################################################
-    optimized_alphas = []
-    for model in models:
-        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-        path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
-
-        slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
-
-        optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
-
-    for model in optimized_alphas:
-        save_dict_as_json(
-            model,
-            f"../../sample_efficiency_evaluation_results/probing_results/BEAR-small/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
-        )
-    plot_alphas(optimized_alphas, output_path, output_diagram_name="psf_optimized_alphas_bear_small")
+        for model in optimized_alphas:
+            save_dict_as_json(
+                model,
+                f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
+            )
+        plot_alphas(optimized_alphas, output_path, output_diagram_name=f"psf_optimized_alphas_bear_{bear_size}")
 
 
 # run_eval()
