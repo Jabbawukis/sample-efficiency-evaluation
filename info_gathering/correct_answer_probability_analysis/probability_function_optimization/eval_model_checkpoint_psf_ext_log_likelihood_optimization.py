@@ -22,15 +22,10 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
     data_on_slices = {}
     for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Get results in slices")):
         # Load checkpoint metadata
-        metadata = load_json_dict(f"{path_probing_results}/{checkpoint}/metadata_results.json")
         occurrences_list = []
         answer_list = []
-        answer_space = []
-
         for relation_id, entity_dict in increasing_occurrences.items():
             # Get number of possible answers for this relation
-            num_possible_answers = len(metadata[relation_id]["answer_space_labels"])
-
             for entity_id, occurrences_increase in entity_dict.items():
                 slice_info = occurrences_increase["occurrences_increase"][idx]
 
@@ -41,28 +36,22 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
                 # Extract occurrence and correctness
                 T = 1 if slice_info["correct"] else 0
 
-                # Skip slices with no occurrences
-                if slice_info["total"] == 0:
-                    continue
-
                 occurrences_list.append(slice_info["total"])
                 answer_list.append(T)
-                answer_space.append(1 / num_possible_answers)
 
         # Sum scores for the current slice
         data_on_slices[f"{idx}"] = {
             "occurrences": occurrences_list,
             "answers": answer_list,
-            "answer_space": answer_space,
         }
     return data_on_slices
 
 
-def power_scaling_function(alpha, x):
-    return 1 - np.power(1 / x, alpha)
+def power_scaling_function_ext(alpha, x):
+    return 1 - np.power(1 / (1 + x), alpha)
 
 
-vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha"])
+vectorized_psf_ext = np.vectorize(power_scaling_function_ext, excluded=["alpha"])
 
 
 # Define the log-likelihood function
@@ -73,7 +62,7 @@ def compute_log_likelihood(t, p_i):
 # Define the negative log-likelihood loss
 def negative_log_likelihood(params, _occurrences, _outcomes):
     alpha = params
-    p_i = vectorized_psf(alpha, _occurrences)
+    p_i = vectorized_psf_ext(alpha, _occurrences)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
@@ -166,16 +155,17 @@ def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: 
     plt.close()
 
 
-def run_eval():
-    optimized_alphas = []
-    output_path = "../../sample_efficiency_evaluation_results/"
+if __name__ == "__main__":
+    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
+    output_path = f"{abs_path}/sample_efficiency_evaluation_results/"
     models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
     bear_sizes = ["big", "small"]
 
     for bear_size in bear_sizes:
+        optimized_alphas = []
         for model in models:
-            path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
             slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
@@ -184,9 +174,6 @@ def run_eval():
         for model in optimized_alphas:
             save_dict_as_json(
                 model,
-                f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/psf_optimized_alphas.json",
+                f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/psf-ext_optimized_alphas.json",
             )
-        plot_alphas(optimized_alphas, output_path, output_diagram_name=f"psf_optimized_alphas_bear_{bear_size}")
-
-
-# run_eval()
+        plot_alphas(optimized_alphas, output_path, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}")

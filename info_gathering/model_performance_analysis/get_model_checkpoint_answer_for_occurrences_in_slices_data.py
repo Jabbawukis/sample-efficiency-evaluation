@@ -50,15 +50,15 @@ def get_model_checkpoint_answer_for_occurrences_in_slices_data(
 
 models = ["gpt2_124m", "mamba2_172m", "xlstm_247m", "gpt2_209m"]
 bear_sizes = ["big", "small"]
-
+abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
 
 for bear_size in bear_sizes:
     for model in models:
-        path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-        output_path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+        path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+        output_path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
         get_model_checkpoint_answer_for_occurrences_in_slices_data(
             path_to_checkpoints_probing_results,
             output_path_to_increasing_occurrences_in_slices,
-            path_to_relation_info_on_slices=f"../../sample_efficiency_evaluation_results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices",
+            path_to_relation_info_on_slices=f"{abs_path}/sample_efficiency_evaluation_results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices",
             subset_indices="../BEAR/bear_lite_indices.json" if bear_size == "small" else None,
         )

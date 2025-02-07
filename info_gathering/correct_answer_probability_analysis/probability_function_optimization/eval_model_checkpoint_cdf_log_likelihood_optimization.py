@@ -170,16 +170,17 @@ def plot_lambdas(lambdas_of_models: list, _output_path: str, output_diagram_name
     plt.close()
 
 
-def run_eval():
-    output_path = "../../sample_efficiency_evaluation_results/"
+if __name__ == "__main__":
+    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
+    output_path = f"{abs_path}/sample_efficiency_evaluation_results/"
     models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
     bear_sizes = ["big", "small"]
 
     for bear_size in bear_sizes:
         optimized_lambdas = []
         for model in models:
-            path_to_checkpoints_probing_results = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
             slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
 
@@ -188,9 +189,6 @@ def run_eval():
         for model in optimized_lambdas:
             save_dict_as_json(
                 model,
-                f"../../sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/cdf_optimized_lambdas.json",
+                f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/cdf_optimized_lambdas.json",
             )
         plot_lambdas(optimized_lambdas, output_path, output_diagram_name=f"cdf_optimized_lambdas_bear_{bear_size}")
-
-
-# run_eval()
