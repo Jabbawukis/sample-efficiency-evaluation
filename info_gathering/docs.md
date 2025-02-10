@@ -1,4 +1,4 @@
-# Scripts for Evaluation
+# Performance Analysis on the BEAR-probe
 
 ## 1. Evaluation of the model answers for each checkpoint
 
@@ -7,9 +7,27 @@
 Counts the [increasing occurrences](https://github.com/Jabbawukis/sample-efficiency-evaluation-results/tree/main/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/evaluation_on_slices) of BEAR facts in the training data up until the slice.
 The model checkpoints answers are evaluated for each fact.
 
-## 2. Get the model checkpoint accuracies over the occurrence buckets (requires step 1.)
+## 2. Get the model checkpoint accuracies over the occurrence buckets (requires step 1. of model performance analysis)
 
 [Get accuracies over occurrence buckets](model_performance_analysis/eval_model_checkpoint_accuracy_on_slices.py):
 
-For each checkpoint, the model is probed and the accuracy is calculated for each occurrence bucket. The results are plotted
-and saved as a .png file.
+For each checkpoint probing result, the accuracy is calculated for each occurrence bucket.
+The accuracy results for each checkpoint are plotted and saved as a .png file.
+
+# Correct Answer Probability Analysis
+
+## 1. Probability Function Optimization (requires step 1. of model performance analysis)
+
+Probability [functions](correct_answer_probability_analysis/probability_function_optimization)
+that approximate the probability of the model checkpoint to give the correct answer given 
+the number of occurrences of the fact in the training data, are optimized.
+
+See [here](https://github.com/Jabbawukis/sample-efficiency-evaluation-results/blob/main/probing_on_dataset_slices.md)
+for the probability function definitions.
+The optimized parameters of the probability functions are saved as .json files.
+
+## 2. Evaluate the probability functions (requires step 1. of answer probability analysis)
+
+The probability functions are evaluated for each model checkpoint and the results are saved as .png files.
+Here, the negative log likelihood loss is calculated for each model checkpoint and for each probability function.
+The results are saved as .png files and .json files.

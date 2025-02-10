@@ -183,8 +183,14 @@ if __name__ == "__main__":
             optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
 
         for model in optimized_alphas:
+
+            _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+
+            if not os.path.exists(_output_path):
+                os.makedirs(_output_path)
+
             save_dict_as_json(
                 model,
-                f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/psf_optimized_alphas.json",
+                f"{_output_path}/psf_optimized_alphas.json",
             )
         plot_alphas(optimized_alphas, output_path, output_diagram_name=f"psf_optimized_alphas_bear_{bear_size}")
