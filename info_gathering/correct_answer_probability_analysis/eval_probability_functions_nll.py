@@ -29,24 +29,38 @@ def compute_log_likelihood(t, p_i):
     return t * np.log(p_i) + (1 - t) * np.log(1 - p_i)
 
 
-def negative_log_likelihood(_param, vectorized_probability_function, _occurrences, _outcomes):
+def negative_log_likelihood(_param, vectorized_probability_function, _occurrences, _outcomes, _total_samples):
     p_i = vectorized_probability_function(_param, _occurrences)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
-    return -np.sum(log_likelihood)
+    return -(1 / _total_samples) * np.sum(log_likelihood)
 
 
 def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     plt.figure(figsize=(24, 18))
+    # Ensure all x-axis values are shown
+    plt.xticks(range(0, 42))
+
     for _model, _functions in model_nll_dict.items():
         for _function in _functions:
 
-            nlls = np.array([value["value"] for value in _function["NLL_values"]])
+            nlls = []
+            count = 0
+            for value in _function["NLL_values"]:
+                if value["slice"] != str(count):
+                    nlls.append(np.nan)
+                    count += 1
+                nlls.append(value["value"])
+                count += 1
 
-            slices = np.array([value["slice"] for value in _function["NLL_values"]])
+            nlls = np.array(nlls)
+            nlls_mask = np.isfinite(nlls)
+            xs = np.arange(42)
 
-            plt.plot(slices, nlls, marker="o", linestyle="-", label=f"{_model} - {_function['Function']}")
+            plt.plot(
+                xs[nlls_mask], nlls[nlls_mask], marker="o", linestyle="-", label=f"{_model} - {_function['Function']}"
+            )
 
     plt.title("Negative Loss Likelihood over Slices (lower is better)", fontsize=16)
     plt.xlabel("Slice", fontsize=14)
@@ -115,6 +129,7 @@ if __name__ == "__main__":
                 for slice_id, _slice_data in slice_data.items():
                     occurrences = np.array(_slice_data["occurrences"])
                     outcomes = np.array(_slice_data["answers"])
+                    total_samples = _slice_data["total_samples"]
 
                     try:
                         slice_optimized_param = available_params_for_slices[slice_id]
@@ -129,7 +144,7 @@ if __name__ == "__main__":
                         {
                             "slice": slice_id,
                             "value": negative_log_likelihood(
-                                optimized_param, function["function_method"], occurrences, outcomes
+                                optimized_param, function["function_method"], occurrences, outcomes, total_samples
                             ),
                         }
                     )

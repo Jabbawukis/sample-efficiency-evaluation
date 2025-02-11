@@ -24,6 +24,8 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
         # Load checkpoint metadata
         occurrences_list = []
         answer_list = []
+        total = 0
+
         for relation_id, entity_dict in increasing_occurrences.items():
             # Get number of possible answers for this relation
             for entity_id, occurrences_increase in entity_dict.items():
@@ -33,6 +35,8 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
                 assert slice_info["Slice"] == idx
                 assert slice_info["checkpoint"] == checkpoint
 
+                total += 1
+
                 # Extract occurrence and correctness
                 T = 1 if slice_info["correct"] else 0
 
@@ -40,10 +44,7 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
                 answer_list.append(T)
 
         # Sum scores for the current slice
-        data_on_slices[f"{idx}"] = {
-            "occurrences": occurrences_list,
-            "answers": answer_list,
-        }
+        data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list, "total_samples": total}
     return data_on_slices
 
 
@@ -60,13 +61,12 @@ def compute_log_likelihood(t, p_i):
 
 
 # Define the negative log-likelihood loss
-def negative_log_likelihood(params, _occurrences, _outcomes):
-    alpha = params
+def negative_log_likelihood(alpha, _occurrences, _outcomes, _total_samples):
     p_i = vectorized_psf_ext(alpha, _occurrences)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
-    return -np.sum(log_likelihood)
+    return -(1 / _total_samples) * np.sum(log_likelihood)
 
 
 def optimize_alphas(data_slice_info):
@@ -77,13 +77,13 @@ def optimize_alphas(data_slice_info):
     for slice_id, _slice_data in data_slice_info.items():
         occurrences = np.array(_slice_data["occurrences"])
         outcomes = np.array(_slice_data["answers"])
-        # min_acc = np.array(slice_data["answer_space"])
+        total_samples = _slice_data["total_samples"]
 
         # Minimize the negative log-likelihood
         result = minimize(
             negative_log_likelihood,
             x0=initial_params,
-            args=(occurrences, outcomes),
+            args=(occurrences, outcomes, total_samples),
             bounds=bounds,
             method="L-BFGS-B",
         )
@@ -109,29 +109,34 @@ def optimize_alphas(data_slice_info):
 def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: str):
     plt.figure(figsize=(24, 18))
 
-    # Find the union of all x values and convert them to integers for proper sorting
-    all_slices = sorted(
-        set(int(slice_val) for model in alphas_of_models for slice_val in [alpha["slice"] for alpha in model["Alphas"]])
-    )
+    # Ensure all x-axis values are shown
+    plt.xticks(range(0, 42))
 
     for _model_alphas in alphas_of_models:
 
-        model_slices = {alpha["slice"]: alpha["alpha"] for alpha in _model_alphas["Alphas"]}
+        alphas = []
+        count = 0
+        for slice_param in _model_alphas["Alphas"]:
+            if slice_param["slice"] != str(count):
+                alphas.append(np.nan)
+                count += 1
+            alphas.append(slice_param["alpha"])
+            count += 1
 
-        # Get available x and y values (excluding NaNs)
-        x_available = np.array([x for x in model_slices.keys()])
-        y_available = np.array([model_slices[str(x)] for x in x_available])
+        alphas = np.array(alphas)
+        alphas_mask = np.isfinite(alphas)
+        xs = np.arange(42)
 
-        plt.plot(x_available, y_available, marker="o", linestyle="-", label=f"{_model_alphas['Model']}")
+        plt.plot(xs[alphas_mask], alphas[alphas_mask], marker="o", linestyle="-", label=f"{_model_alphas['Model']}")
 
         # Exclude NaN values from mean calculation
-        avg_alpha = float(np.nanmean(y_available))
+        avg_alpha = float(np.nanmean(alphas))
 
         plt.axhline(y=avg_alpha, color="r", linestyle="--", alpha=0.7)
 
         # Annotate the average line with model name and value
         plt.text(
-            all_slices[-1],  # Place the text near the last x-value
+            41,  # Place the text near the last x-value
             avg_alpha,
             f"{_model_alphas['Model']}; Avg. Alpha: {avg_alpha:.4f}",
             color="red",
@@ -140,9 +145,6 @@ def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: 
             va="bottom",
             bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
         )
-
-    # Ensure all x-axis values are shown
-    plt.xticks(all_slices)
 
     # Add titles, labels, and legend
     plt.title("Optimized Alpha Values", fontsize=16)
@@ -157,7 +159,6 @@ def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: 
 
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
-    output_path = f"{abs_path}/sample_efficiency_evaluation_results/"
     models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
     bear_sizes = ["big", "small"]
 
@@ -182,4 +183,12 @@ if __name__ == "__main__":
                 model,
                 f"{_output_path}/psf-ext_optimized_alphas.json",
             )
-        plot_alphas(optimized_alphas, output_path, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}")
+
+        output_path_diagram = f"{abs_path}/sample_efficiency_evaluation_results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/power_scaling_function_extended/"
+
+        if not os.path.exists(output_path_diagram):
+            os.makedirs(output_path_diagram)
+
+        plot_alphas(
+            optimized_alphas, output_path_diagram, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}"
+        )
