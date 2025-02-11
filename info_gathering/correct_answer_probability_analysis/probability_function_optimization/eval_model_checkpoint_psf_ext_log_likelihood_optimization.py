@@ -1,51 +1,15 @@
 import os
 import numpy as np
-from tqdm import tqdm
 import logging
 
-import matplotlib.pyplot as plt
+from utility.utility import save_dict_as_json
 from scipy.optimize import minimize
 
-from utility.utility import load_json_dict, save_dict_as_json
-
-
-def get_num(x: str) -> int:
-    """Extract numerical suffix from a string."""
-    number = x.split("-")[-1]
-    return int(number)
-
-
-def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
-    checkpoints = os.listdir(path_probing_results)
-    sorted_checkpoints = sorted(checkpoints, key=get_num)
-    increasing_occurrences = load_json_dict(path_increasing_occurrences_in_slices)
-    data_on_slices = {}
-    for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Get results in slices")):
-        # Load checkpoint metadata
-        occurrences_list = []
-        answer_list = []
-        total = 0
-
-        for relation_id, entity_dict in increasing_occurrences.items():
-            # Get number of possible answers for this relation
-            for entity_id, occurrences_increase in entity_dict.items():
-                slice_info = occurrences_increase["occurrences_increase"][idx]
-
-                # Ensure slice and checkpoint match expectations
-                assert slice_info["Slice"] == idx
-                assert slice_info["checkpoint"] == checkpoint
-
-                total += 1
-
-                # Extract occurrence and correctness
-                T = 1 if slice_info["correct"] else 0
-
-                occurrences_list.append(slice_info["total"])
-                answer_list.append(T)
-
-        # Sum scores for the current slice
-        data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list, "total_samples": total}
-    return data_on_slices
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+    get_slice_data,
+    negative_log_likelihood,
+    plot_alphas,
+)
 
 
 def power_scaling_function_ext(alpha, x):
@@ -55,25 +19,38 @@ def power_scaling_function_ext(alpha, x):
 vectorized_psf_ext = np.vectorize(power_scaling_function_ext, excluded=["alpha"])
 
 
-# Define the log-likelihood function
-def compute_log_likelihood(t, p_i):
-    return t * np.log(p_i) + (1 - t) * np.log(1 - p_i)
-
-
-# Define the negative log-likelihood loss
-def negative_log_likelihood(alpha, _occurrences, _outcomes, _total_samples):
-    p_i = vectorized_psf_ext(alpha, _occurrences)
-    # Ensure probabilities are within a valid range to avoid log(0)
-    p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
-    log_likelihood = compute_log_likelihood(_outcomes, p_i)
-    return -(1 / _total_samples) * np.sum(log_likelihood)
-
-
-def optimize_alphas(data_slice_info):
+def optimize_alphas(data_slice_info, vectorized_function, concatenate_all_slices=False):
     # Initial guess for alpha
     initial_params = np.array([0.07])
     bounds = [(0.037, None)]
     _optimized_alphas = []
+
+    if concatenate_all_slices:
+        all_occurrences = []
+        all_outcomes = []
+        all_total_samples = 0
+
+        for slice_id, _slice_data in data_slice_info.items():
+            all_occurrences.extend(_slice_data["occurrences"])
+            all_outcomes.extend(_slice_data["answers"])
+            all_total_samples += _slice_data["total_samples"]
+
+        all_occurrences = np.array(all_occurrences)
+        all_outcomes = np.array(all_outcomes)
+
+        # Minimize the negative log-likelihood
+        result = minimize(
+            negative_log_likelihood,
+            x0=initial_params,
+            args=(all_occurrences, all_outcomes, all_total_samples, vectorized_function),
+            bounds=bounds,
+            method="L-BFGS-B",
+        )
+        optimized_alpha = result.x[0]
+        print(f"Final optimized_alpha: {optimized_alpha}")
+
+        return optimized_alpha
+
     for slice_id, _slice_data in data_slice_info.items():
         occurrences = np.array(_slice_data["occurrences"])
         outcomes = np.array(_slice_data["answers"])
@@ -83,7 +60,7 @@ def optimize_alphas(data_slice_info):
         result = minimize(
             negative_log_likelihood,
             x0=initial_params,
-            args=(occurrences, outcomes, total_samples),
+            args=(occurrences, outcomes, total_samples, vectorized_function),
             bounds=bounds,
             method="L-BFGS-B",
         )
@@ -106,89 +83,70 @@ def optimize_alphas(data_slice_info):
     return _optimized_alphas
 
 
-def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: str):
-    plt.figure(figsize=(24, 18))
-
-    # Ensure all x-axis values are shown
-    plt.xticks(range(0, 42))
-
-    for _model_alphas in alphas_of_models:
-
-        alphas = []
-        count = 0
-        for slice_param in _model_alphas["Alphas"]:
-            if slice_param["slice"] != str(count):
-                alphas.append(np.nan)
-                count += 1
-            alphas.append(slice_param["alpha"])
-            count += 1
-
-        alphas = np.array(alphas)
-        alphas_mask = np.isfinite(alphas)
-        xs = np.arange(42)
-
-        plt.plot(xs[alphas_mask], alphas[alphas_mask], marker="o", linestyle="-", label=f"{_model_alphas['Model']}")
-
-        # Exclude NaN values from mean calculation
-        avg_alpha = float(np.nanmean(alphas))
-
-        plt.axhline(y=avg_alpha, color="r", linestyle="--", alpha=0.7)
-
-        # Annotate the average line with model name and value
-        plt.text(
-            41,  # Place the text near the last x-value
-            avg_alpha,
-            f"{_model_alphas['Model']}; Avg. Alpha: {avg_alpha:.4f}",
-            color="red",
-            fontsize=12,
-            ha="right",
-            va="bottom",
-            bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
-        )
-
-    # Add titles, labels, and legend
-    plt.title("Optimized Alpha Values", fontsize=16)
-    plt.xlabel("Slice", fontsize=14)
-    plt.ylabel("Alpha", fontsize=14)
-    plt.legend(fontsize=12)
-    plt.grid(alpha=0.5)
-    plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
-    plt.clf()
-    plt.close()
-
-
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
     models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
     bear_sizes = ["big", "small"]
+    optimize_over_all_slices = False
 
-    for bear_size in bear_sizes:
-        optimized_alphas = []
-        for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+    if optimize_over_all_slices:
+        for bear_size in bear_sizes:
+            optimized_alphas = []
+            for model in models:
+                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
-            slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
+                slice_data = get_slice_data(
+                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                )
 
-            optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data)})
+                optimized_alphas.append(
+                    {"Model": model, "Alpha": optimize_alphas(slice_data, vectorized_psf_ext, optimize_over_all_slices)}
+                )
 
-        for model in optimized_alphas:
+            for model in optimized_alphas:
 
-            _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
 
-            if not os.path.exists(_output_path):
-                os.makedirs(_output_path)
+                if not os.path.exists(_output_path):
+                    os.makedirs(_output_path)
 
-            save_dict_as_json(
-                model,
-                f"{_output_path}/psf-ext_optimized_alphas.json",
+                save_dict_as_json(
+                    model,
+                    f"{_output_path}/psf-ext_optimized_alpha_over_all_slices.json",
+                )
+
+    else:
+
+        for bear_size in bear_sizes:
+            optimized_alphas = []
+            for model in models:
+                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+
+                slice_data = get_slice_data(
+                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                )
+
+                optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data, vectorized_psf_ext)})
+
+            for model in optimized_alphas:
+
+                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+
+                if not os.path.exists(_output_path):
+                    os.makedirs(_output_path)
+
+                save_dict_as_json(
+                    model,
+                    f"{_output_path}/psf-ext_optimized_alphas.json",
+                )
+
+            output_path_diagram = f"{abs_path}/sample_efficiency_evaluation_results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/power_scaling_function_extended/"
+
+            if not os.path.exists(output_path_diagram):
+                os.makedirs(output_path_diagram)
+
+            plot_alphas(
+                optimized_alphas, output_path_diagram, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}"
             )
-
-        output_path_diagram = f"{abs_path}/sample_efficiency_evaluation_results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/power_scaling_function_extended/"
-
-        if not os.path.exists(output_path_diagram):
-            os.makedirs(output_path_diagram)
-
-        plot_alphas(
-            optimized_alphas, output_path_diagram, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}"
-        )

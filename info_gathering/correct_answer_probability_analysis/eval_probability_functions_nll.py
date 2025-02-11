@@ -8,34 +8,17 @@ from utility.utility import load_json_dict, save_dict_as_json
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_log_likelihood_optimization import (
     vectorized_psf,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_log_likelihood_optimization import (
-    get_slice_data as get_slice_data_psf,
-)
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_ext_log_likelihood_optimization import (
     vectorized_psf_ext,
-)
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_ext_log_likelihood_optimization import (
-    get_slice_data as get_slice_data_psf_ext,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_cdf_log_likelihood_optimization import (
     vectorized_cdf,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_cdf_log_likelihood_optimization import (
-    get_slice_data as get_slice_data_cdf,
+
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+    get_slice_data,
+    negative_log_likelihood,
 )
-
-
-def compute_log_likelihood(t, p_i):
-    return t * np.log(p_i) + (1 - t) * np.log(1 - p_i)
-
-
-def negative_log_likelihood(_param, vectorized_probability_function, _occurrences, _outcomes, _total_samples):
-    p_i = vectorized_probability_function(_param, _occurrences)
-    # Ensure probabilities are within a valid range to avoid log(0)
-    p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
-    log_likelihood = compute_log_likelihood(_outcomes, p_i)
-    return -(1 / _total_samples) * np.sum(log_likelihood)
-
 
 def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     plt.figure(figsize=(24, 18))
@@ -79,7 +62,7 @@ functions = [
         "function_method": vectorized_psf,
         "function_name": "Power Scaling Function",
         "file_name": "psf_optimized_alphas.json",
-        "get_slice_data": get_slice_data_psf,
+        "get_slice_data": get_slice_data,
         "Params": "Alphas",
         "Param": "alpha",
     },
@@ -87,7 +70,7 @@ functions = [
         "function_method": vectorized_psf_ext,
         "function_name": "Power Scaling Function Extended",
         "file_name": "psf-ext_optimized_alphas.json",
-        "get_slice_data": get_slice_data_psf_ext,
+        "get_slice_data": get_slice_data,
         "Params": "Alphas",
         "Param": "alpha",
     },
@@ -95,7 +78,7 @@ functions = [
         "function_method": vectorized_cdf,
         "function_name": "Cumulative Distribution Function",
         "file_name": "cdf_optimized_lambdas.json",
-        "get_slice_data": get_slice_data_cdf,
+        "get_slice_data": get_slice_data,
         "Params": "Lambdas",
         "Param": "lambda",
     },
@@ -144,7 +127,11 @@ if __name__ == "__main__":
                         {
                             "slice": slice_id,
                             "value": negative_log_likelihood(
-                                optimized_param, function["function_method"], occurrences, outcomes, total_samples
+                                optimized_param,
+                                occurrences,
+                                outcomes,
+                                total_samples,
+                                function["function_method"],
                             ),
                         }
                     )
