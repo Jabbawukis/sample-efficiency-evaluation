@@ -20,6 +20,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
     negative_log_likelihood,
 )
 
+
 def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     plt.figure(figsize=(24, 18))
     # Ensure all x-axis values are shown
@@ -55,7 +56,7 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     plt.close()
 
 
-models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
 bear_sizes = ["big", "small"]
 functions = [
     {

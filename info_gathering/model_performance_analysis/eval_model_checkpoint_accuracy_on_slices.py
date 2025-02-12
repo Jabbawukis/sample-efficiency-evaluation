@@ -164,7 +164,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
     plt.savefig(_final_diagram_output_path)
 
 
-models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+models = []
 bear_sizes = ["big", "small"]
 abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
 

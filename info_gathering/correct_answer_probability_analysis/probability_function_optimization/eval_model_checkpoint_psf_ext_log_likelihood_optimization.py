@@ -2,13 +2,11 @@ import os
 import numpy as np
 import logging
 
-from utility.utility import save_dict_as_json
 from scipy.optimize import minimize
 
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
-    get_slice_data,
     negative_log_likelihood,
-    plot_alphas,
+    run_optimization,
 )
 
 
@@ -19,7 +17,7 @@ def power_scaling_function_ext(alpha, x):
 vectorized_psf_ext = np.vectorize(power_scaling_function_ext, excluded=["alpha"])
 
 
-def optimize_alphas(data_slice_info, vectorized_function, concatenate_all_slices=False):
+def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False):
     # Initial guess for alpha
     initial_params = np.array([0.07])
     bounds = [(0.037, None)]
@@ -85,68 +83,29 @@ def optimize_alphas(data_slice_info, vectorized_function, concatenate_all_slices
 
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
-    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m"]
+    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
     bear_sizes = ["big", "small"]
+    optimized_params_output_file_name = "psf-ext_optimized_alphas.json"
+    optimized_param_all_slices_output_file_name = "psf-ext_optimized_alpha_over_all_slices.json"
+    function_dir_name = "power_scaling_function_extended"
+    comparative_plot_output_file_name = "psf-ext_optimized_alphas"
+    param_name = "Alphas"
+    param_name_key = "alpha"
     optimize_over_all_slices = False
+    force_optimization = False
 
-    if optimize_over_all_slices:
-        for bear_size in bear_sizes:
-            optimized_alphas = []
-            for model in models:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
-
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
-
-                optimized_alphas.append(
-                    {"Model": model, "Alpha": optimize_alphas(slice_data, vectorized_psf_ext, optimize_over_all_slices)}
-                )
-
-            for model in optimized_alphas:
-
-                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
-
-                if not os.path.exists(_output_path):
-                    os.makedirs(_output_path)
-
-                save_dict_as_json(
-                    model,
-                    f"{_output_path}/psf-ext_optimized_alpha_over_all_slices.json",
-                )
-
-    else:
-
-        for bear_size in bear_sizes:
-            optimized_alphas = []
-            for model in models:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
-
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
-
-                optimized_alphas.append({"Model": model, "Alphas": optimize_alphas(slice_data, vectorized_psf_ext)})
-
-            for model in optimized_alphas:
-
-                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model['Model']}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
-
-                if not os.path.exists(_output_path):
-                    os.makedirs(_output_path)
-
-                save_dict_as_json(
-                    model,
-                    f"{_output_path}/psf-ext_optimized_alphas.json",
-                )
-
-            output_path_diagram = f"{abs_path}/sample_efficiency_evaluation_results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/power_scaling_function_extended/"
-
-            if not os.path.exists(output_path_diagram):
-                os.makedirs(output_path_diagram)
-
-            plot_alphas(
-                optimized_alphas, output_path_diagram, output_diagram_name=f"psf-ext_optimized_alphas_bear_{bear_size}"
-            )
+    run_optimization(
+        optimize,
+        vectorized_psf_ext,
+        abs_path,
+        models,
+        bear_sizes,
+        optimized_params_output_file_name,
+        optimized_param_all_slices_output_file_name,
+        function_dir_name,
+        comparative_plot_output_file_name,
+        param_name,
+        param_name_key,
+        optimize_over_all_slices,
+        force_optimization,
+    )

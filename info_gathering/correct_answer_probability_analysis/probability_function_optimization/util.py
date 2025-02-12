@@ -1,9 +1,10 @@
+import logging
 import os
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utility.utility import load_json_dict
+from utility.utility import load_json_dict, save_dict_as_json
 
 
 def get_num(x: str) -> int:
@@ -40,7 +41,7 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
                 answer_list.append(T)
 
         # Sum scores for the current slice
-        data_on_slices[f"{idx}"] = {"occurrences": occurrences_list, "answers": answer_list, "total_samples": total}
+        data_on_slices[str(idx)] = {"occurrences": occurrences_list, "answers": answer_list, "total_samples": total}
     return data_on_slices
 
 
@@ -58,105 +59,153 @@ def negative_log_likelihood(param, _occurrences, _outcomes, _total_samples, vect
     return -(1 / _total_samples) * np.sum(log_likelihood)
 
 
-def plot_alphas(alphas_of_models: list, _output_path: str, output_diagram_name: str):
+def plot_params(
+    params_of_models: list, _output_path: str, output_diagram_name: str, param_name: str, param_name_key: str
+):
     plt.figure(figsize=(24, 18))
 
     # Ensure all x-axis values are shown
     plt.xticks(range(0, 42))
 
-    for _model_alphas in alphas_of_models:
-
-        alphas = []
-        count = 0
-        for slice_param in _model_alphas["Alphas"]:
-            if slice_param["slice"] != str(count):
-                alphas.append(np.nan)
-                count += 1
-            alphas.append(slice_param["alpha"])
-            count += 1
-
-        alphas = np.array(alphas)
-        alphas_mask = np.isfinite(alphas)
-        xs = np.arange(42)
-
-        plt.plot(xs[alphas_mask], alphas[alphas_mask], marker="o", linestyle="-", label=f"{_model_alphas['Model']}")
-
-        # Exclude NaN values from mean calculation
-        avg_alpha = float(np.nanmean(alphas))
-
-        plt.axhline(y=avg_alpha, color="r", linestyle="--", alpha=0.7)
-
-        # Annotate the average line with model name and value
-        plt.text(
-            41,  # Place the text near the last x-value
-            avg_alpha,
-            f"{_model_alphas['Model']}; Avg. Alpha: {avg_alpha:.4f}",
-            color="red",
-            fontsize=12,
-            ha="right",
-            va="bottom",
-            bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
-        )
-
-    # Add titles, labels, and legend
-    plt.title("Optimized Alpha Values", fontsize=16)
-    plt.xlabel("Slice", fontsize=14)
-    plt.ylabel("Alpha", fontsize=14)
-    plt.legend(fontsize=12)
-    plt.grid(alpha=0.5)
-    plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
-    plt.clf()
-    plt.close()
-
-
-def plot_lambdas(lambdas_of_models: list, _output_path: str, output_diagram_name: str):
-    plt.figure(figsize=(24, 18))
-
-    # Ensure all x-axis values are shown
-    plt.xticks(range(0, 42))
-
-    for _model_lambdas in lambdas_of_models:
+    for _model_params in params_of_models:
         # Get available x and y values (excluding NaNs)
-        lambdas = []
+        params = []
         count = 0
-        for slice_param in _model_lambdas["Lambdas"]:
+        for slice_param in _model_params[param_name]:
             if slice_param["slice"] != str(count):
-                lambdas.append(np.nan)
+                params.append(np.nan)
                 count += 1
-            lambdas.append(slice_param["lambda"])
+            params.append(slice_param[param_name_key])
             count += 1
 
-        lambdas = np.array(lambdas)
-        lambdas_mask = np.isfinite(lambdas)
+        params = np.array(params)
+        params_mask = np.isfinite(params)
         xs = np.arange(42)
-
-        # Plot lambda values for the model, allowing for missing values without interpolation
-        plt.plot(xs[lambdas_mask], lambdas[lambdas_mask], marker="o", linestyle="-", label=f"{_model_lambdas['Model']}")
-
-        # Exclude NaN values from mean calculation
-        avg_lambda = float(np.nanmean(lambdas))
-
-        # Plot average lambda line
-        plt.axhline(y=avg_lambda, color="r", linestyle="--", alpha=0.7)
-
-        # Annotate the average line with model name and value
-        plt.text(
-            41,  # Place the text near the last x-value
-            avg_lambda,
-            f"{_model_lambdas['Model']}; Avg. Lambda: {avg_lambda:.4f}",
-            color="red",
-            fontsize=12,
-            ha="right",
-            va="bottom",
-            bbox=dict(facecolor="white", alpha=0.7, edgecolor="red", boxstyle="round,pad=0.3"),
-        )
+        plt.plot(xs[params_mask], params[params_mask], marker="o", linestyle="-", label=f"{_model_params['Model']}")
 
     # Add titles, labels, and legend
-    plt.title("Optimized Lambda Values", fontsize=16)
-    plt.xlabel("Slice", fontsize=14)
-    plt.ylabel("Lambda", fontsize=14)
+    plt.title("Optimized Values", fontsize=16)
+    plt.xlabel("Slices", fontsize=14)
+    plt.ylabel(param_name, fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(alpha=0.5)
     plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
     plt.clf()
     plt.close()
+
+
+def run_optimization(
+    optimize: callable,
+    vectorized_function: callable,
+    abs_path: str,
+    models: list[str],
+    bear_sizes: list[str],
+    optimized_params_output_file_name: str,
+    optimized_param_all_slices_output_file_name: str,
+    function_dir_name: str,
+    comparative_plot_output_file_name: str,
+    param_name: str,
+    param_name_key: str,
+    optimize_over_all_slices: bool,
+    force_optimization: bool,
+):
+
+    if optimize_over_all_slices:
+        for bear_size in bear_sizes:
+            optimized_params = []
+            for model in models:
+                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+
+                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+
+                if os.path.exists(f"{_output_path}/{optimized_param_all_slices_output_file_name}"):
+                    if force_optimization:
+                        logging.info(f"Optimizing for model {model} over all slices")
+                        print("Optimizing for model", model)
+                        slice_data = get_slice_data(
+                            path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                        )
+                        model_dict = {
+                            "Model": model,
+                            param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
+                        }
+                        optimized_params.append(model_dict)
+                        save_dict_as_json(
+                            model_dict,
+                            f"{_output_path}/{optimized_param_all_slices_output_file_name}",
+                        )
+                    else:
+                        logging.info(f"Optimisation for model {model} over all slices already exist")
+                        print("Optimisation for model", model, "over all slices already exist")
+                else:
+                    logging.info(f"Optimizing for model {model} over all slices")
+                    print("Optimizing for model", model)
+                    if not os.path.exists(_output_path):
+                        os.makedirs(_output_path)
+                    slice_data = get_slice_data(
+                        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                    )
+                    model_dict = {
+                        "Model": model,
+                        param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
+                    }
+                    optimized_params.append(model_dict)
+                    save_dict_as_json(
+                        model_dict,
+                        f"{_output_path}/{optimized_param_all_slices_output_file_name}",
+                    )
+    else:
+        for bear_size in bear_sizes:
+            optimized_params = []
+            for model in models:
+                path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+
+                _output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+
+                if os.path.exists(f"{_output_path}/{optimized_params_output_file_name}"):
+                    if force_optimization:
+                        logging.info(f"Optimizing for model {model}")
+                        print("Optimizing for model", model)
+                        slice_data = get_slice_data(
+                            path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                        )
+                        model_dict = {"Model": model, param_name: optimize(slice_data, vectorized_function)}
+                        optimized_params.append(model_dict)
+                        save_dict_as_json(
+                            model_dict,
+                            f"{_output_path}/{optimized_params_output_file_name}",
+                        )
+                    else:
+                        logging.info(f"Loaded optimized params for model {model}")
+                        print("Loaded optimized params for model", model)
+                        optimized_params.append(load_json_dict(f"{_output_path}/{optimized_params_output_file_name}"))
+                else:
+                    logging.info(f"Optimizing for model {model}")
+                    print("Optimizing for model", model)
+                    if not os.path.exists(_output_path):
+                        os.makedirs(_output_path)
+                    os.makedirs(_output_path)
+                    slice_data = get_slice_data(
+                        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                    )
+                    model_dict = {"Model": model, param_name: optimize(slice_data, vectorized_function)}
+                    optimized_params.append(model_dict)
+                    save_dict_as_json(
+                        model_dict,
+                        f"{_output_path}/{optimized_params_output_file_name}",
+                    )
+
+            output_path_diagram = f"{abs_path}/sample_efficiency_evaluation_results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/{function_dir_name}/"
+
+            if not os.path.exists(output_path_diagram):
+                os.makedirs(output_path_diagram)
+
+            plot_params(
+                optimized_params,
+                output_path_diagram,
+                output_diagram_name=f"{comparative_plot_output_file_name}_bear_{bear_size}",
+                param_name=param_name,
+                param_name_key=param_name_key,
+            )
