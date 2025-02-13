@@ -14,29 +14,24 @@ class KnowledgeProber:
     KnowledgeProber class to probe the model with BEAR facts and analyze the results.
     """
 
-    def __init__(self, path_to_relation_occurrence_info_file: str):
+    def __init__(self, path_to_relation_occurrence_info_file: str, num_buckets: int = 14):
         """
         Initialize the KnowledgeProber.
 
         :param path_to_relation_occurrence_info_file: Path to the relation occurrence information file.
+        :param num_buckets: Number of buckets to divide the relation occurrences into.
+        The default is 14. Each bucket is a power of two starting from 1.
+        e.g. (1, 2), (2, 4), (4, 8), ... ending with (8192, inf) for 14 buckets.
         """
         self.entity_relation_occurrence_info_dict = utility.load_json_dict(path_to_relation_occurrence_info_file)
-        self.relation_occurrence_buckets = [
-            (1, 2),
-            (2, 4),
-            (4, 8),
-            (8, 16),
-            (16, 32),
-            (32, 64),
-            (64, 128),
-            (128, 256),
-            (256, 512),
-            (512, 1024),
-            (1024, 2048),
-            (2048, 4096),
-            (4096, 8192),
-            (8192, float("inf")),
-        ]
+
+        self.relation_occurrence_buckets = []
+        for i in range(num_buckets):
+            if i == num_buckets - 1:
+                self.relation_occurrence_buckets.append((2**i, float("inf")))
+                break
+            self.relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
+
         self.bear_results = None
 
     @staticmethod
