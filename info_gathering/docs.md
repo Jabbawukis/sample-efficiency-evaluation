@@ -9,10 +9,17 @@ The model checkpoints answers are evaluated for each fact.
 
 ## 2. Get the model checkpoint accuracies over the occurrence buckets (requires step 1. of model performance analysis)
 
-[Get accuracies over occurrence buckets](model_performance_analysis/eval_model_checkpoint_accuracy_on_slices.py):
+[Get accuracies over occurrence buckets](model_performance_analysis/eval_model_checkpoint_occurrence_bucket_accuracy_on_slices.py):
 
 For each checkpoint probing result, the accuracy is calculated for each occurrence bucket.
 The accuracy results for each checkpoint are plotted and saved as a .png file.
+
+## 3. Get the model checkpoint weighted accuracies over all facts (requires step 1. of model performance analysis)
+
+[Get weighted accuracies over all facts](model_performance_analysis/eval_model_checkpoint_weighted_accuracy_on_slices.py):
+
+For each checkpoint probing result, the weighted accuracy (dependent on fact occurrence) is calculated over all facts.
+The weighted accuracy results for each checkpoint and for each model are plotted and saved as a .png file.
 
 # Correct Answer Probability Analysis
 
@@ -28,6 +35,6 @@ The optimized parameters of the probability functions are saved as .json files.
 
 ## 2. Evaluate the probability functions (requires step 1. of answer probability analysis)
 
-The probability functions are evaluated for each model checkpoint and the results are saved as .png files.
+The probability functions are [evaluated](correct_answer_probability_analysis/eval_probability_functions_nll.py) for each model checkpoint and the results are saved as .png files.
 Here, the negative log likelihood loss is calculated for each model checkpoint and for each probability function.
 The results are saved as .png files and .json files.

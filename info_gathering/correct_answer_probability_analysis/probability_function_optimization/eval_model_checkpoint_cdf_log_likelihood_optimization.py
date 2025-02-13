@@ -79,10 +79,10 @@ def optimize(data_slice_info, _vectorized_function, concatenate_all_slices=False
 
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
-    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
+    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"] # results depend on other models
     bear_sizes = ["big", "small"]
-    optimized_params_output_file_name = "cdf_optimized_lambdas.json"
-    optimized_param_all_slices_output_file_name = "cdf_optimized_lambda_over_all_slices.json"
+    optimized_params_for_all_slices_output_file_name = "cdf_optimized_lambdas.json"
+    optimized_params_over_all_slices_output_file_name = "cdf_optimized_lambda_over_all_slices.json"
     function_dir_name = "cumulative_distribution_function"
     comparative_plot_output_file_name = "cdf_optimized_lambdas"
     param_name = "Lambdas"
@@ -96,8 +96,8 @@ if __name__ == "__main__":
         abs_path,
         models,
         bear_sizes,
-        optimized_params_output_file_name,
-        optimized_param_all_slices_output_file_name,
+        optimized_params_for_all_slices_output_file_name,
+        optimized_params_over_all_slices_output_file_name,
         function_dir_name,
         comparative_plot_output_file_name,
         param_name,
