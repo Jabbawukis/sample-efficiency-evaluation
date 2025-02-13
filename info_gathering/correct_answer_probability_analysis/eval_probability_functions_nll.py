@@ -56,38 +56,38 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
     plt.close()
 
 
-models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
-bear_sizes = ["big", "small"]
-functions = [
-    {
-        "function_method": vectorized_psf,
-        "function_name": "Power Scaling Function",
-        "file_name": "psf_optimized_alphas.json",
-        "get_slice_data": get_slice_data,
-        "Params": "Alphas",
-        "Param": "alpha",
-    },
-    {
-        "function_method": vectorized_psf_ext,
-        "function_name": "Power Scaling Function Extended",
-        "file_name": "psf-ext_optimized_alphas.json",
-        "get_slice_data": get_slice_data,
-        "Params": "Alphas",
-        "Param": "alpha",
-    },
-    {
-        "function_method": vectorized_cdf,
-        "function_name": "Cumulative Distribution Function",
-        "file_name": "cdf_optimized_lambdas.json",
-        "get_slice_data": get_slice_data,
-        "Params": "Lambdas",
-        "Param": "lambda",
-    },
-]
-
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
     nll_on_slices = []
+
+    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
+    bear_sizes = ["big", "small"]
+    functions = [
+        {
+            "function_method": vectorized_psf,
+            "function_name": "Power Scaling Function",
+            "file_name": "psf_optimized_alphas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Alphas",
+            "Param": "alpha",
+        },
+        {
+            "function_method": vectorized_psf_ext,
+            "function_name": "Power Scaling Function Extended",
+            "file_name": "psf-ext_optimized_alphas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Alphas",
+            "Param": "alpha",
+        },
+        {
+            "function_method": vectorized_cdf,
+            "function_name": "Cumulative Distribution Function",
+            "file_name": "cdf_optimized_lambdas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Lambdas",
+            "Param": "lambda",
+        },
+    ]
 
     for bear_size in bear_sizes:
         for model in tqdm(models, desc="Get NLL on slices for models"):
