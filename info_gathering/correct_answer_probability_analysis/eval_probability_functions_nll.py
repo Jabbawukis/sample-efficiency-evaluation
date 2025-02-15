@@ -59,8 +59,7 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
     nll_on_slices = []
-
-    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"]
+    models = []  # results dont depend on other models
     bear_sizes = ["big", "small"]
     functions = [
         {

@@ -47,8 +47,9 @@ def get_model_checkpoint_answer_for_occurrences_in_slices_data(
 
     save_dict_as_json(increasing_occurrences, output_path_increasing_occurrences_in_slices)
 
+
 if __name__ == "__main__":
-    models = [] # results dont depend on other models
+    models = []  # results dont depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
 
@@ -61,6 +62,8 @@ if __name__ == "__main__":
                 output_path_to_increasing_occurrences_in_slices,
                 path_to_relation_info_on_slices=f"{abs_path}/sample_efficiency_evaluation_results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices",
                 subset_indices=(
-                    f"{abs_path}/sample_efficiency_evaluation/BEAR/bear_lite_indices.json" if bear_size == "small" else None
+                    f"{abs_path}/sample_efficiency_evaluation/BEAR/bear_lite_indices.json"
+                    if bear_size == "small"
+                    else None
                 ),
             )

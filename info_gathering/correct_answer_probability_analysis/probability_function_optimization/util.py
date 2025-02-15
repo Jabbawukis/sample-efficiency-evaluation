@@ -186,7 +186,6 @@ def run_optimization(
                     print("Optimizing for model", model)
                     if not os.path.exists(_output_path):
                         os.makedirs(_output_path)
-                    os.makedirs(_output_path)
                     slice_data = get_slice_data(
                         path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
                     )

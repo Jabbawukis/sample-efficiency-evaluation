@@ -48,7 +48,14 @@ def plot_params(weighed_scores_models: dict, output_path: str, output_diagram_na
 
 
 if __name__ == "__main__":
-    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"] # results depend on other models
+    models = [
+        "gpt2_124m",
+        "gpt2_209m",
+        "gpt2_355m",
+        "mamba2_172m",
+        "mamba2_432m",
+        "xlstm_247m",
+    ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
 

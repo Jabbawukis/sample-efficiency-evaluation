@@ -83,7 +83,14 @@ def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False)
 
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
-    models = ["gpt2_124m", "gpt2_209m", "mamba2_172m", "xlstm_247m", "gpt2_355m"] # results depend on other models
+    models = [
+        "gpt2_124m",
+        "gpt2_209m",
+        "gpt2_355m",
+        "mamba2_172m",
+        "mamba2_432m",
+        "xlstm_247m",
+    ]  # results depend on other models
     bear_sizes = ["big", "small"]
     optimized_params_for_all_slices_output_file_name = "psf-ext_optimized_alphas.json"
     optimized_params_over_all_slices_output_file_name = "psf-ext_optimized_alpha_over_all_slices.json"
