@@ -21,7 +21,7 @@ def get_checkpoint_weighted_accuracy(
 
     for idx, _checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
         relation_accuracy_scores_dict = {}
-        num_of_wights = set()
+        sum_of_wights = []
         for relation_id, entity_dict in increasing_occurrences.items():
             for entity_id, fact in entity_dict.items():
                 assert fact["occurrences_increase"][idx]["Slice"] == idx
@@ -39,14 +39,12 @@ def get_checkpoint_weighted_accuracy(
         for occurrence, stats in relation_accuracy_scores_dict.items():
             if stats["total"] == 0:
                 continue
-            num_of_wights.add(weighting_function(occurrence))
-            accuracy_scores_output[occurrence] = {"accuracy": (stats["correct"] / stats["total"])}
-        num_of_wights = len(num_of_wights)
-        for key, stats in accuracy_scores_output.items():
-            stats["accuracy"] = stats["accuracy"] * (weighting_function(key) / num_of_wights)
-
+            weight = weighting_function(occurrence)
+            sum_of_wights.append(weight)
+            accuracy_scores_output[occurrence] = {"accuracy": (stats["correct"] / stats["total"]) * weight}
+        sum_of_wights = np.sum(np.array(sum_of_wights))
         sum_of_accuracy_scores = np.sum(np.array([stats["accuracy"] for stats in accuracy_scores_output.values()]))
-        final_output[idx] = sum_of_accuracy_scores
+        final_output[idx] = (1/sum_of_wights) * sum_of_accuracy_scores
 
     return final_output
 
