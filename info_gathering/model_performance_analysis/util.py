@@ -111,6 +111,7 @@ def get_checkpoint_occurrence_bucket_accuracy(
                         relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["total"] += 1
                         if fact["occurrences_increase"][idx]["correct"]:
                             relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["correct"] += 1
+                        break
         accuracy_scores_output = {}
         for key, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:

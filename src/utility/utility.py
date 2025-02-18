@@ -129,6 +129,7 @@ def create_fact_occurrence_histogram(
                 bucket_end = bucket[1]
                 if bucket_start <= occurrences < bucket_end:
                     relation_occurrence_info_dict[f"{bucket_start}-{bucket_end}"]["total_occurrence"] += 1
+                    break
 
     def get_num(x: str) -> int:
         number = x.split("-")[0]

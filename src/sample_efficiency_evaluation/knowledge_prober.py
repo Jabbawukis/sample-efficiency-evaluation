@@ -168,6 +168,7 @@ class KnowledgeProber:
                         relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["total"] += 1
                         if answer_row.correctly_predicted:
                             relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["correct"] += 1
+                        break
         accuracy_scores_output = {}
         for key, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
