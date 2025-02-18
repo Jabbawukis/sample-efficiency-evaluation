@@ -84,6 +84,7 @@ def create_fact_occurrence_histogram(
 ) -> None:
     """
     Create fact occurrence statistics and plot a histogram.
+    The bucket end is exclusive.
 
     :param output_diagram_name: Name of the output diagram.
     :param path_to_rel_info_file: Path to relation info file.
@@ -124,8 +125,10 @@ def create_fact_occurrence_histogram(
                 relation_occurrence_info_dict["0"]["total_occurrence"] += 1
                 continue
             for bucket in occurrence_buckets:
-                if bucket[0] <= occurrences <= bucket[1]:
-                    relation_occurrence_info_dict[f"{bucket[0]}-{bucket[1]}"]["total_occurrence"] += 1
+                bucket_start = bucket[0]
+                bucket_end = bucket[1]
+                if bucket_start <= occurrences < bucket_end:
+                    relation_occurrence_info_dict[f"{bucket_start}-{bucket_end}"]["total_occurrence"] += 1
 
     def get_num(x: str) -> int:
         number = x.split("-")[0]
@@ -142,6 +145,8 @@ def create_fact_occurrence_histogram(
     plt.title("Entity Pair Occurrence Histogram")
     plt.tight_layout()
     plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
+    plt.clf()
+    plt.close()
 
 
 def count_increasing_occurrences_in_slices(path_to_files: str) -> dict:

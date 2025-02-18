@@ -14,7 +14,9 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_cdf_log_likelihood_optimization import (
     vectorized_cdf,
 )
-
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_ext2_log_likelihood_optimization import (
+    vectorized_psf_ext2,
+)
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
     negative_log_likelihood,
@@ -59,7 +61,14 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
     nll_on_slices = []
-    models = []  # results dont depend on other models
+    models = [
+        "gpt2_124m",
+        "gpt2_209m",
+        "gpt2_355m",
+        "mamba2_172m",
+        "mamba2_432m",
+        "xlstm_247m",
+    ]  # results dont depend on other models
     bear_sizes = ["big", "small"]
     functions = [
         {
@@ -74,6 +83,14 @@ if __name__ == "__main__":
             "function_method": vectorized_psf_ext,
             "function_name": "Power Scaling Function Extended",
             "file_name": "psf-ext_optimized_alphas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Alphas",
+            "Param": "alpha",
+        },
+        {
+            "function_method": vectorized_psf_ext2,
+            "function_name": "Power Scaling Function Extended2",
+            "file_name": "psf-ext2_optimized_alphas.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
             "Param": "alpha",

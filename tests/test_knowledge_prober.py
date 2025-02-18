@@ -42,7 +42,7 @@ class KnowledgeProberTest(unittest.TestCase):
                     "obj_aliases": [],
                     "obj_id": "Q222",
                     "obj_label": "Albania",
-                    "occurrences": 10,
+                    "occurrences": 16,
                     "subj_aliases": [],
                     "subj_label": "Gülcemal Sultan",
                 },
@@ -104,9 +104,8 @@ class KnowledgeProberTest(unittest.TestCase):
                 {
                     "0": {"accuracy": 1.0, "correct": 1, "total": 1},
                     "128-256": {"accuracy": 0.0, "correct": 0, "total": 1},
-                    "16-32": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "16-32": {"accuracy": 0.5, "correct": 1, "total": 2},
                     "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
-                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )
 
@@ -206,8 +205,8 @@ class KnowledgeProberTest(unittest.TestCase):
                 {
                     "0": {"accuracy": 1.0, "correct": 1, "total": 1},
                     "128-256": {"accuracy": 0.0, "correct": 0, "total": 1},
+                    "16-32": {"accuracy": 0.0, "correct": 0, "total": 1},
                     "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
-                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )
 
@@ -242,7 +241,7 @@ class KnowledgeProberTest(unittest.TestCase):
                 prober.get_accuracy_scores_over_all_relations(),
                 {
                     "0": {"accuracy": 1.0, "correct": 1, "total": 1},
+                    "16-32": {"accuracy": 0.0, "correct": 0, "total": 1},
                     "512-1024": {"accuracy": 1.0, "correct": 1, "total": 1},
-                    "8-16": {"accuracy": 0.0, "correct": 0, "total": 1},
                 },
             )

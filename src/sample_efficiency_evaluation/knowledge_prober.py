@@ -133,6 +133,8 @@ class KnowledgeProber:
     def get_accuracy_scores_over_all_relations(self) -> dict:
         """
         Get the accuracy scores over all relations.
+        The bucket end is exclusive.
+
         :return: The Dictionary containing the accuracy scores.
         """
         relation_accuracy_scores_dict = {}
@@ -160,10 +162,12 @@ class KnowledgeProber:
                         relation_accuracy_scores_dict["0"]["correct"] += 1
                     continue
                 for bucket in self.relation_occurrence_buckets:
-                    if bucket[0] <= occurrences <= bucket[1]:
-                        relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["total"] += 1
+                    bucket_start = bucket[0]
+                    bucket_end = bucket[1]
+                    if bucket_start <= occurrences < bucket_end:
+                        relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["total"] += 1
                         if answer_row.correctly_predicted:
-                            relation_accuracy_scores_dict[f"{bucket[0]}-{bucket[1]}"]["correct"] += 1
+                            relation_accuracy_scores_dict[f"{bucket_start}-{bucket_end}"]["correct"] += 1
         accuracy_scores_output = {}
         for key, bucket in relation_accuracy_scores_dict.items():
             if bucket["total"] == 0:
