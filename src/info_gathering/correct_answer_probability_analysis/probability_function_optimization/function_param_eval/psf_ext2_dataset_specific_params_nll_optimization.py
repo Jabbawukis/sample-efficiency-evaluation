@@ -135,7 +135,7 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
-    optimize_over_all_slices = False
+    optimize_over_all_slices = False # optimize the values over all slices for each model at once (takes a lot of time)
 
     for bear_size in bear_sizes:
         model_dict = {}
