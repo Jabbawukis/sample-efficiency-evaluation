@@ -1,5 +1,5 @@
 import os
-
+import info_gathering.paths as paths
 from utility.utility import load_json_dict
 
 
@@ -7,10 +7,10 @@ def evaluate_aliases(bear_size):
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
 
     match_dict_no_aliases = load_json_dict(
-        f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/no_aliases/relation_occurrence_info.json"
+        f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_no_alias_wikipedia_20231101_en}"
     )
     match_dict_aliases = load_json_dict(
-        f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/relation_occurrence_info.json"
+        f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_wikipedia_20231101_en}"
     )
 
     subj_with_alias_count = {"has_alias": set(), "no_alias": set()}

@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import info_gathering.paths as paths
 
 from scipy.optimize import minimize
 from tqdm import tqdm
@@ -134,13 +135,13 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
-    optimize_over_all_slices = True
+    optimize_over_all_slices = False
 
     for bear_size in bear_sizes:
         model_dict = {}
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
             slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
             model_dict[model] = slice_data

@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 import numpy as np
+import info_gathering.paths as paths
 
 from tqdm import tqdm
 
@@ -55,12 +56,12 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            output_path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
+            output_path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
             get_model_checkpoint_answer_for_occurrences_in_slices_data(
                 path_to_checkpoints_probing_results,
                 output_path_to_increasing_occurrences_in_slices,
-                path_to_relation_info_on_slices=f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/relation_info_on_slices",
+                path_to_relation_info_on_slices=f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_info_on_slices_wikipedia_20231101_en}",
                 subset_indices=(
                     f"{abs_path}/sample-efficiency-evaluation/BEAR/bear_lite_indices.json"
                     if bear_size == "small"

@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
+import info_gathering.paths as paths
 
 from utility.utility import load_json_dict, save_dict_as_json
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_log_likelihood_optimization import (
@@ -107,8 +108,8 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         for model in tqdm(models, desc="Get NLL on slices for models"):
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
             model_dict = {model: []}
             for function in functions:
