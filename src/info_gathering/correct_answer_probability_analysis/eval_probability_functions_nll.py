@@ -59,7 +59,7 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
 
 
 if __name__ == "__main__":
-    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
+    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     nll_on_slices = []
     models = [
         "gpt2_124m",
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         for model in tqdm(models, desc="Get NLL on slices for models"):
-            path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
 
             model_dict = {model: []}
             for function in functions:
@@ -118,7 +118,7 @@ if __name__ == "__main__":
                 )
 
                 optimized_params_dict = load_json_dict(
-                    f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/{function['file_name']}"
+                    f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/{function['file_name']}"
                 )
                 list_of_optimized_params: list[dict] = optimized_params_dict[function["Params"]]
 
@@ -159,10 +159,10 @@ if __name__ == "__main__":
         for model in nll_on_slices:
             plot_nll(
                 model,
-                f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/",
+                f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/",
                 f"nll_on_slices_bear_{bear_size}",
             )
             save_dict_as_json(
                 model,
-                f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/nll_on_slices.json",
+                f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{list(model.keys())[0]}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/nll_on_slices.json",
             )

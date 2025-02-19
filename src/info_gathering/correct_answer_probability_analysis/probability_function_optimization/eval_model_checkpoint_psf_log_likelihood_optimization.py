@@ -82,7 +82,7 @@ def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False)
 
 
 if __name__ == "__main__":
-    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
+    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     models = [
         "gpt2_124m",
         "gpt2_209m",

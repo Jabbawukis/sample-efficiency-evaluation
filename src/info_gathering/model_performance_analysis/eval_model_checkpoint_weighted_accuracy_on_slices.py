@@ -77,24 +77,24 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
-    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample_efficiency_evaluation")[0]
+    abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     weight_on_buckets = True
 
     for bear_size in bear_sizes:
         model_weighted_accuracy_on_slices = {}
 
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/probing_results_on_checkpoints/checkpoint_extracted"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
             if weight_on_buckets:
-                final_diagram_output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/on_buckets"
+                final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/on_buckets"
                 data = get_checkpoint_occurrence_weighted_accuracy(
                     path_to_checkpoints_probing_results,
                     path_to_increasing_occurrences_in_slices,
                     weighting_function_on_buckets,
                 )
             else:
-                final_diagram_output_path = f"{abs_path}/sample_efficiency_evaluation_results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
+                final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
                 data = get_checkpoint_occurrence_weighted_accuracy_overall(
                     path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices, weighting_function
                 )
