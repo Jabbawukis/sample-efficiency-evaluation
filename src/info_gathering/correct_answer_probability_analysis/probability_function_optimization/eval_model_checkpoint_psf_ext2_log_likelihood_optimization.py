@@ -10,8 +10,8 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def power_scaling_function_ext2(alpha, x):
-    return 1 - np.power(0.3 / (1 + x), alpha)
+def power_scaling_function_ext2(alpha, x, x_0=3.0):
+    return 1 - np.power(x_0 / (1 + x), alpha)
 
 
 vectorized_psf_ext2 = np.vectorize(power_scaling_function_ext2, excluded=["alpha"])

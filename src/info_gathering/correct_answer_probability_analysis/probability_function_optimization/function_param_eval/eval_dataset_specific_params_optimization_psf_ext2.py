@@ -6,11 +6,12 @@ from tqdm import tqdm
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import get_slice_data
 from utility.utility import save_dict_as_json
 
-def power_scaling_function_ext(alpha, x_0, L_0, x):
+
+def power_scaling_function_ext2(alpha, x_0, L_0, x):
     return 1 - (L_0 + np.power(x_0 / (1 + x), alpha))
 
 
-vectorized_psf_ext = np.vectorize(power_scaling_function_ext, excluded=["alpha", "x_0", "L_0"])
+vectorized_psf_ext2 = np.vectorize(power_scaling_function_ext2, excluded=["alpha", "x_0", "L_0"])
 
 
 def compute_log_likelihood(t, p_i):
@@ -37,9 +38,54 @@ def negative_log_likelihood(params, _occurrences, _outcomes, _total_samples, num
     return -(1 / _total_samples) * np.sum(log_likelihoods)
 
 
-def optimize(data_slice_info, vectorized_function, num_slices=42):
+def optimize(data_slice_info, vectorized_function, num_slices=42, _optimize_over_all_slices=False):
+
+    initial_params = [0.07] * len(data_slice_info)  # alphas
+    initial_params.append(1)  # x_0
+    initial_params.append(0)  # L_0
+    initial_params = np.array(initial_params)
+
+    bounds = [(0.037, None)] * len(data_slice_info)  # alphas
+    bounds.append((0, None))  # x_0
+    bounds.append((0, None))  # L_0
 
     final_optimized_params_dict = {}
+    if _optimize_over_all_slices:
+        all_occurrences = []
+        all_outcomes = []
+        all_total_samples = 0
+        optimized_params_dict = {}
+
+        for _model, _slice_data in data_slice_info.items():
+            for slice_id in range(num_slices):
+                all_occurrences.extend(_slice_data[str(slice_id)]["occurrences"])
+                all_outcomes.extend(_slice_data[str(slice_id)]["answers"])
+                all_total_samples += _slice_data[str(slice_id)]["total_samples"]
+
+        all_occurrences = np.array(all_occurrences)
+        all_outcomes = np.array(all_outcomes)
+
+        # Minimize the negative log-likelihood
+        result = minimize(
+            negative_log_likelihood,
+            x0=initial_params,
+            args=(all_occurrences, all_outcomes, all_total_samples, len(data_slice_info), vectorized_function),
+            bounds=bounds,
+            method="L-BFGS-B",
+        )
+        x_0 = result.x[-2]
+        L_0 = result.x[-1]
+        alphas = result.x[:-2]
+        print(f"Final x_0: {x_0}")
+        print(f"Final L_0: {L_0}")
+
+        for optimized_param, _model in zip(alphas, data_slice_info.keys()):
+            optimized_params_dict[_model] = optimized_param
+            print(f"Final optimized alpha for {_model}: {optimized_param}")
+
+        final_optimized_params_dict["all_slices"] = {"alphas": optimized_params_dict, "x_0": x_0, "L_0": L_0}
+
+        return final_optimized_params_dict
 
     for slice_id in tqdm(range(num_slices), desc=f"Optimizing parameters for each slice (total: {num_slices})"):
         all_occurrences = []
@@ -54,15 +100,6 @@ def optimize(data_slice_info, vectorized_function, num_slices=42):
 
         all_occurrences = np.array(all_occurrences)
         all_outcomes = np.array(all_outcomes)
-
-        initial_params = [0.07] * len(data_slice_info)  # alphas
-        initial_params.append(1)  # x_0
-        initial_params.append(0)  # L_0
-        initial_params = np.array(initial_params)
-
-        bounds = [(0.037, None)] * len(data_slice_info)  # alphas
-        bounds.append((0, None))  # x_0
-        bounds.append((0, None))  # L_0
 
         # Minimize the negative log-likelihood
         result = minimize(
@@ -97,6 +134,7 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
+    optimize_over_all_slices = True
 
     for bear_size in bear_sizes:
         model_dict = {}
@@ -107,5 +145,5 @@ if __name__ == "__main__":
             slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
             model_dict[model] = slice_data
 
-        optimized_params = optimize(model_dict, vectorized_psf_ext)
+        optimized_params = optimize(model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices)
         save_dict_as_json(optimized_params, f"./BEAR-{bear_size}_optimized_params.json")

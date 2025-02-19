@@ -15,7 +15,8 @@ run-workflow:
 	black tests/
 	pytest tests/
 	black src/
-	pylint src/
+	pylint src/sample_efficiency_evaluation
+	pylint src/utility
 
 ## install: Install the package locally.
 .PHONY: install
