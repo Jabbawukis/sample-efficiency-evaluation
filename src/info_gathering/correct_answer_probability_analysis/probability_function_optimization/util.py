@@ -112,38 +112,22 @@ def run_optimization(
 ):
 
     if optimize_over_all_slices:
-        for bear_size in bear_sizes:
-            optimized_params = []
-            for model in models:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
-                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
+        output_file_name_json = optimized_param_all_slices_output_file_name
+    else:
+        output_file_name_json = optimized_params_output_file_name
 
-                _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+    for bear_size in bear_sizes:
+        optimized_params = []
+        for model in models:
+            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
-                if os.path.exists(f"{_output_path}/{optimized_param_all_slices_output_file_name}"):
-                    if force_optimization:
-                        logging.info(f"Optimizing for model {model} over all slices")
-                        print("Optimizing for model", model)
-                        slice_data = get_slice_data(
-                            path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                        )
-                        model_dict = {
-                            "Model": model,
-                            param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
-                        }
-                        optimized_params.append(model_dict)
-                        save_dict_as_json(
-                            model_dict,
-                            f"{_output_path}/{optimized_param_all_slices_output_file_name}",
-                        )
-                    else:
-                        logging.info(f"Optimisation for model {model} over all slices already exist")
-                        print("Optimisation for model", model, "over all slices already exist")
-                else:
-                    logging.info(f"Optimizing for model {model} over all slices")
-                    print("Optimizing for model", model)
-                    if not os.path.exists(_output_path):
-                        os.makedirs(_output_path)
+            _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+
+            if os.path.exists(f"{_output_path}/{output_file_name_json}"):
+                if force_optimization:
+                    logging.info(f"Optimizing for model {model}")
+                    print(f"Optimizing for model {model}")
                     slice_data = get_slice_data(
                         path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
                     )
@@ -154,49 +138,32 @@ def run_optimization(
                     optimized_params.append(model_dict)
                     save_dict_as_json(
                         model_dict,
-                        f"{_output_path}/{optimized_param_all_slices_output_file_name}",
+                        f"{_output_path}/{output_file_name_json}",
                     )
-    else:
-        for bear_size in bear_sizes:
-            optimized_params = []
-            for model in models:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
-                path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-
-                _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
-
-                if os.path.exists(f"{_output_path}/{optimized_params_output_file_name}"):
-                    if force_optimization:
-                        logging.info(f"Optimizing for model {model}")
-                        print("Optimizing for model", model)
-                        slice_data = get_slice_data(
-                            path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                        )
-                        model_dict = {"Model": model, param_name: optimize(slice_data, vectorized_function)}
-                        optimized_params.append(model_dict)
-                        save_dict_as_json(
-                            model_dict,
-                            f"{_output_path}/{optimized_params_output_file_name}",
-                        )
-                    else:
-                        logging.info(f"Loaded optimized params for model {model}")
-                        print("Loaded optimized params for model", model)
-                        optimized_params.append(load_json_dict(f"{_output_path}/{optimized_params_output_file_name}"))
                 else:
-                    logging.info(f"Optimizing for model {model}")
-                    print("Optimizing for model", model)
-                    if not os.path.exists(_output_path):
-                        os.makedirs(_output_path)
-                    slice_data = get_slice_data(
-                        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                    )
-                    model_dict = {"Model": model, param_name: optimize(slice_data, vectorized_function)}
-                    optimized_params.append(model_dict)
-                    save_dict_as_json(
-                        model_dict,
-                        f"{_output_path}/{optimized_params_output_file_name}",
-                    )
+                    logging.info(f"Optimisation for model {model} already exist")
+                    print(f"Optimisation for model {model} already exist")
+                    if not optimize_over_all_slices:
+                        optimized_params.append(load_json_dict(f"{_output_path}/{output_file_name_json}"))
+            else:
+                logging.info(f"Optimizing for model {model}")
+                print(f"Optimizing for model {model}")
+                if not os.path.exists(_output_path):
+                    os.makedirs(_output_path)
+                slice_data = get_slice_data(
+                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                )
+                model_dict = {
+                    "Model": model,
+                    param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
+                }
+                optimized_params.append(model_dict)
+                save_dict_as_json(
+                    model_dict,
+                    f"{_output_path}/{output_file_name_json}",
+                )
 
+        if not optimize_over_all_slices:
             output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/{function_dir_name}/"
 
             if not os.path.exists(output_path_diagram):

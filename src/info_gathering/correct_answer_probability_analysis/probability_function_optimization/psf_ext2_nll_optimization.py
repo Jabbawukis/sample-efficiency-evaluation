@@ -10,7 +10,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def power_scaling_function_ext2(alpha, x, x_0=3.0):
+def power_scaling_function_ext2(alpha, x, x_0=0.325):
     return 1 - np.power(x_0 / (1 + x), alpha)
 
 
