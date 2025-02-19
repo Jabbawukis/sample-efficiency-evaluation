@@ -147,4 +147,8 @@ if __name__ == "__main__":
             model_dict[model] = slice_data
 
         optimized_params = optimize(model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices)
-        save_dict_as_json(optimized_params, f"./BEAR-{bear_size}_optimized_params.json")
+
+        if optimize_over_all_slices:
+            save_dict_as_json(optimized_params, f"./BEAR-{bear_size}_over_all_slices_optimized_params.json")
+        else:
+            save_dict_as_json(optimized_params, f"./BEAR-{bear_size}_for_every_slice_optimized_params.json")
