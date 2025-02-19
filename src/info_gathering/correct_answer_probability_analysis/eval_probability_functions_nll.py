@@ -6,16 +6,16 @@ import matplotlib.pyplot as plt
 import info_gathering.paths as paths
 
 from utility.utility import load_json_dict, save_dict_as_json
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_log_likelihood_optimization import (
-    vectorized_psf,
-)
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_ext_log_likelihood_optimization import (
-    vectorized_psf_ext,
-)
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_cdf_log_likelihood_optimization import (
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.cdf_nll_optimization import (
     vectorized_cdf,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.eval_model_checkpoint_psf_ext2_log_likelihood_optimization import (
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
+    vectorized_psf,
+)
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext_nll_optimization import (
+    vectorized_psf_ext,
+)
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext2_nll_optimization import (
     vectorized_psf_ext2,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
@@ -73,6 +73,14 @@ if __name__ == "__main__":
     bear_sizes = ["big", "small"]
     functions = [
         {
+            "function_method": vectorized_cdf,
+            "function_name": "Cumulative Distribution Function",
+            "file_name": "cdf_optimized_lambdas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Lambdas",
+            "Param": "lambda",
+        },
+        {
             "function_method": vectorized_psf,
             "function_name": "Power Scaling Function",
             "file_name": "psf_optimized_alphas.json",
@@ -95,14 +103,6 @@ if __name__ == "__main__":
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
             "Param": "alpha",
-        },
-        {
-            "function_method": vectorized_cdf,
-            "function_name": "Cumulative Distribution Function",
-            "file_name": "cdf_optimized_lambdas.json",
-            "get_slice_data": get_slice_data,
-            "Params": "Lambdas",
-            "Param": "lambda",
         },
     ]
 
