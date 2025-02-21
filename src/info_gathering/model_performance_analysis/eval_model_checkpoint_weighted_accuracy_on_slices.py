@@ -16,11 +16,11 @@ def weighting_function_on_buckets(occurrences, lambda_=0.01, num_buckets=14):
         bucket_start = 2**i
         if i == num_buckets - 1:
             if float("inf") > occurrences >= bucket_start:  # bucket end is exclusive
-                occurrence_class = bucket_start / 2
+                occurrence_class = bucket_start
                 break
         bucket_end = 2 ** (i + 1)
         if bucket_end > occurrences >= bucket_start:  # bucket end is exclusive
-            occurrence_class = bucket_start / 2
+            occurrence_class = bucket_start
             break
 
     return np.exp(-lambda_ * occurrence_class) if occurrence_class > 0 else 0
