@@ -94,7 +94,7 @@ if __name__ == "__main__":
     comparative_plot_output_file_name = "cdf_optimized_lambdas"
     param_name = "Lambdas"
     param_name_key = "lambda"
-    optimize_over_all_slices = False
+    optimize_over_all_slices = False  # optimize the values over all slices at once
     force_optimization = False
 
     run_optimization(

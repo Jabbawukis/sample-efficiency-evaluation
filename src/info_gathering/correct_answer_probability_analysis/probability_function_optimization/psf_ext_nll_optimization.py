@@ -98,7 +98,7 @@ if __name__ == "__main__":
     comparative_plot_output_file_name = "psf-ext_optimized_alphas"
     param_name = "Alphas"
     param_name_key = "alpha"
-    optimize_over_all_slices = False
+    optimize_over_all_slices = False  # optimize the values over all slices at once
     force_optimization = False
 
     run_optimization(

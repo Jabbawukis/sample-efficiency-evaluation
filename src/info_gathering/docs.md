@@ -32,6 +32,17 @@ the number of occurrences of the fact in the training data, are optimized.
 See [here](https://github.com/Jabbawukis/sample-efficiency-evaluation-results/blob/main/probing_on_dataset_slices.md)
 for the probability function definitions.
 The optimized parameters of the probability functions are saved as .json files.
+The optimization can be performed for each model checkpoint or for all model checkpoints at once.
+
+### 1.1. Probability Function Optimization for multiple Parameters
+
+The PSF_EXT2 probability function can be optimized/evaluated for multiple parameters ($L_0$, $x_O$ and $\alpha$).
+Here, we can optimize these values as well by concatenating all models predictions
+and minimizing the negative log-likelihood
+by optimizing a separate $\alpha$ for each model and a global $x_0$ and $L_0$ value all at once.
+Hence, the optimized $x_0$ and $L_0$ values are used for the PSF_EXT2 function and are dataset-specific parameters.
+
+The script can be found [here](correct_answer_probability_analysis/probability_function_optimization/function_param_eval/psf_ext2_dataset_specific_params_nll_optimization.py).
 
 ## 2. Evaluate the probability functions (requires step 1. of answer probability analysis)
 
