@@ -42,8 +42,6 @@ and minimizing the negative log-likelihood
 by optimizing a separate $\alpha$ for each model and a global $x_0$ and $L_0$ value all at once.
 Hence, the optimized $x_0$ and $L_0$ values are used for the PSF_EXT2 function and are dataset-specific parameters.
 
-The script can be found [here](correct_answer_probability_analysis/probability_function_optimization/function_param_eval/psf_ext2_dataset_specific_params_nll_optimization.py).
-
 ## 2. Evaluate the probability functions (requires step 1. of answer probability analysis)
 
 The probability functions are [evaluated](correct_answer_probability_analysis/eval_probability_functions_nll.py) for each model checkpoint and the results are saved as .png files.

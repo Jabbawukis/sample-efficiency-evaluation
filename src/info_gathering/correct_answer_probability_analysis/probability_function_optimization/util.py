@@ -112,7 +112,6 @@ def run_optimization(
     param_name_key: str,
     optimize_over_all_slices: bool,
     force_optimization: bool,
-    **kwargs,
 ):
 
     if optimize_over_all_slices:
@@ -126,7 +125,7 @@ def run_optimization(
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
-            _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/"
+            _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
 
             if os.path.exists(f"{_output_path}/{output_file_name_json}"):
                 if force_optimization:
@@ -137,12 +136,7 @@ def run_optimization(
                     )
                     model_dict = {
                         "Model": model,
-                        param_name: optimize(
-                            slice_data,
-                            vectorized_function,
-                            optimize_over_all_slices,
-                            kwargs[bear_size] if bear_size in kwargs else None,
-                        ),
+                        param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
                     }
                     optimized_params.append(model_dict)
                     save_dict_as_json(
@@ -164,12 +158,7 @@ def run_optimization(
                 )
                 model_dict = {
                     "Model": model,
-                    param_name: optimize(
-                        slice_data,
-                        vectorized_function,
-                        optimize_over_all_slices,
-                        kwargs[bear_size] if bear_size in kwargs else None,
-                    ),
+                    param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
                 }
                 optimized_params.append(model_dict)
                 save_dict_as_json(

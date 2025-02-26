@@ -17,7 +17,7 @@ def power_scaling_function_ext(alpha, x):
 vectorized_psf_ext = np.vectorize(power_scaling_function_ext, excluded=["alpha"])
 
 
-def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False, *args):
+def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False):
     # Initial guess for alpha
     initial_params = np.array([0.07])
     bounds = [(0.037, None)]
