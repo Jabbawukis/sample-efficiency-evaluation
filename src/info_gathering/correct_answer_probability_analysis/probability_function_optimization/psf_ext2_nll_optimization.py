@@ -142,7 +142,6 @@ if __name__ == "__main__":
     param_name = "Alphas"
     param_name_key = "alpha"
     optimize_over_all_slices = False  # optimize the values over all slices for each model at once (takes a lot of time)
-    force_optimization = True
 
     for bear_size in bear_sizes:
         model_dict = {}
@@ -159,28 +158,14 @@ if __name__ == "__main__":
 
             _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
 
-            if os.path.exists(f"{_output_path}/{output_file_name_json}"):
-                if force_optimization:
-                    logging.info(f"Optimizing for model {model}")
-                    print(f"Optimizing for model {model}")
-                    slice_data = get_slice_data(
-                        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                    )
-                    model_dict[model] = slice_data
-                else:
-                    logging.info(f"Optimisation for model {model} already exist")
-                    print(f"Optimisation for model {model} already exist")
-                    if not optimize_over_all_slices:
-                        models_already_optimized.append(load_json_dict(f"{_output_path}/{output_file_name_json}"))
-            else:
-                logging.info(f"Optimizing for model {model}")
-                print(f"Optimizing for model {model}")
-                if not os.path.exists(_output_path):
-                    os.makedirs(_output_path)
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
-                model_dict[model] = slice_data
+            logging.info(f"Optimizing for model {model}")
+            print(f"Optimizing for model {model}")
+            if not os.path.exists(_output_path):
+                os.makedirs(_output_path)
+            slice_data = get_slice_data(
+                path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+            )
+            model_dict[model] = slice_data
 
         optimized_params = optimize(model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices)
 
