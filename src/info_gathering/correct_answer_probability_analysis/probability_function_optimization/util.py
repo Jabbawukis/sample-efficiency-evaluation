@@ -52,8 +52,11 @@ def compute_log_likelihood(t, p_i):
 
 
 # Define the negative log-likelihood loss
-def negative_log_likelihood(param, _occurrences, _outcomes, _total_samples, vectorized_function):
-    p_i = vectorized_function(param, _occurrences)
+def negative_log_likelihood(param, _occurrences, _outcomes, _total_samples, vectorized_function, *args):
+    if args:
+        p_i = vectorized_function(param, _occurrences, *args)
+    else:
+        p_i = vectorized_function(param, _occurrences)
     # Ensure probabilities are within a valid range to avoid log(0)
     p_i = np.clip(p_i, 1e-10, 1 - 1e-10)
     log_likelihood = compute_log_likelihood(_outcomes, p_i)
@@ -109,6 +112,7 @@ def run_optimization(
     param_name_key: str,
     optimize_over_all_slices: bool,
     force_optimization: bool,
+    **kwargs,
 ):
 
     if optimize_over_all_slices:
@@ -133,7 +137,12 @@ def run_optimization(
                     )
                     model_dict = {
                         "Model": model,
-                        param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
+                        param_name: optimize(
+                            slice_data,
+                            vectorized_function,
+                            optimize_over_all_slices,
+                            kwargs[bear_size] if bear_size in kwargs else None,
+                        ),
                     }
                     optimized_params.append(model_dict)
                     save_dict_as_json(
@@ -155,7 +164,12 @@ def run_optimization(
                 )
                 model_dict = {
                     "Model": model,
-                    param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
+                    param_name: optimize(
+                        slice_data,
+                        vectorized_function,
+                        optimize_over_all_slices,
+                        kwargs[bear_size] if bear_size in kwargs else None,
+                    ),
                 }
                 optimized_params.append(model_dict)
                 save_dict_as_json(

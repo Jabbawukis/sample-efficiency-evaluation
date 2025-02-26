@@ -141,15 +141,28 @@ if __name__ == "__main__":
 
                     optimized_param = slice_optimized_param[function["Param"]]
 
+                    additional_args = slice_optimized_param["args"] if "args" in slice_optimized_param else None
+
                     nll_sums.append(
                         {
                             "slice": slice_id,
-                            "value": negative_log_likelihood(
-                                optimized_param,
-                                occurrences,
-                                outcomes,
-                                total_samples,
-                                function["function_method"],
+                            "value": (
+                                negative_log_likelihood(
+                                    optimized_param,
+                                    occurrences,
+                                    outcomes,
+                                    total_samples,
+                                    function["function_method"],
+                                )
+                                if additional_args is None
+                                else negative_log_likelihood(
+                                    optimized_param,
+                                    occurrences,
+                                    outcomes,
+                                    total_samples,
+                                    function["function_method"],
+                                    additional_args,
+                                )
                             ),
                         }
                     )

@@ -10,14 +10,14 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def power_scaling_function_ext2(alpha, x, x_0=0.325):
+def power_scaling_function_ext2(alpha, x, x_0):
     return 1 - np.power(x_0 / (1 + x), alpha)
 
 
 vectorized_psf_ext2 = np.vectorize(power_scaling_function_ext2, excluded=["alpha"])
 
 
-def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False):
+def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False, *args):
     # Initial guess for alpha
     initial_params = np.array([0.07])
     bounds = [(0.037, None)]
@@ -40,7 +40,7 @@ def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False)
         result = minimize(
             negative_log_likelihood,
             x0=initial_params,
-            args=(all_occurrences, all_outcomes, all_total_samples, vectorized_function),
+            args=(all_occurrences, all_outcomes, all_total_samples, vectorized_function, *args),
             bounds=bounds,
             method="L-BFGS-B",
         )
@@ -58,7 +58,7 @@ def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False)
         result = minimize(
             negative_log_likelihood,
             x0=initial_params,
-            args=(occurrences, outcomes, total_samples, vectorized_function),
+            args=(occurrences, outcomes, total_samples, vectorized_function, *args),
             bounds=bounds,
             method="L-BFGS-B",
         )
@@ -74,6 +74,7 @@ def optimize(data_slice_info, vectorized_function, concatenate_all_slices=False)
                 {
                     "slice": slice_id,
                     "alpha": optimized_alpha,
+                    "args": args,
                 }
             )
         else:
@@ -115,4 +116,5 @@ if __name__ == "__main__":
         param_name_key,
         optimize_over_all_slices,
         force_optimization,
+        **{"big": 0.36, "small": 0.29},
     )

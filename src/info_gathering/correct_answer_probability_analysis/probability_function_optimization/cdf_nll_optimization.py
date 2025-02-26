@@ -18,7 +18,7 @@ def cumulative_distribution_function(lambd, x):
 vectorized_cdf = np.vectorize(cumulative_distribution_function, excluded=["lambd"])
 
 
-def optimize(data_slice_info, _vectorized_function, concatenate_all_slices=False):
+def optimize(data_slice_info, _vectorized_function, concatenate_all_slices=False, *args):
     # Initial guess for lambda
     initial_params = np.array(0.1)
     bounds = [(1e-5, None)]
