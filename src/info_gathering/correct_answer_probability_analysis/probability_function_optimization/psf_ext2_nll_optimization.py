@@ -92,7 +92,8 @@ def optimize(data_slice_info, vectorized_function, num_slices=42, _optimize_over
         all_total_samples = 0
 
         for _model, _slice_data in data_slice_info.items():
-            final_optimized_params_dict[_model] = {"Model": _model, "Alphas": []}
+            if _model not in final_optimized_params_dict:
+                final_optimized_params_dict[_model] = {"Model": _model, "Alphas": []}
             all_occurrences.extend(_slice_data[str(slice_id)]["occurrences"])
             all_outcomes.extend(_slice_data[str(slice_id)]["answers"])
             all_total_samples += _slice_data[str(slice_id)]["total_samples"]
