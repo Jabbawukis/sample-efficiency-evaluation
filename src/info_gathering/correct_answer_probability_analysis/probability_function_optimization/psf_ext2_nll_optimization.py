@@ -114,11 +114,13 @@ def optimize(data_slice_info, vectorized_function, num_slices=42, _optimize_over
         print(f"Final L_0: {L_0}")
 
         for optimized_param, _model in zip(result.x[:-2], data_slice_info.keys()):
-            final_optimized_params_dict[_model]["Alphas"] = {
-                "slice": str(slice_id),
-                "alpha": optimized_param,
-                "args": [L_0, x_0],
-            }
+            final_optimized_params_dict[_model]["Alphas"].append(
+                {
+                    "slice": str(slice_id),
+                    "alpha": optimized_param,
+                    "args": [L_0, x_0],
+                }
+            )
             print(f"Final optimized alpha for {_model}: {optimized_param}")
 
     return final_optimized_params_dict
