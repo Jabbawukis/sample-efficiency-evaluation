@@ -138,7 +138,7 @@ class UtilityTest(unittest.TestCase):
     def test_count_increasing_occurrences_in_slices(self):
         with (
             patch.object(utility, "load_json_dict") as load_json_dict,
-            patch.object(utility, "save_dict_as_json") as save_dict_as_json,
+            patch.object(utility, "save_dict_as_json"),
             patch.object(
                 os,
                 "listdir",

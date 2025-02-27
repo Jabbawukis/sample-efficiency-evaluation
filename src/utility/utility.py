@@ -79,6 +79,7 @@ def word_in_sentence(word: str, sentence: str, ignore_case: bool = True) -> bool
 
 def create_fact_occurrence_histogram(
     path_to_rel_info_file: str,
+    num_buckets: int = 14,
     output_diagram_name: str = "occurrence_statistics",
     output_path: Optional[str] = None,
 ) -> None:
@@ -87,6 +88,9 @@ def create_fact_occurrence_histogram(
     The bucket end is exclusive.
 
     :param output_diagram_name: Name of the output diagram.
+    :param num_buckets: Number of buckets to divide the relation occurrences into.
+        The default is 14. Each bucket is a power of two starting from 1.
+        e.g. (1, 2), (2, 4), (4, 8), ... ending with (8192, inf) for 14 buckets.
     :param path_to_rel_info_file: Path to relation info file.
     :param output_path: Path to save the diagram.
     :return:
@@ -95,22 +99,13 @@ def create_fact_occurrence_histogram(
     if output_path is None:
         out = os.path.dirname(path_to_rel_info_file)
     relation_info_dict: dict = load_json_dict(path_to_rel_info_file)
-    occurrence_buckets = [
-        (1, 2),
-        (2, 4),
-        (4, 8),
-        (8, 16),
-        (16, 32),
-        (32, 64),
-        (64, 128),
-        (128, 256),
-        (256, 512),
-        (512, 1024),
-        (1024, 2048),
-        (2048, 4096),
-        (4096, 8192),
-        (8192, float("inf")),
-    ]
+
+    occurrence_buckets = []
+    for i in range(num_buckets):
+        if i == num_buckets - 1:
+            occurrence_buckets.append((2**i, float("inf")))
+            break
+        occurrence_buckets.append((2**i, 2 ** (i + 1)))
     relation_occurrence_info_dict = {}
     for occurrence in occurrence_buckets:
         relation_occurrence_info_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
