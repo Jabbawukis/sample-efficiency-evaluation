@@ -148,7 +148,6 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         model_dict = {}
-        models_already_optimized = []
 
         if optimize_over_all_slices:
             output_file_name_json = optimized_params_over_all_slices_output_file_name
@@ -187,8 +186,6 @@ if __name__ == "__main__":
             optimized_params_list = []
             for _, optimized_param in optimized_params.items():
                 optimized_params_list.append(optimized_param)
-            for model_params in models_already_optimized:
-                optimized_params_list.append(model_params)
 
             plot_params(
                 optimized_params_list,
