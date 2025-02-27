@@ -161,7 +161,7 @@ if __name__ == "__main__":
                                     outcomes,
                                     total_samples,
                                     function["function_method"],
-                                    additional_args,
+                                    *additional_args,
                                 )
                             ),
                         }
