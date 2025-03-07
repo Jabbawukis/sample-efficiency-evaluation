@@ -9,7 +9,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
     get_slice_data,
     plot_params,
 )
-from utility.utility import save_dict_as_json, load_json_dict
+from utility.utility import save_dict_as_json
 
 
 def power_scaling_function_ext2(alpha, x, L_0, x_0):
