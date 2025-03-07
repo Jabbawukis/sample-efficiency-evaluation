@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         model_weighted_accuracy_on_slices = {}
-
+        final_diagram_output_path = ""
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
@@ -104,8 +104,8 @@ if __name__ == "__main__":
                 os.makedirs(final_diagram_output_path)
 
             model_weighted_accuracy_on_slices[model] = data
-            plot_params(
-                model_weighted_accuracy_on_slices,
-                final_diagram_output_path,
-                f"weighted_accuracy_on_slices_bear_{bear_size}",
-            )
+        plot_params(
+            model_weighted_accuracy_on_slices,
+            final_diagram_output_path,
+            f"weighted_accuracy_on_slices_bear_{bear_size}",
+        )
