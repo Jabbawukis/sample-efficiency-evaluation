@@ -87,12 +87,25 @@ def plot_params(
         xs = np.arange(42)
         plt.plot(xs[params_mask], params[params_mask], marker="o", linestyle="-", label=f"{_model_params['Model']}")
 
+        last_x = xs[params_mask][-1]
+        last_y = params[params_mask][-1]
+        plt.text(
+            float(last_x),
+            float(last_y),
+            f"{last_y:.4f}",
+            fontsize=12,
+            color="black",
+            ha="left",  # Align text to the left of the point
+            va="bottom",
+        )
+
     # Add titles, labels, and legend
     plt.title("Optimized Values", fontsize=16)
     plt.xlabel("Slices", fontsize=14)
     plt.ylabel(param_name, fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(alpha=0.5)
+    plt.tight_layout()
     plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
     plt.clf()
     plt.close()

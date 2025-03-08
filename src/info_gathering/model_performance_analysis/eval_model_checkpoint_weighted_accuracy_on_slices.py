@@ -63,6 +63,7 @@ def plot_params(weighed_scores_models: dict, output_path: str, output_diagram_na
     plt.ylabel("Weighed Accuracy Score", fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(alpha=0.5)
+    plt.tight_layout()
     plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
     plt.clf()
     plt.close()
