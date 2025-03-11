@@ -36,7 +36,7 @@ The optimization can be performed for each model checkpoint or for all model che
 
 ### 1.1. Probability Function Optimization for multiple Parameters
 
-The PSF_EXT2 probability function can be optimized/evaluated for multiple parameters ($L_0$, $x_O$ and $\alpha$).
+The PSF_EXT2 probability function can be optimized/evaluated for multiple parameters ($L_0$, $x_0$ and $\alpha$).
 Here, we can optimize these values as well by concatenating all models predictions
 and minimizing the negative log-likelihood
 by optimizing a separate $\alpha$ for each model and a global $x_0$ and $L_0$ value all at once.
