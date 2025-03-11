@@ -82,6 +82,15 @@ if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     weight_on_buckets = True
 
+    num_buckets = 14
+
+    relation_occurrence_buckets = []
+    for i in range(num_buckets):
+        if i == num_buckets - 1:
+            relation_occurrence_buckets.append((2**i, float("inf")))
+            break
+        relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
+
     for bear_size in bear_sizes:
         model_weighted_accuracy_on_slices = {}
         final_diagram_output_path = ""
@@ -94,6 +103,7 @@ if __name__ == "__main__":
                     path_to_checkpoints_probing_results,
                     path_to_increasing_occurrences_in_slices,
                     weighting_function_on_buckets,
+                    relation_occurrence_buckets,
                 )
             else:
                 final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
