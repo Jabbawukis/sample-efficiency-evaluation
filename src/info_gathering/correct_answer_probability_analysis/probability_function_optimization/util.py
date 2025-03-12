@@ -66,7 +66,7 @@ def negative_log_likelihood(param, _occurrences, _outcomes, _total_samples, vect
 def plot_params(
     params_of_models: list, _output_path: str, output_diagram_name: str, param_name: str, param_name_key: str
 ):
-    plt.figure(figsize=(24, 18))
+    plt.figure(figsize=(16, 10))
 
     # Ensure all x-axis values are shown
     plt.xticks(range(0, 42))

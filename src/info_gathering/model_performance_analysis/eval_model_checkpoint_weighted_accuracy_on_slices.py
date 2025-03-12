@@ -32,7 +32,7 @@ def weighting_function(occurrences, lambda_=0.01):
 
 def plot_params(weighed_scores_models: dict, output_path: str, output_diagram_name: str):
 
-    plt.figure(figsize=(24, 18))
+    plt.figure(figsize=(16, 10))
 
     # Ensure all x-axis values are shown
     plt.xticks(range(0, 42))

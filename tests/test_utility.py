@@ -299,3 +299,22 @@ class UtilityTest(unittest.TestCase):
                 },
                 "output/joined_relation_occurrence_info.json",
             )
+
+    def test_join_relation_info_json_files_2(self):
+        with (
+            patch.object(utility, "load_json_dict") as load_json_dict,
+            patch.object(utility, "save_dict_as_json") as save_dict_as_json,
+            patch.object(
+                os,
+                "listdir",
+                return_value=["0_relation_info.json"],
+            ),
+        ):
+            load_json_dict.side_effect = [
+                self.entity_relation_result_info_dict_1,
+            ]
+            utility.join_relation_occurrences_info_json_files("output")
+            save_dict_as_json.assert_called_once_with(
+                self.entity_relation_result_info_dict_1,
+                "output/joined_relation_occurrence_info.json",
+            )
