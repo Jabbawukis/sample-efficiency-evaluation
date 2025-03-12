@@ -20,19 +20,18 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
     # Determine grid layout
     num_checkpoints = df["Checkpoint"].nunique()
-    cols = 5
+    cols = 1
     rows = math.ceil(num_checkpoints / cols)
 
     # Create the grid of plots
-    fig, axes = plt.subplots(rows, cols, figsize=(30, 4 * rows), sharey=False)
-    axes = axes.flatten()
+    fig, axes = plt.subplots(rows, cols, figsize=(6, 5 * rows))
+    # axes = axes.flatten()
 
     # Get unique checkpoints for ordering
     checkpoints = sorted(df["Checkpoint"].unique(), key=lambda x: int(x.split("-")[-1]))
-
     # Iterate over each checkpoint to create individual plots
     for i, checkpoint in enumerate(checkpoints):
-        ax = axes[i]
+        ax = axes
         checkpoint_data = df[df["Checkpoint"] == checkpoint]
 
         # Create a secondary axis for Total Occurrences
@@ -40,7 +39,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
         # Plot accuracy on the primary y-axis
         accuracy_plot = sns.barplot(
-            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy"
+            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax, color="blue"#, label="Accuracy"
         )
 
         # Annotate accuracy bars
@@ -58,14 +57,14 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
             ax=ax2,
             color="red",
             alpha=0.5,
-            label="Total Occurrences",
+            #label="Total Occurrences",
         )
 
         # Annotate total occurrences bars
         for p in occurrences_plot.patches:
             value = f"{int(p.get_height())}"  # Total occurrences is an integer
             ax2.text(
-                p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="red", fontsize=8
+                p.get_x() + p.get_width() / 2, 0, value, ha="center", va="bottom", color="red", fontsize=6
             )
 
         # Rotate x-tick labels
@@ -75,29 +74,29 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
         ax.set_ylabel("Accuracy", color="blue")
         ax2.set_ylabel("Total Occurrences", color="red")
         ax.set_xlabel("Occurrence Buckets")
-        ax.set_title(f"Checkpoint {checkpoint}")
+        # ax.set_title(f"Checkpoint {checkpoint} (Slice {lol[i]})")
 
-        ax.set_ylim(0, max_accuracy)
-        ax2.set_ylim(0, max_occurrences)
-    # Remove unused subplots
-    for j in range(len(checkpoints), len(axes)):
-        fig.delaxes(axes[j])
+        ax.set_ylim(0, 1.1)
+        ax2.set_ylim(0, 6000)
+    # # Remove unused subplots
+    # for j in range(len(checkpoints), len(axes)):
+    #     fig.delaxes(axes[j])
 
     # Adjust layout and save the plot
-    fig.tight_layout()
-    plt.savefig(_final_diagram_output_path)
+        fig.tight_layout()
+        plt.savefig(_final_diagram_output_path)
 
 
 if __name__ == "__main__":
     models = [
-        "gpt2_124m",
-        "gpt2_209m",
-        "gpt2_355m",
-        "mamba2_172m",
+        # "gpt2_124m",
+        # "gpt2_209m",
+        # "gpt2_355m",
+        # "mamba2_172m",
         "mamba2_432m",
-        "xlstm_247m",
+        # "xlstm_247m",
     ]  # results dont depend on other models
-    bear_sizes = ["big", "small"]
+    bear_sizes = ["small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     num_buckets = 14
 
@@ -112,11 +111,11 @@ if __name__ == "__main__":
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
-
+            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-153300.pdf"
             data = get_checkpoint_occurrence_bucket_accuracy(
                 path_to_checkpoints_probing_results,
                 path_to_increasing_occurrences_in_slices,
                 relation_occurrence_buckets,
             )
+
             plot_checkpoint_accuracy(data, final_diagram_output_path)

@@ -141,7 +141,10 @@ def get_checkpoint_occurrence_bucket_accuracy(
 
     # Convert final_output to a DataFrame
     out_put_data = []
-    for _checkpoint, buckets in final_output.items():
+    _final_output = {#"checkpoint-3650": final_output["checkpoint-3650"]}
+                      #"checkpoint-76650": final_output["checkpoint-76650"]}
+                      "checkpoint-153300": final_output["checkpoint-153300"]}
+    for _checkpoint, buckets in _final_output.items():
         for bucket, stats in buckets.items():
             out_put_data.append(
                 {
