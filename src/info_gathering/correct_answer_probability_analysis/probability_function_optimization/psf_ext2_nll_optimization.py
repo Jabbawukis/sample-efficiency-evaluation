@@ -9,7 +9,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
     get_slice_data,
     plot_params,
 )
-from utility.utility import save_dict_as_json
+from utility.utility import save_dict_as_json, load_json_dict
 
 
 def power_scaling_function_ext2(alpha, x, L_0, x_0):
@@ -145,6 +145,7 @@ if __name__ == "__main__":
     param_name = "Alphas"
     param_name_key = "alpha"
     optimize_over_all_slices = False  # optimize the values over all slices for each model at once (takes a lot of time)
+    skip_optimisation = False  # skip optimization and load the optimized parameters (if already optimized)
 
     for bear_size in bear_sizes:
         model_dict = {}
@@ -167,15 +168,25 @@ if __name__ == "__main__":
             slice_data = get_slice_data(path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices)
             model_dict[model] = slice_data
 
-        optimized_params = optimize(model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices)
-
-        for model, optimized_param in optimized_params.items():
-            _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
-            save_dict_as_json(
-                optimized_param,
-                f"{_output_path}/{output_file_name_json}",
+        if not skip_optimisation:
+            optimized_params = optimize(
+                model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices
             )
-            print(f"Optimized parameters for model {model} saved successfully")
+
+            for model, optimized_param in optimized_params.items():
+                _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
+                save_dict_as_json(
+                    optimized_param,
+                    f"{_output_path}/{output_file_name_json}",
+                )
+                print(f"Optimized parameters for model {model} saved successfully")
+        else:
+            optimized_params = {}
+            for model in models:
+                logging.info(f"Skipping optimizing for model {model} and loading the optimized parameters")
+                print(f"Skipping optimizing for model {model} and loading the optimized parameters")
+                _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
+                optimized_params[model] = load_json_dict(f"{_output_path}/{output_file_name_json}")
 
         if not optimize_over_all_slices:
             output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/{function_dir_name}/"
