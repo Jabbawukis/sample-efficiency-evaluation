@@ -132,6 +132,7 @@ def create_fact_occurrence_histogram(
 
     x_labels = sorted(list(relation_occurrence_info_dict.keys()), key=get_num)
     occurrences = [relation_occurrence_info_dict[x_label]["total_occurrence"] for x_label in x_labels]
+    plt.figure(figsize=(6, 5))
     plt.bar(x_labels, occurrences)
     for i, count in enumerate(occurrences):
         plt.text(i, count, str(count), ha="center", va="bottom")
