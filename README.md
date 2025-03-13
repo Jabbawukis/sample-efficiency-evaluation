@@ -16,8 +16,8 @@ This project aims to measure the sample efficiency of different language model a
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/Jabbawukis/sample_efficiency_evaluation.git
-    cd sample_efficiency_evaluation
+    git clone https://github.com/Jabbawukis/sample-efficiency-evaluation.git
+    cd sample-efficiency-evaluation
     ```
 
 2. Install the required dependencies:
@@ -30,5 +30,8 @@ This project aims to measure the sample efficiency of different language model a
 4. Place the downloaded dataset in the appropriate directory as specified in your configuration.
 
 ## Experiment Results
-
-See [sample-efficiency-evaluation-results](https://github.com/Jabbawukis/sample_efficiency_evaluation_results)
+Clone the repository containing the experiment results and place it next to the `sample-efficiency-evaluation` directory.:
+```bash
+git clone https://github.com/Jabbawukis/sample-efficiency-evaluation-results
+```
+Extract the contents describe in the `sample-efficiency-evaluation-results` README.md file.
