@@ -27,7 +27,7 @@ This project aims to measure the sample efficiency of different language model a
 
 3. Download the BEAR dataset from the following link: [BEAR Dataset](https://github.com/lm-pub-quiz/BEAR)
 
-4. Place the downloaded dataset in the appropriate directory as specified in your configuration.
+4. Place the downloaded dataset in the appropriate directory as specified in your configuration (or simply inside this directory).
 
 ## Experiment Results
 Clone the repository containing the experiment results and place it next to the `sample-efficiency-evaluation` directory.:
