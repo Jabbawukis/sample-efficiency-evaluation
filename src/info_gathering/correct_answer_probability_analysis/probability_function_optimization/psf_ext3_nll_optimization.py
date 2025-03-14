@@ -140,7 +140,7 @@ if __name__ == "__main__":
     bear_sizes = ["big", "small"]
     optimized_params_for_all_slices_output_file_name = "psf-ext3_optimized_alphas.json"
     optimized_params_over_all_slices_output_file_name = "psf-ext3_optimized_alpha_over_all_slices.json"
-    function_dir_name = "power_scaling_function_extended2"
+    function_dir_name = "power_scaling_function_extended3"
     comparative_plot_output_file_name = "psf-ext3_optimized_alphas"
     param_name = "Alphas"
     param_name_key = "alpha"
