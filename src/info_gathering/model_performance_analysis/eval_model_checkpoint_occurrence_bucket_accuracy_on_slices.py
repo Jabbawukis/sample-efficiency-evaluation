@@ -24,7 +24,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
     rows = math.ceil(num_checkpoints / cols)
 
     # Create the grid of plots
-    fig, axes = plt.subplots(rows, cols, figsize=(6, 5 * rows))
+    fig, axes = plt.subplots(rows, cols, figsize=(4.5, 3))
     # axes = axes.flatten()
 
     # Get unique checkpoints for ordering
@@ -46,7 +46,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
         for p in accuracy_plot.patches:
             value = f"{p.get_height():.2f}"
             ax.text(
-                p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="blue", fontsize=8
+                p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="blue", fontsize=5
             )
 
         # Plot total occurrences on the secondary y-axis
@@ -64,11 +64,11 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
         for p in occurrences_plot.patches:
             value = f"{int(p.get_height())}"  # Total occurrences is an integer
             ax2.text(
-                p.get_x() + p.get_width() / 2, 0, value, ha="center", va="bottom", color="red", fontsize=6
+                p.get_x() + p.get_width() / 2, 0, value, ha="center", va="bottom", color="red", fontsize=5
             )
 
         # Rotate x-tick labels
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=50, ha="right")
 
         # Set axis labels and titles
         ax.set_ylabel("Accuracy", color="blue")
