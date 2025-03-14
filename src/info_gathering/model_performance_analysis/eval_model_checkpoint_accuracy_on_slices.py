@@ -58,7 +58,7 @@ if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     num_buckets = 14
     for bear_size in bear_sizes:
-        model_weighted_accuracy_on_slices = {}
+        model_accuracy_on_slices = {}
         final_diagram_output_path = ""
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
@@ -71,9 +71,9 @@ if __name__ == "__main__":
             if not os.path.exists(final_diagram_output_path):
                 os.makedirs(final_diagram_output_path)
 
-            model_weighted_accuracy_on_slices[model] = data
+            model_accuracy_on_slices[model] = data
         plot_params(
-            model_weighted_accuracy_on_slices,
+            model_accuracy_on_slices,
             final_diagram_output_path,
             f"accuracy_on_slices_bear_{bear_size}",
         )
