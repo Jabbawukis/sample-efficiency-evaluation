@@ -91,6 +91,26 @@ def get_checkpoint_occurrence_weighted_accuracy_overall(
     return final_output
 
 
+def get_checkpoint_accuracy_overall(path_to_checkpoints: str, path_to_increasing_occurrences_in_slices: str):
+    checkpoints: list = os.listdir(path_to_checkpoints)
+    sorted_checkpoints = sorted(checkpoints, key=get_num)
+    increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
+    final_output = {}
+
+    for idx, _checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
+        correct = 0
+        total = 0
+        for relation_id, entity_dict in increasing_occurrences.items():
+            for entity_id, fact in entity_dict.items():
+                assert fact["occurrences_increase"][idx]["Slice"] == idx
+                assert fact["occurrences_increase"][idx]["checkpoint"] == _checkpoint
+                if fact["occurrences_increase"][idx]["correct"]:
+                    correct += 1
+                total += 1
+        final_output[idx] = correct / total
+    return final_output
+
+
 def get_checkpoint_occurrence_bucket_accuracy(
     path_to_checkpoints: str,
     path_to_increasing_occurrences_in_slices: str,
