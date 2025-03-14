@@ -38,46 +38,44 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
         ax2 = ax.twinx()
 
         # Plot accuracy on the primary y-axis
-        accuracy_plot = sns.barplot(
-            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax, color="blue"#, label="Accuracy"
+        sns.lineplot(
+            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax2, color="tab:red", markers=True,
+            style="Checkpoint", legend=False, markersize=3
         )
 
-        # Annotate accuracy bars
-        for p in accuracy_plot.patches:
-            value = f"{p.get_height():.2f}"
-            ax.text(
-                p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="blue", fontsize=5
-            )
+        for x, y in zip(checkpoint_data["Occurrence Buckets"], checkpoint_data["Accuracy"]):
+            ax2.text(x, y + 0.02, f"{y:.2f}", ha="center", va="bottom", fontsize=5, color="k")
+        # Annotate accuracy ba
 
         # Plot total occurrences on the secondary y-axis
         occurrences_plot = sns.barplot(
             data=checkpoint_data,
             x="Occurrence Buckets",
             y="Total Occurrences",
-            ax=ax2,
-            color="red",
-            alpha=0.5,
+            ax=ax,
+            color="tab:blue",
+            #alpha=0.5,
             #label="Total Occurrences",
         )
 
         # Annotate total occurrences bars
         for p in occurrences_plot.patches:
             value = f"{int(p.get_height())}"  # Total occurrences is an integer
-            ax2.text(
-                p.get_x() + p.get_width() / 2, 0, value, ha="center", va="bottom", color="red", fontsize=5
+            ax.text(
+                p.get_x() + p.get_width() / 2, 0, value, ha="center", va="bottom", color="k", fontsize=5
             )
 
         # Rotate x-tick labels
         ax.set_xticklabels(ax.get_xticklabels(), rotation=50, ha="right")
 
         # Set axis labels and titles
-        ax.set_ylabel("Accuracy", color="blue")
-        ax2.set_ylabel("Total Occurrences", color="red")
-        ax.set_xlabel("Occurrence Buckets")
+        ax2.set_ylabel("Accuracy", color="tab:red")
+        ax.set_ylabel("Total Occurrences", color="tab:blue")
+        ax2.set_xlabel("Occurrence Buckets")
         # ax.set_title(f"Checkpoint {checkpoint} (Slice {lol[i]})")
 
-        ax.set_ylim(0, 1.1)
-        ax2.set_ylim(0, 6000)
+        ax2.set_ylim(0, 1.1)
+        ax.set_ylim(0, max_occurrences)
     # # Remove unused subplots
     # for j in range(len(checkpoints), len(axes)):
     #     fig.delaxes(axes[j])
@@ -111,7 +109,7 @@ if __name__ == "__main__":
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-153300.pdf"
+            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-76650.pdf"
             data = get_checkpoint_occurrence_bucket_accuracy(
                 path_to_checkpoints_probing_results,
                 path_to_increasing_occurrences_in_slices,
