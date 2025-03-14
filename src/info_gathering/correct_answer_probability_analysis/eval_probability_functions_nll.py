@@ -18,6 +18,9 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext2_nll_optimization import (
     vectorized_psf_ext2,
 )
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext3_nll_optimization import (
+    vectorized_psf_ext3,
+)
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
     negative_log_likelihood,
@@ -100,6 +103,14 @@ if __name__ == "__main__":
             "function_method": vectorized_psf_ext2,
             "function_name": "Power Scaling Function Extended2",
             "file_name": "psf-ext2_optimized_alphas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Alphas",
+            "Param": "alpha",
+        },
+        {
+            "function_method": vectorized_psf_ext3,
+            "function_name": "Power Scaling Function Extended3",
+            "file_name": "psf-ext3_optimized_alphas.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
             "Param": "alpha",

@@ -12,11 +12,11 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 from utility.utility import save_dict_as_json, load_json_dict
 
 
-def power_scaling_function_ext2(alpha, x, L_0, x_0):
+def power_scaling_function_ext3(alpha, x, L_0, x_0):
     return 1 - (L_0 + x_0 / (np.power((1 + x), alpha)))
 
 
-vectorized_psf_ext2 = np.vectorize(power_scaling_function_ext2, excluded=["alpha", "L_0", "x_0"])
+vectorized_psf_ext3 = np.vectorize(power_scaling_function_ext3, excluded=["alpha", "L_0", "x_0"])
 
 
 def compute_log_likelihood(t, p_i):
@@ -171,7 +171,7 @@ if __name__ == "__main__":
                 model_dict[model] = slice_data
 
             optimized_params = optimize(
-                model_dict, vectorized_psf_ext2, _optimize_over_all_slices=optimize_over_all_slices
+                model_dict, vectorized_psf_ext3, _optimize_over_all_slices=optimize_over_all_slices
             )
 
             for model, optimized_param in optimized_params.items():
