@@ -41,6 +41,7 @@ def plot_params(weighed_scores_models: dict, output_path: str, output_diagram_na
     plt.grid(alpha=0.5)
     plt.tight_layout()
     plt.savefig(os.path.join(output_path, f"{output_diagram_name}.pdf"))
+    plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
     plt.clf()
     plt.close()
 
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
+            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/"
             data = get_checkpoint_accuracy_overall(
                 path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
             )
