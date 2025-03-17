@@ -24,7 +24,7 @@ def get_checkpoint_occurrence_weighted_accuracy(
 
     for idx, _checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
         sum_of_wights = []
-        relation_accuracy_scores_dict = {}
+        relation_accuracy_scores_dict = {"0": {"correct": 0, "total": 0, "lower_bound": 0}}
         for occurrence in relation_occurrence_buckets:
             relation_accuracy_scores_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
                 "correct": 0,
