@@ -1,4 +1,3 @@
-import math
 import os
 import logging
 from typing import Optional
@@ -97,7 +96,7 @@ class KnowledgeProber:
         x_labels = sorted(list(relation_accuracy_scores_dict.keys()), key=get_num)
         accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
         total_values = [relation_accuracy_scores_dict[x_label]["total"] for x_label in x_labels]
-        fig, ax1 = plt.subplots(figsize=(5.5, 3.5))
+        _, ax1 = plt.subplots(figsize=(5.5, 3.5))
 
         ax2 = ax1.twinx()
         bars = ax1.bar(x_labels, total_values, color="tab:blue", width=0.8)
@@ -124,7 +123,7 @@ class KnowledgeProber:
         plt.xticks(rotation=45, ha="right")
         ax1.set_xticklabels(x_labels, rotation=45, ha="right")
         plt.tight_layout()
-        # plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
+        plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
         plt.savefig(os.path.join(output_path, f"{output_diagram_name}.pdf"))
         plt.clf()
         plt.close()
