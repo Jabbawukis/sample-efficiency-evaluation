@@ -107,6 +107,7 @@ def plot_params(
     plt.grid(alpha=0.5)
     plt.tight_layout()
     plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
+    plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.pdf"))
     plt.clf()
     plt.close()
 

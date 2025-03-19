@@ -1,3 +1,4 @@
+import math
 import os
 import logging
 from typing import Optional
@@ -96,37 +97,35 @@ class KnowledgeProber:
         x_labels = sorted(list(relation_accuracy_scores_dict.keys()), key=get_num)
         accuracy_scores = [round(relation_accuracy_scores_dict[x_label]["accuracy"], 2) for x_label in x_labels]
         total_values = [relation_accuracy_scores_dict[x_label]["total"] for x_label in x_labels]
-
-        fig, ax1 = plt.subplots(figsize=(12, 6))
-
-        bars1 = ax1.bar(x_labels, accuracy_scores, color="blue", alpha=0.7, label="Accuracy")
-        ax1.set_ylabel("Accuracy", color="blue")
-        ax1.tick_params(axis="y", labelcolor="blue")
-        ax1.set_xlabel("Occurrence Buckets")
-
-        for _bar in bars1:
-            height = _bar.get_height()
-            ax1.text(
-                _bar.get_x() + _bar.get_width() / 2, height, f"{height:.2f}", ha="center", va="bottom", color="blue"
-            )
+        fig, ax1 = plt.subplots(figsize=(5.5, 3.5))
 
         ax2 = ax1.twinx()
-        bars2 = ax2.bar(x_labels, total_values, color="red", alpha=0.5, label="Total Occurrences", width=0.4)
-        ax2.set_ylabel("Total Occurrences", color="red")
-        ax2.tick_params(axis="y", labelcolor="red")
+        bars = ax1.bar(x_labels, total_values, color="tab:blue", width=0.8)
+        ax1.set_xlabel("Occurrence Buckets")
+        ax1.set_ylabel("Total Occurrences", color="tab:blue")
+        ax1.tick_params(axis="y", labelcolor="black")
 
-        for _bar in bars2:
+        for _bar in bars:
             height = _bar.get_height()
-            ax2.text(_bar.get_x() + _bar.get_width() / 2, height, f"{height}", ha="center", va="bottom", color="red")
+            ax1.text(
+                _bar.get_x() + _bar.get_width() / 2, 0, f"{height}", ha="center", va="bottom", color="black", fontsize=6
+            )
 
+        ax2.plot(x_labels, accuracy_scores, color="tab:red", marker="o", markersize=4)
+        ax2.set_ylabel("Accuracy", color="tab:red")
+        ax2.tick_params(axis="y", labelcolor="black")
+        ax2.set_ylim(0, 1.1)
+
+        for x, y in zip(x_labels, accuracy_scores):
+            ax2.text(x, y + 0.02, f"{y:.2f}", ha="center", va="bottom", fontsize=7, color="black")
+
+        ax1.margins(x=0)
+        ax1.set_xlim(-0.5, len(x_labels) - 0.5)
         plt.xticks(rotation=45, ha="right")
         ax1.set_xticklabels(x_labels, rotation=45, ha="right")
-        legend = fig.legend(loc="upper center", bbox_to_anchor=(0.5, 1.1), fontsize=10, ncol=2)
-        plt.title("Entity Pair Accuracy and Total Occurrences Histogram")
         plt.tight_layout()
-        plt.savefig(
-            os.path.join(output_path, f"{output_diagram_name}.png"), bbox_extra_artists=(legend,), bbox_inches="tight"
-        )
+        # plt.savefig(os.path.join(output_path, f"{output_diagram_name}.png"))
+        plt.savefig(os.path.join(output_path, f"{output_diagram_name}.pdf"))
         plt.clf()
         plt.close()
 
