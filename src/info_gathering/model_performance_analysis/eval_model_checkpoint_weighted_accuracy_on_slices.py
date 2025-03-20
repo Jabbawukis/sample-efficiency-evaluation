@@ -82,7 +82,7 @@ if __name__ == "__main__":
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     weight_on_buckets = True
-
+    num_slices = 1
     num_buckets = 14
 
     relation_occurrence_buckets = []
@@ -96,17 +96,17 @@ if __name__ == "__main__":
         model_weighted_accuracy_on_slices = {}
         final_diagram_output_path = ""
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/occurrence_info_0.2_500_0.8.json"
             if weight_on_buckets:
                 final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/on_buckets"
                 data = get_checkpoint_occurrence_weighted_accuracy(
-                    path_to_checkpoints_probing_results,
+                    num_slices,
                     path_to_increasing_occurrences_in_slices,
                     weighting_function_on_buckets,
                     relation_occurrence_buckets,
                 )
             else:
+                path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
                 final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
                 data = get_checkpoint_occurrence_weighted_accuracy_overall(
                     path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices, weighting_function
@@ -119,5 +119,5 @@ if __name__ == "__main__":
         plot_params(
             model_weighted_accuracy_on_slices,
             final_diagram_output_path,
-            f"weighted_accuracy_on_slices_bear_{bear_size}",
+            f"weighted_accuracy_on_slices_bear_{bear_size}_0.2_500_0.8",
         )

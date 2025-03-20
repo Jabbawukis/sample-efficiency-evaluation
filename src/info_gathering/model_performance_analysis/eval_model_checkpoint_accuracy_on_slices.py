@@ -56,16 +56,17 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
+    num_slices = 1
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     for bear_size in bear_sizes:
         model_accuracy_on_slices = {}
         final_diagram_output_path = ""
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
-            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
+            path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/occurrence_info_0.8_500_0.2.json"
             final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/"
             data = get_checkpoint_accuracy_overall(
-                path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
+                num_slices,
+                path_to_increasing_occurrences_in_slices
             )
 
             if not os.path.exists(final_diagram_output_path):
@@ -75,5 +76,5 @@ if __name__ == "__main__":
         plot_params(
             model_accuracy_on_slices,
             final_diagram_output_path,
-            f"accuracy_on_slices_bear_{bear_size}",
+            f"accuracy_on_slices_bear_{bear_size}_0.8_500_0.2",
         )
