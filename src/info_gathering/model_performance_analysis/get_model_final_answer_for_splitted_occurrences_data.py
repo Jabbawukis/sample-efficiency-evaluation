@@ -98,13 +98,13 @@ if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     subset_percentage = {
         "big": {
-            "threshold": 500,
-            "total_num_samples": 100,
+            "threshold": 1024,
+            "total_num_samples": 500,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
         "small": {
-            "threshold": 500,
-            "total_num_samples": 200,
+            "threshold": 1024,
+            "total_num_samples": 100,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         }
     }
