@@ -1,4 +1,5 @@
 import os
+import random
 import unittest
 from unittest.mock import patch
 
@@ -317,4 +318,154 @@ class UtilityTest(unittest.TestCase):
             save_dict_as_json.assert_called_once_with(
                 self.entity_relation_result_info_dict_1,
                 "output/joined_relation_occurrence_info.json",
+            )
+
+    def test_split_relation_occurrences_info_json_on_occurrences_good_1(self):
+        relation_info = {
+            "P6": {
+                "Q1519": {
+                    "occurrences": 20,
+                },
+                "Q399": {
+                    "occurrences": 15,
+                },
+                "Q15119": {
+                    "occurrences": 201,
+                },
+                "Q1521219": {
+                    "occurrences": 21,
+                },
+                "Q837": {
+                    "occurrences": 22,
+                },
+            },
+            "P2": {
+                "Q548114": {
+                    "occurrences": 3,
+                },
+                "Q5626824": {
+                    "occurrences": 2,
+                },
+                "Q837": {
+                    "occurrences": 2,
+                },
+                "Q81237": {
+                    "occurrences": 122,
+                },
+                "Q8137": {
+                    "occurrences": 1,
+                },
+                "Q8373213": {
+                    "occurrences": 2,
+                },
+                "Q83713": {
+                    "occurrences": 2,
+                },
+            },
+        }
+        with patch.object(utility, "load_json_dict", return_value=relation_info):
+            random.seed(42)
+            split = utility.split_relation_occurrences_info_json_on_occurrences(
+                path_to_relation_info="output", threshold=10, total_num_samples=10, splits=[(0.5, 0.5), (0.6, 0.4)]
+            )
+            self.assertEqual(
+                split,
+                {
+                    (0.5, 0.5): {
+                        "list": [
+                            ("P2", "Q83713"),
+                            ("P2", "Q548114"),
+                            ("P2", "Q8373213"),
+                            ("P2", "Q837"),
+                            ("P2", "Q5626824"),
+                            ("P6", "Q399"),
+                            ("P2", "Q81237"),
+                            ("P6", "Q837"),
+                            ("P6", "Q15119"),
+                            ("P6", "Q1519"),
+                        ],
+                        "threshold": 10,
+                    },
+                    (0.6, 0.4): {
+                        "list": [
+                            ("P2", "Q83713"),
+                            ("P2", "Q8373213"),
+                            ("P2", "Q548114"),
+                            ("P2", "Q837"),
+                            ("P2", "Q5626824"),
+                            ("P2", "Q8137"),
+                            ("P6", "Q1519"),
+                            ("P2", "Q81237"),
+                            ("P6", "Q399"),
+                            ("P6", "Q837"),
+                        ],
+                        "threshold": 10,
+                    },
+                },
+            )
+
+    def test_split_relation_occurrences_info_json_on_occurrences_good_2(self):
+        relation_info = {
+            "P6": {
+                "Q1519": {
+                    "occurrences": 20,
+                },
+                "Q399": {
+                    "occurrences": 15,
+                },
+                "Q15119": {
+                    "occurrences": 201,
+                },
+                "Q1521219": {
+                    "occurrences": 21,
+                },
+                "Q837": {
+                    "occurrences": 22,
+                },
+            },
+            "P2": {
+                "Q548114": {
+                    "occurrences": 3,
+                },
+                "Q5626824": {
+                    "occurrences": 2,
+                },
+                "Q837": {
+                    "occurrences": 2,
+                },
+                "Q81237": {
+                    "occurrences": 122,
+                },
+                "Q8137": {
+                    "occurrences": 1,
+                },
+                "Q8373213": {
+                    "occurrences": 2,
+                },
+            },
+        }
+        with patch.object(utility, "load_json_dict", return_value=relation_info):
+            random.seed(42)
+            split = utility.split_relation_occurrences_info_json_on_occurrences(
+                path_to_relation_info="output", threshold=10, total_num_samples=10, splits=[(0.5, 0.5), (0.6, 0.4)]
+            )
+            self.assertEqual(
+                split,
+                {
+                    (0.5, 0.5): {
+                        "list": [
+                            ("P2", "Q548114"),
+                            ("P2", "Q8373213"),
+                            ("P2", "Q837"),
+                            ("P2", "Q5626824"),
+                            ("P2", "Q8137"),
+                            ("P6", "Q399"),
+                            ("P2", "Q81237"),
+                            ("P6", "Q1519"),
+                            ("P6", "Q15119"),
+                            ("P6", "Q1521219"),
+                        ],
+                        "threshold": 10,
+                    }
+                },
             )

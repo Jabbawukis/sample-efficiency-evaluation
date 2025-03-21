@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Union
 
@@ -35,7 +36,7 @@ def get_checkpoint_occurrence_weighted_accuracy(
                 try:
                     assert fact["occurrences_increase"][idx]["Slice"] == idx
                 except (AssertionError, KeyError):
-                    print(f'Warning: slice in dict is not {idx}')
+                    logging.warning(f"Warning: slice in dict is not {idx}")
                 occurrences = fact["occurrences_increase"][idx]["total"]
                 if occurrences == 0:
                     relation_accuracy_scores_dict["0"]["total"] += 1
@@ -103,7 +104,7 @@ def get_checkpoint_accuracy_overall(num_slices: int, path_to_increasing_occurren
                 try:
                     assert fact["occurrences_increase"][idx]["Slice"] == idx
                 except (AssertionError, KeyError):
-                    print(f'Warning: slice in dict is not {idx}')
+                    logging.warning(f"Warning: slice in dict is not {idx}")
                 if fact["occurrences_increase"][idx]["correct"]:
                     correct += 1
                 total += 1
