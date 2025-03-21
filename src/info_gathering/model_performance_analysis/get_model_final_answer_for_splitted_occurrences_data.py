@@ -41,7 +41,7 @@ def plot_scores(scores_models: dict, output: str, output_diagram_name: str, num_
     plt.ylabel("Accuracy Score", fontsize=14)
     plt.grid(axis="y", alpha=0.5)
     plt.tight_layout()
-    plt.savefig(os.path.join(output, f"{output_diagram_name}.pdf"))
+    # plt.savefig(os.path.join(output, f"{output_diagram_name}.pdf"))
     plt.savefig(os.path.join(output, f"{output_diagram_name}.png"))
     plt.clf()
     plt.close()
@@ -125,6 +125,13 @@ if __name__ == "__main__":
         relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
 
     for bear_size in bear_sizes:
+        splits_file_appendix = (
+            f"{subset_percentage[bear_size]['splits'][0][0]}_"
+            f"{subset_percentage[bear_size]['splits'][0][1]}_"
+            f"{subset_percentage[bear_size]['threshold']}_"
+            f"{subset_percentage[bear_size]['splits'][1][0]}_"
+            f"{subset_percentage[bear_size]['splits'][1][1]}"
+        )
 
         random.seed(42)
         splits = split_relation_occurrences_info_json_on_occurrences(
@@ -140,7 +147,7 @@ if __name__ == "__main__":
 
             # output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/occurrence_splits/"
             #####################
-            output_path = f"./test"
+            output_path = f"./test/samples/{bear_size}/{splits_file_appendix}/"
             #####################
             os.makedirs(output_path, exist_ok=True)
 
@@ -163,7 +170,7 @@ if __name__ == "__main__":
 
         # final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/split_occurrences/"
         #####################
-        final_diagram_output_path = f"./test/dias/{bear_size}/"
+        final_diagram_output_path = f"./test/dias/{bear_size}/{splits_file_appendix}/"
         #####################
 
         os.makedirs(final_diagram_output_path, exist_ok=True)
