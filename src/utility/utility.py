@@ -235,7 +235,8 @@ def split_relation_occurrences_info_json_on_occurrences(path_to_relation_info: s
             split_b = random.sample(split_b_list, num_b_samples)
         except ValueError:
             logging.error(
-                f"Total number of samples {total_num_samples} is less than the sum of the number of samples for splits."
+                "Total number of samples %s is less than the sum of the number of samples for splits.",
+                total_num_samples,
             )
             continue
 

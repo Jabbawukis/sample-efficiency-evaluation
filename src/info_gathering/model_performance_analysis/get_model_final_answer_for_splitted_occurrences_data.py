@@ -26,7 +26,7 @@ def plot_scores(scores_models: dict, output: str, output_diagram_name: str, num_
     x_labels = list(scores_models.keys())
     scores = [score[0] for score in scores_models.values()]
 
-    colors = ["#1f77b4" if i % 2 == 0 else "#ff7f0e" for i in range(len(x_labels))]
+    colors = ["#1f77b4" if m % 2 == 0 else "#ff7f0e" for m in range(len(x_labels))]
 
     plt.bar(x_labels, scores, width=bar_width, color=colors)
 
