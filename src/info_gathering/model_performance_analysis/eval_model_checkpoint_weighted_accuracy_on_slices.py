@@ -81,7 +81,7 @@ if __name__ == "__main__":
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
-    weight_on_buckets = True # True for bucket weighting, False fact weighting
+    weight_on_buckets = True  # True for bucket weighting, False fact weighting
     num_slices = 42
     num_buckets = 14
 
@@ -91,6 +91,12 @@ if __name__ == "__main__":
             relation_occurrence_buckets.append((2**i, float("inf")))
             break
         relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
+
+    # filter out the top buckets (only facts under 1024 occurrences)
+    # relation_occurrence_buckets = relation_occurrence_buckets[:10]
+
+    # filter out the bottom buckets (only facts over 1024 occurrences)
+    #relation_occurrence_buckets = relation_occurrence_buckets[10:]
 
     for bear_size in bear_sizes:
         model_weighted_accuracy_on_slices = {}

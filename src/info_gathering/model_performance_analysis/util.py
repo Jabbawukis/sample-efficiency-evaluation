@@ -23,7 +23,10 @@ def get_checkpoint_occurrence_weighted_accuracy(
 
     for idx in tqdm(range(num_slices), desc="Evaluating Probe results in slices"):
         sum_of_wights = []
+        # remove the 0 bucket if filtering out facts with less than 1024 occurrences
+        # relation_accuracy_scores_dict = {}
         relation_accuracy_scores_dict = {"0": {"correct": 0, "total": 0, "lower_bound": 0}}
+        ########################################################################################
         for occurrence in relation_occurrence_buckets:
             relation_accuracy_scores_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
                 "correct": 0,
@@ -38,11 +41,13 @@ def get_checkpoint_occurrence_weighted_accuracy(
                 except (AssertionError, KeyError):
                     logging.warning(f"Warning: slice in dict is not {idx}")
                 occurrences = fact["occurrences_increase"][idx]["total"]
+                ########################################################################################
                 if occurrences == 0:
                     relation_accuracy_scores_dict["0"]["total"] += 1
                     if fact["occurrences_increase"][idx]["correct"]:
                         relation_accuracy_scores_dict["0"]["correct"] += 1
                     continue
+                ########################################################################################
                 for bucket in relation_occurrence_buckets:
                     bucket_start = bucket[0]
                     bucket_end = bucket[1]
@@ -101,6 +106,19 @@ def get_checkpoint_accuracy_overall(num_slices: int, path_to_increasing_occurren
         total = 0
         for relation_id, entity_dict in increasing_occurrences.items():
             for entity_id, fact in entity_dict.items():
+
+                # filter out facts with less than 1024 occurrences
+                # if fact["occurrences_increase"][idx]["total"] >= 1024:
+                #     pass
+                # else:
+                #     continue
+
+                # filter out facts with less than 1024 occurrences
+                # if fact["occurrences_increase"][idx]["total"] < 1024:
+                #     pass
+                # else:
+                #     continue
+
                 try:
                     assert fact["occurrences_increase"][idx]["Slice"] == idx
                 except (AssertionError, KeyError):
