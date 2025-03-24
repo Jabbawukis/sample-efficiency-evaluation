@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Union
 
@@ -12,17 +13,15 @@ def get_num(x: str) -> int:
 
 
 def get_checkpoint_occurrence_weighted_accuracy(
-    path_to_checkpoints: str,
+    num_slices: int,
     path_to_increasing_occurrences_in_slices: str,
     weighting_function: callable,
     relation_occurrence_buckets: list[tuple[int, Union[int, float]]],
 ):
-    checkpoints: list = os.listdir(path_to_checkpoints)
-    sorted_checkpoints = sorted(checkpoints, key=get_num)
     increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
     final_output = {}
 
-    for idx, _checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
+    for idx in tqdm(range(num_slices), desc="Evaluating Probe results in slices"):
         sum_of_wights = []
         relation_accuracy_scores_dict = {"0": {"correct": 0, "total": 0, "lower_bound": 0}}
         for occurrence in relation_occurrence_buckets:
@@ -34,8 +33,10 @@ def get_checkpoint_occurrence_weighted_accuracy(
 
         for relation_id, entity_dict in increasing_occurrences.items():
             for entity_id, fact in entity_dict.items():
-                assert fact["occurrences_increase"][idx]["Slice"] == idx
-                assert fact["occurrences_increase"][idx]["checkpoint"] == _checkpoint
+                try:
+                    assert fact["occurrences_increase"][idx]["Slice"] == idx
+                except (AssertionError, KeyError):
+                    logging.warning(f"Warning: slice in dict is not {idx}")
                 occurrences = fact["occurrences_increase"][idx]["total"]
                 if occurrences == 0:
                     relation_accuracy_scores_dict["0"]["total"] += 1
@@ -91,19 +92,19 @@ def get_checkpoint_occurrence_weighted_accuracy_overall(
     return final_output
 
 
-def get_checkpoint_accuracy_overall(path_to_checkpoints: str, path_to_increasing_occurrences_in_slices: str):
-    checkpoints: list = os.listdir(path_to_checkpoints)
-    sorted_checkpoints = sorted(checkpoints, key=get_num)
+def get_checkpoint_accuracy_overall(num_slices: int, path_to_increasing_occurrences_in_slices: str):
     increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
     final_output = {}
 
-    for idx, _checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
+    for idx in tqdm(range(num_slices), desc="Evaluating Probe results in slices"):
         correct = 0
         total = 0
         for relation_id, entity_dict in increasing_occurrences.items():
             for entity_id, fact in entity_dict.items():
-                assert fact["occurrences_increase"][idx]["Slice"] == idx
-                assert fact["occurrences_increase"][idx]["checkpoint"] == _checkpoint
+                try:
+                    assert fact["occurrences_increase"][idx]["Slice"] == idx
+                except (AssertionError, KeyError):
+                    logging.warning(f"Warning: slice in dict is not {idx}")
                 if fact["occurrences_increase"][idx]["correct"]:
                     correct += 1
                 total += 1

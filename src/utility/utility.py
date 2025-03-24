@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import random
 import re
 from typing import Optional
 
@@ -198,3 +199,47 @@ def join_relation_occurrences_info_json_files(path_to_files: str) -> None:
             fact.pop("sentences")
     save_dict_as_json(first_file, f"{path_to_files}/joined_relation_occurrence_info.json")
     logging.info("Joined relation info files.")
+
+
+def split_relation_occurrences_info_json_on_occurrences(path_to_relation_info: str, **kwargs) -> dict:
+    """
+    Split relation occurrences info json file based on occurrences.
+
+    :param path_to_relation_info: Path to relation info file.
+    :param kwargs: Information for splitting the relation occurrences info file.
+    - threshold: int = 100 (The threshold occurrence for splitting the relation occurrences info file)
+    - total_num_samples: int = 1000 (Total number of samples to draw from the relation occurrences info file)
+    - splits: list[tuples] = [(0.5, 0.5), (0.7, 0.3)] (The splits to divide the total number of samples)
+    :return: Dictionary containing a dictionary with the split list (list of tuples) and threshold for each split.
+    """
+    occurrences = load_json_dict(path_to_relation_info)
+    split_a_list = []
+    split_b_list = []
+    split_threshold = kwargs.get("threshold")
+    total_num_samples = kwargs.get("total_num_samples")
+
+    for relation_id, entity_dict in occurrences.items():
+        for entity, fact_info in entity_dict.items():
+            if fact_info["occurrences"] < split_threshold:
+                split_a_list.append((relation_id, entity))
+            else:
+                split_b_list.append((relation_id, entity))
+    split_dict = {}
+    for split in kwargs.get("splits"):
+        split_a_percent, split_b_percent = split
+
+        num_a_samples = round(total_num_samples * split_a_percent)
+        num_b_samples = round(total_num_samples * split_b_percent)
+        try:
+            split_a = random.sample(split_a_list, num_a_samples)
+            split_b = random.sample(split_b_list, num_b_samples)
+        except ValueError:
+            logging.error(
+                "Total number of samples %s is less than the sum of the number of samples for splits.",
+                total_num_samples,
+            )
+            continue
+
+        split_dict[split] = {"list": split_a + split_b, "threshold": split_threshold}
+
+    return split_dict
