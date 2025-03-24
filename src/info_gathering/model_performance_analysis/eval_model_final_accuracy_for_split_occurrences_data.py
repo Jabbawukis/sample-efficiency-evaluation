@@ -111,8 +111,8 @@ if __name__ == "__main__":
             "splits": [(0.9, 0.1), (0.1, 0.9)],
         },
         "small": {
-            "threshold": 1024,
-            "total_num_samples": 100,
+            "threshold": 256,
+            "total_num_samples": 500,
             "splits": [(0.9, 0.1), (0.1, 0.9)],
         },
     }

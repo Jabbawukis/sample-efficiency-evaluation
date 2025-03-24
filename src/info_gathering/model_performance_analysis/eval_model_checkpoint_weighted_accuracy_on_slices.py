@@ -81,7 +81,7 @@ if __name__ == "__main__":
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
-    weight_on_buckets = True
+    weight_on_buckets = True # True for bucket weighting, False fact weighting
     num_slices = 42
     num_buckets = 14
 

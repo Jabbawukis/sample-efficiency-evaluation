@@ -12,14 +12,26 @@ The model checkpoints answers are evaluated for each fact.
 [Get accuracies over occurrence buckets](model_performance_analysis/eval_model_checkpoint_occurrence_bucket_accuracy_on_slices.py):
 
 For each checkpoint probing result, the accuracy is calculated for each occurrence bucket.
-The accuracy results for each checkpoint are plotted and saved as a .png file.
+The accuracy results for each checkpoint are plotted and saved.
 
-## 3. Get the model checkpoint weighted accuracies over all facts (requires step 1. of model performance analysis)
+## 3. Get the model checkpoint weighted accuracies (requires step 1. of model performance analysis)
 
-[Get weighted accuracies over all facts](model_performance_analysis/eval_model_checkpoint_weighted_accuracy_on_slices.py):
+[Get weighted accuracies](model_performance_analysis/eval_model_checkpoint_weighted_accuracy_on_slices.py):
 
-For each checkpoint probing result, the weighted accuracy (dependent on fact occurrence) is calculated over all facts.
-The weighted accuracy results for each checkpoint and for each model are plotted and saved as a .png file.
+For each checkpoint probing result, the bucket accuracy (dependent on fact occurrence) is calculated.
+The weighted accuracy is calculated by weighting the bucket accuracies by the lower bound of the bucket
+The weighted accuracy results for each checkpoint, and for each model are plotted and saved.
+
+It is also possible to calculate the weighted accuracy for each fact.
+The result is an accuracy score by taking the 
+sum of weights (0 if answer is wrong, the weight value if answer is correct)
+and dividing it by the total sum of weights.
+
+## 4. Get the model checkpoint accuracies over all facts (requires step 1. of model performance analysis)
+
+[Get accuracies over all facts](model_performance_analysis/eval_model_checkpoint_accuracy_on_slices.py):
+
+For each checkpoint probing result, the accuracy is calculated for all facts.
 
 # Correct Answer Probability Analysis
 
