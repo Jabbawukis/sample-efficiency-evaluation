@@ -13,7 +13,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
     df = pd.DataFrame(_data)
 
     max_accuracy = df["Accuracy"].max()
-    max_occurrences = df["Total Occurrences"].max()
+    max_occurrences = df["Frequency"].max()
 
     # Round up the maximum occurrences for better scaling (e.g., to the nearest 1000)
     max_occurrences = math.ceil(max_occurrences / 1000) * 1000
@@ -40,7 +40,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
         # Plot accuracy on the primary y-axis
         accuracy_plot = sns.barplot(
-            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy"
+            data=checkpoint_data, x="Frequency Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy"
         )
 
         # Annotate accuracy bars
@@ -53,12 +53,12 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
         # Plot total occurrences on the secondary y-axis
         occurrences_plot = sns.barplot(
             data=checkpoint_data,
-            x="Occurrence Buckets",
-            y="Total Occurrences",
+            x="Frequency Buckets",
+            y="Frequency",
             ax=ax2,
             color="red",
             alpha=0.5,
-            label="Total Occurrences",
+            label="Frequency",
         )
 
         # Annotate total occurrences bars
@@ -73,8 +73,8 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
         # Set axis labels and titles
         ax.set_ylabel("Accuracy", color="blue")
-        ax2.set_ylabel("Total Occurrences", color="red")
-        ax.set_xlabel("Occurrence Buckets")
+        ax2.set_ylabel("Frequency", color="red")
+        ax.set_xlabel("Frequency Buckets")
         ax.set_title(f"Checkpoint {checkpoint}")
 
         ax.set_ylim(0, max_accuracy)

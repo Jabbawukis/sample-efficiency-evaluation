@@ -185,9 +185,9 @@ def get_checkpoint_occurrence_bucket_accuracy(
             out_put_data.append(
                 {
                     "Checkpoint": _checkpoint,
-                    "Occurrence Buckets": bucket,
+                    "Frequency Buckets": bucket,
                     "Accuracy": stats["accuracy"],
-                    "Total Occurrences": stats["total"],
+                    "Frequency": stats["total"],
                 }
             )
     return out_put_data
