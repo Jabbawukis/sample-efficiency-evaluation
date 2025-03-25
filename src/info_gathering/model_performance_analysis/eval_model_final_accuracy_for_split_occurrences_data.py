@@ -17,34 +17,94 @@ from info_gathering.model_performance_analysis.util import (
 from info_gathering.model_performance_analysis.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
 )
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext3_nll_optimization import (
+    vectorized_psf_ext3,
+    optimize,
+)
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+    get_slice_data,
+)
 
 
-def plot_scores(scores_models: dict, output: str, output_diagram_name: str, num_samples: int):
+def plot_scores(data: dict, output_path: str, num_samples: int):
     plt.figure(figsize=(16, 10))
-    bar_width = 0.2  # Adjust bar width for slimmer bars
+    metrics = ["accuracy", "alpha", "weighted_accuracy"]
+    colors = {"accuracy": "blue", "alpha": "green", "weighted_accuracy": "red"}
 
-    x_labels = list(scores_models.keys())
-    scores = [score[0] for score in scores_models.values()]
+    for split in data["accuracy"].keys():
+        models = list(data["accuracy"][split].keys())
+        x = np.arange(len(models))  # Model positions on x-axis
+        width = 0.12  # Reduce width to fit bars properly without overlap
 
-    colors = ["#1f77b4" if m % 2 == 0 else "#ff7f0e" for m in range(len(x_labels))]
+        fig, ax = plt.subplots(figsize=(12, 6))
 
-    plt.bar(x_labels, scores, width=bar_width, color=colors)
+        bar_containers = []
+        labels = []
 
-    # Display the score on top of each bar
-    for x, y in zip(x_labels, scores):
-        plt.text(x, y + 0.01, f"{y:.4f}", fontsize=12, color="black", ha="center", va="bottom")
+        for i, metric in enumerate(metrics):
+            on_split_values = [data[metric][split][model]["on_split"] for model in models]
+            total_values = [data[metric][split][model]["total"] for model in models]
 
-    # Add titles, labels, and legend
-    plt.xticks(rotation=45, ha="right")
-    plt.title(f"Accuracy Scores Over Facts ({num_samples} Samples)", fontsize=16)
-    plt.xlabel("Slices", fontsize=14)
-    plt.ylabel("Accuracy Score", fontsize=14)
-    plt.grid(axis="y", alpha=0.5)
-    plt.tight_layout()
-    # plt.savefig(os.path.join(output, f"{output_diagram_name}.pdf"))
-    plt.savefig(os.path.join(output, f"{output_diagram_name}.png"))
-    plt.clf()
-    plt.close()
+            bar1 = ax.bar(
+                x + (i - 1) * 2 * width,
+                on_split_values,
+                width,
+                label=f"{metric} (on_split)",
+                color=colors[metric],
+                alpha=0.6,
+            )
+            bar2 = ax.bar(
+                x + (i - 1) * 2 * width + width,
+                total_values,
+                width,
+                label=f"{metric} (total)",
+                color=colors[metric],
+                alpha=1.0,
+                hatch="//",
+            )
+
+            bar_containers.append(bar1)
+            bar_containers.append(bar2)
+            labels.append(f"{metric} (on_split)")
+            labels.append(f"{metric} (total)")
+
+            # Add value labels above bars
+            for b in bar1:
+                ax.text(
+                    b.get_x() + b.get_width() / 2,
+                    b.get_height(),
+                    f"{b.get_height():.2f}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                )
+            for b in bar2:
+                ax.text(
+                    b.get_x() + b.get_width() / 2,
+                    b.get_height(),
+                    f"{b.get_height():.2f}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                )
+
+        ax.set_xlabel("Models")
+        ax.set_ylabel("Scores")
+        ax.set_title(f"Scores for Split {split} with {num_samples} Samples")
+        ax.set_xticks(x)
+        ax.set_xticklabels(models, rotation=45)
+        ax.set_ylim(0, 1.1)
+        # Creating legend with metric colors for both on_split and total
+        legend_labels = [plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=0.6) for m in metrics] + [
+            plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=1.0, hatch="//") for m in metrics
+        ]
+        legend_texts = [f"{m} (on_split)" for m in metrics] + [f"{m} (total)" for m in metrics]
+        ax.legend(legend_labels, legend_texts, title="Metrics", loc="upper left")
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_path, f"{split}.png"))
+        plt.clf()
+        plt.close()
 
 
 def get_model_answer_for_occurrences_in_data(
@@ -100,20 +160,14 @@ if __name__ == "__main__":
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
-    ]  # results dont depend on other models
+    ]  # results depend on other models
     num_buckets = 14
-    num_slices = 1
-    bear_sizes = ["big", "small"]
+    bear_sizes = ["small"]
     subset_percentage = {
-        "big": {
-            "threshold": 1024,
-            "total_num_samples": 500,
-            "splits": [(0.9, 0.1), (0.1, 0.9)],
-        },
         "small": {
-            "threshold": 256,
+            "threshold": 64,
             "total_num_samples": 500,
-            "splits": [(0.9, 0.1), (0.1, 0.9)],
+            "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
     }
 
@@ -124,23 +178,29 @@ if __name__ == "__main__":
             break
         relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
 
+    seed = random.randint(0, 1000)
     for bear_size in bear_sizes:
         splits_file_appendix = (
             f"{subset_percentage[bear_size]['splits'][0][0]}_"
             f"{subset_percentage[bear_size]['splits'][0][1]}_"
             f"{subset_percentage[bear_size]['threshold']}_"
             f"{subset_percentage[bear_size]['splits'][1][0]}_"
-            f"{subset_percentage[bear_size]['splits'][1][1]}"
+            f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}"
         )
 
-        random.seed(42)
+        random.seed(seed)
         splits = split_relation_occurrences_info_json_on_occurrences(
             f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_wikipedia_20231101_en}",
             **subset_percentage[bear_size],
         )
 
-        model_accuracy_on_split = {}
-        model_weighted_accuracy_on_split = {}
+        model_scores = {"accuracy": {}, "weighted_accuracy": {}, "alpha": {}}
+        model_alphas_dict = {}
+        for split in subset_percentage[bear_size]["splits"]:
+            model_scores["accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["weighted_accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["alpha"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_alphas_dict[f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
 
         for model in tqdm(models, desc=f"Evaluating Probe results in BEAR-{bear_size}"):
             probing_results_final_model = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.final_model_probing_scores_wikipedia_20231101_en}"
@@ -156,17 +216,49 @@ if __name__ == "__main__":
                 path_to_relation_info=f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_wikipedia_20231101_en}",
                 split_info=splits,
             )
+
             for split, fact_dict in result.items():
                 save_dict_as_json(fact_dict, f"{output_path}/{model}_{split}_bear_{bear_size}.json")
-                model_accuracy_on_split[f"{model}_{split}"] = get_checkpoint_accuracy_overall(
-                    num_slices, f"{output_path}/{model}_{split}_bear_{bear_size}.json"
-                )
-                model_weighted_accuracy_on_split[f"{model}_{split}"] = get_checkpoint_occurrence_weighted_accuracy(
-                    num_slices,
+                model_scores["accuracy"][split][model] = {
+                    "on_split": get_checkpoint_accuracy_overall(
+                        1, f"{output_path}/{model}_{split}_bear_{bear_size}.json"
+                    )[0],
+                    "total": get_checkpoint_accuracy_overall(
+                        42,
+                        f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
+                    )[41],
+                }
+                model_scores["weighted_accuracy"][split][model] = {
+                    "on_split": get_checkpoint_occurrence_weighted_accuracy(
+                        1,
+                        f"{output_path}/{model}_{split}_bear_{bear_size}.json",
+                        weighting_function,
+                        relation_occurrence_buckets,
+                    )[0],
+                    "total": get_checkpoint_occurrence_weighted_accuracy(
+                        42,
+                        f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
+                        weighting_function,
+                        relation_occurrence_buckets,
+                    )[41],
+                }
+                model_alphas_dict[split][model] = get_slice_data(
+                    1,
                     f"{output_path}/{model}_{split}_bear_{bear_size}.json",
-                    weighting_function,
-                    relation_occurrence_buckets,
                 )
+        for split, model_dict in model_alphas_dict.items():
+            optimized_params = optimize(
+                model_dict,
+                vectorized_psf_ext3,
+                1,
+            )
+            for model, optimized_param in optimized_params.items():
+                path_to_total_op_alpha = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}/psf-ext3_optimized_alphas.json"
+                total_optimized_alpha = load_json_dict(path_to_total_op_alpha)["Alphas"][41]["alpha"]
+                model_scores["alpha"][split][model] = {
+                    "on_split": optimized_param["Alphas"][0]["alpha"],
+                    "total": total_optimized_alpha,
+                }
 
         # final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/split_occurrences/"
         #####################
@@ -175,14 +267,7 @@ if __name__ == "__main__":
 
         os.makedirs(final_diagram_output_path, exist_ok=True)
         plot_scores(
-            model_accuracy_on_split,
+            model_scores,
             final_diagram_output_path,
-            f"accuracy_on_splits_bear_{bear_size}",
-            num_samples=subset_percentage[bear_size]["total_num_samples"],
-        )
-        plot_scores(
-            model_weighted_accuracy_on_split,
-            final_diagram_output_path,
-            f"weighted_accuracy_on_splits_bear_{bear_size}",
             num_samples=subset_percentage[bear_size]["total_num_samples"],
         )

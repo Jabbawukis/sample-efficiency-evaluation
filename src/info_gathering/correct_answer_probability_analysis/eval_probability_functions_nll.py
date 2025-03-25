@@ -74,6 +74,7 @@ if __name__ == "__main__":
         "xlstm_247m",
     ]  # results dont depend on other models
     bear_sizes = ["big", "small"]
+    num_slices = 42
     functions = [
         {
             "function_method": vectorized_cdf,
@@ -119,15 +120,12 @@ if __name__ == "__main__":
 
     for bear_size in bear_sizes:
         for model in tqdm(models, desc="Get NLL on slices for models"):
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
             model_dict = {model: []}
             for function in functions:
                 nll_sums = []
-                slice_data = function["get_slice_data"](
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
+                slice_data = function["get_slice_data"](num_slices, path_to_increasing_occurrences_in_slices)
 
                 optimized_params_dict = load_json_dict(
                     f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/{function['file_name']}"

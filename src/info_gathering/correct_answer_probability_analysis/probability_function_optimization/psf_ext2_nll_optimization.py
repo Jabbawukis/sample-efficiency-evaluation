@@ -144,6 +144,7 @@ if __name__ == "__main__":
     comparative_plot_output_file_name = "psf-ext2_optimized_alphas"
     param_name = "Alphas"
     param_name_key = "alpha"
+    num_slices = 42
     optimize_over_all_slices = False  # optimize the values over all slices for each model at once (takes a lot of time)
     skip_optimisation = True  # skip optimization and load the optimized parameters (if already optimized)
 
@@ -156,7 +157,6 @@ if __name__ == "__main__":
             output_file_name_json = optimized_params_for_all_slices_output_file_name
         if not skip_optimisation:
             for model in models:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
                 path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
                 _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
@@ -165,9 +165,7 @@ if __name__ == "__main__":
                 print(f"Optimizing for model {model}")
                 if not os.path.exists(_output_path):
                     os.makedirs(_output_path)
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
+                slice_data = get_slice_data(num_slices, path_to_increasing_occurrences_in_slices)
                 model_dict[model] = slice_data
 
             optimized_params = optimize(

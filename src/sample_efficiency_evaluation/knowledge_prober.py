@@ -100,8 +100,8 @@ class KnowledgeProber:
 
         ax2 = ax1.twinx()
         bars = ax1.bar(x_labels, total_values, color="tab:blue", width=0.8)
-        ax1.set_xlabel("Occurrence Buckets")
-        ax1.set_ylabel("Total Occurrences", color="tab:blue")
+        ax1.set_xlabel("Frequency Buckets")
+        ax1.set_ylabel("Frequency", color="tab:blue")
         ax1.tick_params(axis="y", labelcolor="black")
 
         for _bar in bars:

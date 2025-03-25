@@ -144,6 +144,7 @@ if __name__ == "__main__":
     comparative_plot_output_file_name = "psf-ext3_optimized_alphas"
     param_name = "Alphas"
     param_name_key = "alpha"
+    num_slices = 42
     optimize_over_all_slices = False  # optimize the values over all slices for each model at once (takes a lot of time)
     skip_optimisation = False  # skip optimization and load the optimized parameters (if already optimized)
 
@@ -165,13 +166,11 @@ if __name__ == "__main__":
                 print(f"Optimizing for model {model}")
                 if not os.path.exists(_output_path):
                     os.makedirs(_output_path)
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
+                slice_data = get_slice_data(num_slices, path_to_increasing_occurrences_in_slices)
                 model_dict[model] = slice_data
 
             optimized_params = optimize(
-                model_dict, vectorized_psf_ext3, _optimize_over_all_slices=optimize_over_all_slices
+                model_dict, vectorized_psf_ext3, num_slices, _optimize_over_all_slices=optimize_over_all_slices
             )
 
             for model, optimized_param in optimized_params.items():

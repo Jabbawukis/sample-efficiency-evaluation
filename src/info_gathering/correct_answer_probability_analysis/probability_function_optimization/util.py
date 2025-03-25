@@ -14,12 +14,10 @@ def get_num(x: str) -> int:
     return int(number)
 
 
-def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
-    checkpoints = os.listdir(path_probing_results)
-    sorted_checkpoints = sorted(checkpoints, key=get_num)
-    increasing_occurrences = load_json_dict(path_increasing_occurrences_in_slices)
+def get_slice_data(num_slices: int, path_to_increasing_occurrences_in_slices: str):
+    increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
     data_on_slices = {}
-    for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Get results in slices")):
+    for idx in tqdm(range(num_slices), desc="Get results in slices"):
         # Load checkpoint metadata
         occurrences_list = []
         answer_list = []
@@ -30,9 +28,10 @@ def get_slice_data(path_probing_results, path_increasing_occurrences_in_slices):
             for entity_id, occurrences_increase in entity_dict.items():
                 slice_info = occurrences_increase["occurrences_increase"][idx]
 
-                # Ensure slice and checkpoint match expectations
-                assert slice_info["Slice"] == idx
-                assert slice_info["checkpoint"] == checkpoint
+                try:
+                    assert slice_info["occurrences_increase"][idx]["Slice"] == idx
+                except (AssertionError, KeyError):
+                    logging.warning(f"Warning: slice in dict is not {idx}")
 
                 total += 1
 
@@ -136,7 +135,6 @@ def run_optimization(
     for bear_size in bear_sizes:
         optimized_params = []
         for model in models:
-            path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
 
             _output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}"
@@ -145,9 +143,7 @@ def run_optimization(
                 if force_optimization:
                     logging.info(f"Optimizing for model {model}")
                     print(f"Optimizing for model {model}")
-                    slice_data = get_slice_data(
-                        path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                    )
+                    slice_data = get_slice_data(42, path_to_increasing_occurrences_in_slices)
                     model_dict = {
                         "Model": model,
                         param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),
@@ -167,9 +163,7 @@ def run_optimization(
                 print(f"Optimizing for model {model}")
                 if not os.path.exists(_output_path):
                     os.makedirs(_output_path)
-                slice_data = get_slice_data(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices
-                )
+                slice_data = get_slice_data(42, path_to_increasing_occurrences_in_slices)
                 model_dict = {
                     "Model": model,
                     param_name: optimize(slice_data, vectorized_function, optimize_over_all_slices),

@@ -138,11 +138,12 @@ def create_fact_occurrence_histogram(
     for i, count in enumerate(occurrences):
         plt.text(i, count, str(count), ha="center", va="bottom")
     plt.xticks(rotation=45, ha="right")
-    plt.xlabel("Occurrence Buckets")
-    plt.ylabel("Number of Subj/Obj Pairs")
-    plt.title("Entity Pair Occurrence Histogram")
+    plt.xlabel("Frequency Buckets")
+    plt.ylabel("Frequency of Subj/Obj Pairs")
+    plt.title("Entity Pair Frequency Histogram")
     plt.tight_layout()
     plt.savefig(os.path.join(out, f"{output_diagram_name}.png"))
+    plt.savefig(os.path.join(out, f"{output_diagram_name}.pdf"))
     plt.clf()
     plt.close()
 
