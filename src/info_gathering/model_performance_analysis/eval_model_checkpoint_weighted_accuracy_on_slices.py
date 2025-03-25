@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # relation_occurrence_buckets = relation_occurrence_buckets[:10]
 
     # filter out the bottom buckets (only facts over 1024 occurrences)
-    #relation_occurrence_buckets = relation_occurrence_buckets[10:]
+    # relation_occurrence_buckets = relation_occurrence_buckets[10:]
 
     for bear_size in bear_sizes:
         model_weighted_accuracy_on_slices = {}
