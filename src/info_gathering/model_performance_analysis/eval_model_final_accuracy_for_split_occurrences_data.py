@@ -76,7 +76,7 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=10,
+                    fontsize=6,
                 )
             for b in bar2:
                 ax.text(
@@ -85,7 +85,7 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=10,
+                    fontsize=6,
                 )
 
         ax.set_xlabel("Models")
