@@ -40,9 +40,9 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
     for split in data["Accuracy"].keys():
         models = list(data["Accuracy"][split].keys())
         x = np.arange(len(models))  # Model positions on x-axis
-        width = 0.12  # Reduce width to fit bars properly without overlap
+        width = 0.15  # Reduce width to fit bars properly without overlap
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(7, 5))
 
         bar_containers = []
         labels = []
@@ -94,19 +94,17 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     fontsize=5,
                 )
 
-        ax.set_xlabel("Models")
         ax.set_ylabel("Scores")
-        ax.set_title(f"Metric Scores")
         ax.set_xticks(x)
         ax.set_xticklabels(models, rotation=45)
         ax.set_ylim(0, 1.1)
         # Creating legend with metric colors for both on_split and total
         legend_labels = [plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=0.6) for m in metrics] + [
-            plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=1.0, hatch="//") for m in metrics
+            plt.Rectangle((0, 0), 1, 1, fc=colors[m], alpha=1.0, hatch="//") for m in metrics
         ]
         legend_texts = [f"{m} (on split)" for m in metrics] + [f"{m} (on all data)" for m in metrics]
         ax.legend(legend_labels, legend_texts, title="Metrics", loc="upper left")
-
+        ax.set_xlim(-0.45, len(models) - 0.4)
         plt.tight_layout()
         plt.savefig(os.path.join(output_path, f"{split}.png"))
         plt.savefig(os.path.join(output_path, f"{split}.pdf"))
