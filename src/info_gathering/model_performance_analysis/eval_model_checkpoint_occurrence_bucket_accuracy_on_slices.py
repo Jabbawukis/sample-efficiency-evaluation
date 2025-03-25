@@ -13,7 +13,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
     df = pd.DataFrame(_data)
 
     max_accuracy = df["Accuracy"].max()
-    max_occurrences = df["Total Occurrences"].max()
+    max_occurrences = df["Frequency"].max()
 
     # Round up the maximum occurrences for better scaling (e.g., to the nearest 1000)
     max_occurrences = math.ceil(max_occurrences / 1000) * 1000
@@ -39,19 +39,19 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
         # Plot accuracy on the primary y-axis
         sns.lineplot(
-            data=checkpoint_data, x="Occurrence Buckets", y="Accuracy", ax=ax2, color="tab:red", markers=True,
+            data=checkpoint_data, x="Frequency Buckets", y="Accuracy", ax=ax2, color="tab:red", markers=True,
             style="Checkpoint", legend=False, markersize=3
         )
 
-        for x, y in zip(checkpoint_data["Occurrence Buckets"], checkpoint_data["Accuracy"]):
+        for x, y in zip(checkpoint_data["Frequency Buckets"], checkpoint_data["Accuracy"]):
             ax2.text(x, y + 0.02, f"{y:.2f}", ha="center", va="bottom", fontsize=5, color="k")
         # Annotate accuracy ba
 
         # Plot total occurrences on the secondary y-axis
         occurrences_plot = sns.barplot(
             data=checkpoint_data,
-            x="Occurrence Buckets",
-            y="Total Occurrences",
+            x="Frequency Buckets",
+            y="Frequency",
             ax=ax,
             color="tab:blue",
             #alpha=0.5,
@@ -70,8 +70,8 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
         # Set axis labels and titles
         ax2.set_ylabel("Accuracy", color="tab:red")
-        ax.set_ylabel("Total Occurrences", color="tab:blue")
-        ax2.set_xlabel("Occurrence Buckets")
+        ax.set_ylabel("Frequency", color="tab:blue")
+        ax2.set_xlabel("Frequency Buckets")
         # ax.set_title(f"Checkpoint {checkpoint} (Slice {lol[i]})")
 
         ax2.set_ylim(0, 1.1)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-76650.pdf"
+            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-153300.pdf"
             data = get_checkpoint_occurrence_bucket_accuracy(
                 path_to_checkpoints_probing_results,
                 path_to_increasing_occurrences_in_slices,
