@@ -18,7 +18,6 @@ from info_gathering.model_performance_analysis.eval_model_checkpoint_weighted_ac
     weighting_function,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext3_nll_optimization import (
-    vectorized_psf_ext3,
     optimize,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
@@ -26,17 +25,24 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def plot_scores(data: dict, output_path: str, num_samples: int):
-    plt.figure(figsize=(16, 10))
-    metrics = ["accuracy", "alpha", "weighted_accuracy"]
-    colors = {"accuracy": "blue", "alpha": "green", "weighted_accuracy": "red"}
+def power_scaling_function_ext3(alpha, x, L_0, x_0):
+    return 1 - (0 + 0.88 / (np.power((1 + x), alpha)))
 
-    for split in data["accuracy"].keys():
-        models = list(data["accuracy"][split].keys())
+
+vectorized_psf_ext3 = np.vectorize(power_scaling_function_ext3, excluded=["alpha", "L_0", "x_0"])
+
+
+def plot_scores(data: dict, output_path: str, num_samples: int):
+    plt.figure(figsize=(10, 4))
+    metrics = ["Accuracy", "α", "WASB"]
+    colors = {"Accuracy": "tab:blue", "α": "tab:green", "WASB": "tab:red"}
+
+    for split in data["Accuracy"].keys():
+        models = list(data["Accuracy"][split].keys())
         x = np.arange(len(models))  # Model positions on x-axis
         width = 0.12  # Reduce width to fit bars properly without overlap
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(8, 6))
 
         bar_containers = []
         labels = []
@@ -49,7 +55,7 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                 x + (i - 1) * 2 * width,
                 on_split_values,
                 width,
-                label=f"{metric} (on_split)",
+                label=f"{metric} (on split)",
                 color=colors[metric],
                 alpha=0.6,
             )
@@ -57,7 +63,7 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                 x + (i - 1) * 2 * width + width,
                 total_values,
                 width,
-                label=f"{metric} (total)",
+                label=f"{metric} (on all data)",
                 color=colors[metric],
                 alpha=1.0,
                 hatch="//",
@@ -65,8 +71,8 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
 
             bar_containers.append(bar1)
             bar_containers.append(bar2)
-            labels.append(f"{metric} (on_split)")
-            labels.append(f"{metric} (total)")
+            labels.append(f"{metric} (on split)")
+            labels.append(f"{metric} (on all data)")
 
             # Add value labels above bars
             for b in bar1:
@@ -76,7 +82,7 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=6,
+                    fontsize=5,
                 )
             for b in bar2:
                 ax.text(
@@ -85,12 +91,12 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=6,
+                    fontsize=5,
                 )
 
         ax.set_xlabel("Models")
         ax.set_ylabel("Scores")
-        ax.set_title(f"Scores for Split {split} with {num_samples} Samples")
+        ax.set_title(f"Metric Scores")
         ax.set_xticks(x)
         ax.set_xticklabels(models, rotation=45)
         ax.set_ylim(0, 1.1)
@@ -98,11 +104,12 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
         legend_labels = [plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=0.6) for m in metrics] + [
             plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=1.0, hatch="//") for m in metrics
         ]
-        legend_texts = [f"{m} (on_split)" for m in metrics] + [f"{m} (total)" for m in metrics]
+        legend_texts = [f"{m} (on split)" for m in metrics] + [f"{m} (on all data)" for m in metrics]
         ax.legend(legend_labels, legend_texts, title="Metrics", loc="upper left")
 
         plt.tight_layout()
         plt.savefig(os.path.join(output_path, f"{split}.png"))
+        plt.savefig(os.path.join(output_path, f"{split}.pdf"))
         plt.clf()
         plt.close()
 
@@ -178,8 +185,10 @@ if __name__ == "__main__":
             break
         relation_occurrence_buckets.append((2**i, 2 ** (i + 1)))
 
-    seed = random.randint(0, 1000)
+    # seed = random.randint(0, 1000)
+    seed = 93
     for bear_size in bear_sizes:
+
         splits_file_appendix = (
             f"{subset_percentage[bear_size]['splits'][0][0]}_"
             f"{subset_percentage[bear_size]['splits'][0][1]}_"
@@ -187,6 +196,10 @@ if __name__ == "__main__":
             f"{subset_percentage[bear_size]['splits'][1][0]}_"
             f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}"
         )
+        #####################
+        output_path = f"./test/samples/{bear_size}/{splits_file_appendix}/"
+        os.makedirs(output_path, exist_ok=True)
+        #####################
 
         random.seed(seed)
         splits = split_relation_occurrences_info_json_on_occurrences(
@@ -194,22 +207,18 @@ if __name__ == "__main__":
             **subset_percentage[bear_size],
         )
 
-        model_scores = {"accuracy": {}, "weighted_accuracy": {}, "alpha": {}}
+        model_scores = {"Accuracy": {}, "WASB": {}, "α": {}}
         model_alphas_dict = {}
         for split in subset_percentage[bear_size]["splits"]:
-            model_scores["accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
-            model_scores["weighted_accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
-            model_scores["alpha"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["Accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["WASB"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["α"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
             model_alphas_dict[f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
 
         for model in tqdm(models, desc=f"Evaluating Probe results in BEAR-{bear_size}"):
             probing_results_final_model = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.final_model_probing_scores_wikipedia_20231101_en}"
 
             # output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/occurrence_splits/"
-            #####################
-            output_path = f"./test/samples/{bear_size}/{splits_file_appendix}/"
-            #####################
-            os.makedirs(output_path, exist_ok=True)
 
             result = get_model_answer_for_occurrences_in_data(
                 path_to_probing_results=probing_results_final_model,
@@ -219,7 +228,7 @@ if __name__ == "__main__":
 
             for split, fact_dict in result.items():
                 save_dict_as_json(fact_dict, f"{output_path}/{model}_{split}_bear_{bear_size}.json")
-                model_scores["accuracy"][split][model] = {
+                model_scores["Accuracy"][split][model] = {
                     "on_split": get_checkpoint_accuracy_overall(
                         1, f"{output_path}/{model}_{split}_bear_{bear_size}.json"
                     )[0],
@@ -228,7 +237,7 @@ if __name__ == "__main__":
                         f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
                     )[41],
                 }
-                model_scores["weighted_accuracy"][split][model] = {
+                model_scores["WASB"][split][model] = {
                     "on_split": get_checkpoint_occurrence_weighted_accuracy(
                         1,
                         f"{output_path}/{model}_{split}_bear_{bear_size}.json",
@@ -255,7 +264,7 @@ if __name__ == "__main__":
             for model, optimized_param in optimized_params.items():
                 path_to_total_op_alpha = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}/psf-ext3_optimized_alphas.json"
                 total_optimized_alpha = load_json_dict(path_to_total_op_alpha)["Alphas"][41]["alpha"]
-                model_scores["alpha"][split][model] = {
+                model_scores["α"][split][model] = {
                     "on_split": optimized_param["Alphas"][0]["alpha"],
                     "total": total_optimized_alpha,
                 }
@@ -264,6 +273,8 @@ if __name__ == "__main__":
         #####################
         final_diagram_output_path = f"./test/dias/{bear_size}/{splits_file_appendix}/"
         #####################
+
+        save_dict_as_json(model_scores, f"{output_path}/model_scores.json")
 
         os.makedirs(final_diagram_output_path, exist_ok=True)
         plot_scores(
