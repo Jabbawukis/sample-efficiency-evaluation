@@ -134,9 +134,9 @@ def get_model_answer_for_occurrences_in_data(
                     {
                         "total": entity_dict[answer_row.sub_id]["occurrences"],
                         "correct": answer_row.correctly_predicted,
-                        "obj_id": entity_dict[answer_row.sub_id]["obj_id"],
                     }
-                ]
+                ],
+                "obj_id": entity_dict[answer_row.sub_id]["obj_id"],
             }
             fact_info_dict[relation_id][answer_row.sub_id] = fact_info
 
