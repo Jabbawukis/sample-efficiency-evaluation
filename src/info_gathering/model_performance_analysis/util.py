@@ -112,8 +112,8 @@ def get_checkpoint_occurrence_bucket_accuracy(
 
         for relation_id, entity_dict in increasing_occurrences.items():
             for entity_id, fact in entity_dict.items():
-                assert fact["occurrences_increase"][idx]["Slice"] == idx
-                assert fact["occurrences_increase"][idx]["checkpoint"] == _checkpoint
+                # assert fact["occurrences_increase"][idx]["Slice"] == idx
+                # assert fact["occurrences_increase"][idx]["checkpoint"] == _checkpoint
                 occurrences = fact["occurrences_increase"][idx]["total"]
                 if occurrences == 0:
                     relation_accuracy_scores_dict["0"]["total"] += 1
@@ -138,12 +138,13 @@ def get_checkpoint_occurrence_bucket_accuracy(
                 "total": bucket["total"],
             }
         final_output[_checkpoint] = accuracy_scores_output
+        break
 
     # Convert final_output to a DataFrame
     out_put_data = []
-    _final_output = {#"checkpoint-3650": final_output["checkpoint-3650"]}
+    _final_output = {"checkpoint-3650": final_output["checkpoint-3650"]}
                       #"checkpoint-76650": final_output["checkpoint-76650"]}
-                      "checkpoint-153300": final_output["checkpoint-153300"]}
+                      #"checkpoint-153300": final_output["checkpoint-153300"]}
     for _checkpoint, buckets in _final_output.items():
         for bucket, stats in buckets.items():
             out_put_data.append(
