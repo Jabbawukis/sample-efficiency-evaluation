@@ -78,6 +78,7 @@ if __name__ == "__main__":
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
+        "xlstm_406m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
