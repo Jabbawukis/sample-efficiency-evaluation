@@ -29,7 +29,7 @@ def get_slice_data(num_slices: int, path_to_increasing_occurrences_in_slices: st
                 slice_info = occurrences_increase["occurrences_increase"][idx]
 
                 try:
-                    assert slice_info["occurrences_increase"][idx]["Slice"] == idx
+                    assert slice_info["Slice"] == idx
                 except (AssertionError, KeyError):
                     logging.warning(f"Warning: slice in dict is not {idx}")
 
