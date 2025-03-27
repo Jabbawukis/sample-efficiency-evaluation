@@ -90,6 +90,7 @@ if __name__ == "__main__":
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
+        "xlstm_406m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     optimized_params_for_all_slices_output_file_name = "psf_optimized_alphas.json"

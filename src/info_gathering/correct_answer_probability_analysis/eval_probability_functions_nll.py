@@ -72,6 +72,7 @@ if __name__ == "__main__":
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
+        "xlstm_406m",
     ]  # results dont depend on other models
     bear_sizes = ["big", "small"]
     num_slices = 42
@@ -100,14 +101,14 @@ if __name__ == "__main__":
             "Params": "Alphas",
             "Param": "alpha",
         },
-        {
-            "function_method": vectorized_psf_ext2,
-            "function_name": "Power Scaling Function Extended2",
-            "file_name": "psf-ext2_optimized_alphas.json",
-            "get_slice_data": get_slice_data,
-            "Params": "Alphas",
-            "Param": "alpha",
-        },
+        # {
+        #     "function_method": vectorized_psf_ext2,
+        #     "function_name": "Power Scaling Function Extended2",
+        #     "file_name": "psf-ext2_optimized_alphas.json",
+        #     "get_slice_data": get_slice_data,
+        #     "Params": "Alphas",
+        #     "Param": "alpha",
+        # },
         {
             "function_method": vectorized_psf_ext3,
             "function_name": "Power Scaling Function Extended3",

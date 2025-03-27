@@ -146,7 +146,7 @@ if __name__ == "__main__":
     param_name_key = "alpha"
     num_slices = 42
     optimize_over_all_slices = False  # optimize the values over all slices for each model at once (takes a lot of time)
-    skip_optimisation = True  # skip optimization and load the optimized parameters (if already optimized)
+    skip_optimisation = False  # skip optimization and load the optimized parameters (if already optimized)
 
     for bear_size in bear_sizes:
         model_dict = {}

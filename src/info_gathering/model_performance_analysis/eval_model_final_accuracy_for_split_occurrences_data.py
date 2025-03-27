@@ -165,6 +165,7 @@ if __name__ == "__main__":
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
+        "xlstm_406m",
     ]  # results depend on other models
     num_buckets = 14
     bear_sizes = ["small"]
