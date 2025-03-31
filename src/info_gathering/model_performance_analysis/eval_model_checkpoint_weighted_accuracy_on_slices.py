@@ -9,23 +9,6 @@ from info_gathering.model_performance_analysis.util import (
 )
 
 
-def weighting_function_on_buckets(occurrences, lambda_=0.01, num_buckets=14):
-    occurrence_class = 0
-
-    for i in range(num_buckets):
-        bucket_start = 2**i
-        if i == num_buckets - 1:
-            if float("inf") > occurrences >= bucket_start:  # bucket end is exclusive
-                occurrence_class = bucket_start
-                break
-        bucket_end = 2 ** (i + 1)
-        if bucket_end > occurrences >= bucket_start:  # bucket end is exclusive
-            occurrence_class = bucket_start
-            break
-
-    return np.exp(-lambda_ * occurrence_class) if occurrence_class > 0 else 0
-
-
 def weighting_function(occurrences, lambda_=0.01):
     return np.exp(-lambda_ * occurrences) if occurrences > 0 else 0
 
@@ -109,7 +92,7 @@ if __name__ == "__main__":
                 data = get_checkpoint_occurrence_weighted_accuracy(
                     num_slices,
                     path_to_increasing_occurrences_in_slices,
-                    weighting_function_on_buckets,
+                    weighting_function,
                     relation_occurrence_buckets,
                 )
             else:
