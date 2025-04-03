@@ -9,7 +9,7 @@ from info_gathering.model_performance_analysis.util import (
 )
 
 
-def weighting_function(occurrences, lambda_=0.01):
+def weighting_function(occurrences, lambda_=0.05):
     return np.exp(-lambda_ * occurrences) if occurrences > 0 else 0
 
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
-    weight_on_buckets = True  # True for bucket weighting, False fact weighting
+    weight_on_buckets = False  # True for bucket weighting, False fact weighting
     num_slices = 42
     num_buckets = 14
 
