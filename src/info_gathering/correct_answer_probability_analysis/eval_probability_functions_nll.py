@@ -9,15 +9,16 @@ from utility.utility import load_json_dict, save_dict_as_json
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.cdf_nll_optimization import (
     vectorized_cdf,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
-    vectorized_psf,
-)
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext_nll_optimization import (
-    vectorized_psf_ext,
-)
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext2_nll_optimization import (
-    vectorized_psf_ext2,
-)
+
+# from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
+#     vectorized_psf,
+# )
+# from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext_nll_optimization import (
+#     vectorized_psf_ext,
+# )
+# from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext2_nll_optimization import (
+#     vectorized_psf_ext2,
+# )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext3_nll_optimization import (
     vectorized_psf_ext3,
 )
@@ -28,7 +29,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 
 
 def plot_nll(model_nll_dict, _output_path, output_diagram_name):
-    plt.figure(figsize=(24, 18))
+    plt.figure(figsize=(16, 12))
     # Ensure all x-axis values are shown
     plt.xticks(range(0, 42))
 
@@ -52,12 +53,14 @@ def plot_nll(model_nll_dict, _output_path, output_diagram_name):
                 xs[nlls_mask], nlls[nlls_mask], marker="o", linestyle="-", label=f"{_model} - {_function['Function']}"
             )
 
-    plt.title("Negative Loss Likelihood over Slices (lower is better)", fontsize=16)
+    plt.title("Negative Loss Likelihood over Slices", fontsize=16)
     plt.xlabel("Slice", fontsize=14)
     plt.ylabel("Loss", fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(alpha=0.5)
+    plt.tight_layout()
     plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.png"))
+    plt.savefig(os.path.join(_output_path, f"{output_diagram_name}.pdf"))
     plt.clf()
     plt.close()
 
@@ -85,22 +88,22 @@ if __name__ == "__main__":
             "Params": "Lambdas",
             "Param": "lambda",
         },
-        {
-            "function_method": vectorized_psf,
-            "function_name": "Power Scaling Function",
-            "file_name": "psf_optimized_alphas.json",
-            "get_slice_data": get_slice_data,
-            "Params": "Alphas",
-            "Param": "alpha",
-        },
-        {
-            "function_method": vectorized_psf_ext,
-            "function_name": "Power Scaling Function Extended",
-            "file_name": "psf-ext_optimized_alphas.json",
-            "get_slice_data": get_slice_data,
-            "Params": "Alphas",
-            "Param": "alpha",
-        },
+        # {
+        #     "function_method": vectorized_psf,
+        #     "function_name": "Power Scaling Function",
+        #     "file_name": "psf_optimized_alphas.json",
+        #     "get_slice_data": get_slice_data,
+        #     "Params": "Alphas",
+        #     "Param": "alpha",
+        # },
+        # {
+        #     "function_method": vectorized_psf_ext,
+        #     "function_name": "Power Scaling Function Extended",
+        #     "file_name": "psf-ext_optimized_alphas.json",
+        #     "get_slice_data": get_slice_data,
+        #     "Params": "Alphas",
+        #     "Param": "alpha",
+        # },
         # {
         #     "function_method": vectorized_psf_ext2,
         #     "function_name": "Power Scaling Function Extended2",
@@ -111,7 +114,7 @@ if __name__ == "__main__":
         # },
         {
             "function_method": vectorized_psf_ext3,
-            "function_name": "Power Scaling Function Extended3",
+            "function_name": "Power Scaling Function",
             "file_name": "psf-ext3_optimized_alphas.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
