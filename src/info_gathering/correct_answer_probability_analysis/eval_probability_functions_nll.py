@@ -81,7 +81,7 @@ if __name__ == "__main__":
         {
             "function_method": vectorized_psf,
             "function_name": "Power Scaling Function",
-            "file_name": "psf-ext3_optimized_alphas.json",
+            "file_name": "psf_optimized_alphas.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
             "Param": "alpha",
