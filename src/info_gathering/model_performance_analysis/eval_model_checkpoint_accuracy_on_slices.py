@@ -48,13 +48,14 @@ def plot_scores(scores_models: dict, output_path: str, output_diagram_name: str)
 
 if __name__ == "__main__":
     models = [
-        "gpt2_124m",
         "gpt2_209m",
         "gpt2_355m",
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
         "xlstm_406m",
+        "llama_208m",
+        "llama_360m"
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     num_slices = 42

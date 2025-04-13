@@ -17,7 +17,7 @@ from info_gathering.model_performance_analysis.util import (
 from info_gathering.model_performance_analysis.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_ext3_nll_optimization import (
+from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
     optimize,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
@@ -159,13 +159,14 @@ def get_model_answer_for_occurrences_in_data(
 if __name__ == "__main__":
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     models = [
-        "gpt2_124m",
         "gpt2_209m",
         "gpt2_355m",
         "mamba2_172m",
         "mamba2_432m",
         "xlstm_247m",
         "xlstm_406m",
+        "llama_208m",
+        "llama_360m"
     ]  # results depend on other models
     num_buckets = 14
     bear_sizes = ["small"]
@@ -261,7 +262,7 @@ if __name__ == "__main__":
                 1,
             )
             for model, optimized_param in optimized_params.items():
-                path_to_total_op_alpha = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}/psf-ext3_optimized_alphas.json"
+                path_to_total_op_alpha = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.model_optimized_params_wikipedia_20231101_en}/psf_optimized_alphas.json"
                 total_optimized_alpha = load_json_dict(path_to_total_op_alpha)["Alphas"][41]["alpha"]
                 model_scores["α"][split][model] = {
                     "on_split": optimized_param["Alphas"][0]["alpha"],
