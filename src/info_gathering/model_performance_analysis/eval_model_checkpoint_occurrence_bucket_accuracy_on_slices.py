@@ -89,8 +89,7 @@ def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
 
 
 if __name__ == "__main__":
-    models = [
-    ]  # results dont depend on other models
+    models = []  # results dont depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     num_buckets = 14

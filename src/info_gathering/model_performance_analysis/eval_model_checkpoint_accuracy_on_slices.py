@@ -55,7 +55,7 @@ if __name__ == "__main__":
         "xlstm_247m",
         "xlstm_406m",
         "llama_208m",
-        "llama_360m"
+        "llama_360m",
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     num_slices = 42
