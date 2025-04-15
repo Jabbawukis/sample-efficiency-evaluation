@@ -25,11 +25,11 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def power_scaling_function_ext3(alpha, x, L_0, x_0):
+def power_scaling_function(alpha, x, L_0, x_0):
     return 1 - (0 + 0.88 / (np.power((1 + x), alpha)))
 
 
-vectorized_psf_ext3 = np.vectorize(power_scaling_function_ext3, excluded=["alpha", "L_0", "x_0"])
+vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha", "L_0", "x_0"])
 
 
 def plot_scores(data: dict, output_path: str, num_samples: int):
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         for split, model_dict in model_alphas_dict.items():
             optimized_params = optimize(
                 model_dict,
-                vectorized_psf_ext3,
+                vectorized_psf,
                 1,
             )
             for model, optimized_param in optimized_params.items():
