@@ -108,8 +108,8 @@ if __name__ == "__main__":
     for bear_size in bear_sizes:
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
-            path_to_increasing_occurrences_in_slices = f"/home/daniel/PycharmProjects/sample-efficiency-evaluation/src/info_gathering/model_performance_analysis/test/samples/small/0.8_0.2_64_0.2_0.8_seed_93/mamba2_432m_0.8_64_0.2_bear_small.json"
-            final_diagram_output_path = "./mamba2_432_buckets_accuracy_0.8_64_0.2_bear_small.pdf"
+            path_to_increasing_occurrences_in_slices = f"/home/daniel/PycharmProjects/sample-efficiency-evaluation-results/probing_results/BEAR-small/mamba2_432m/wikimedia_wikipedia_20231101_en/evaluation_on_slices/increasing_occurrences_in_slices.json"
+            final_diagram_output_path = "./mamba2_432_buckets_accuracy_checkpoint-109500.pdf"
             data = get_checkpoint_occurrence_bucket_accuracy(
                 path_to_checkpoints_probing_results,
                 path_to_increasing_occurrences_in_slices,
