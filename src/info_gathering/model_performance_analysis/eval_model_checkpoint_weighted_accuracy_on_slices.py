@@ -97,10 +97,9 @@ if __name__ == "__main__":
                     relation_occurrence_buckets,
                 )
             else:
-                path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
                 final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/over_all_facts"
                 data = get_checkpoint_occurrence_weighted_accuracy_overall(
-                    path_to_checkpoints_probing_results, path_to_increasing_occurrences_in_slices, weighting_function
+                    num_slices, path_to_increasing_occurrences_in_slices, weighting_function
                 )
 
             if not os.path.exists(final_diagram_output_path):

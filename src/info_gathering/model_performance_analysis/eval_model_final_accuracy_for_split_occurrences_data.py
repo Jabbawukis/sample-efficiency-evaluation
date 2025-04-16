@@ -13,6 +13,7 @@ from lm_pub_quiz import DatasetResults
 from info_gathering.model_performance_analysis.util import (
     get_checkpoint_accuracy_overall,
     get_checkpoint_occurrence_weighted_accuracy,
+    get_checkpoint_occurrence_weighted_accuracy_overall,
 )
 from info_gathering.model_performance_analysis.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
@@ -34,13 +35,13 @@ vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha", "L_0", 
 
 def plot_scores(data: dict, output_path: str, num_samples: int):
     plt.figure(figsize=(10, 4))
-    metrics = ["Accuracy", "α", "WASB"]
-    colors = {"Accuracy": "tab:blue", "α": "tab:green", "WASB": "tab:red"}
+    metrics = ["Accuracy", "WASB", "WAF", "α"]
+    colors = {"Accuracy": "tab:blue", "α": "tab:green", "WASB": "tab:red", "WAF": "tab:orange"}
 
     for split in data["Accuracy"].keys():
         models = list(data["Accuracy"][split].keys())
         x = np.arange(len(models))  # Model positions on x-axis
-        width = 0.15  # Reduce width to fit bars properly without overlap
+        width = 0.11  # Reduce width to fit bars properly without overlap
 
         fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -82,7 +83,8 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=5,
+                    fontsize=6,
+                    rotation=50,
                 )
             for b in bar2:
                 ax.text(
@@ -91,7 +93,8 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
                     f"{b.get_height():.2f}",
                     ha="center",
                     va="bottom",
-                    fontsize=5,
+                    fontsize=6,
+                    rotation=50,
                 )
 
         ax.set_ylabel("Scores")
@@ -99,12 +102,12 @@ def plot_scores(data: dict, output_path: str, num_samples: int):
         ax.set_xticklabels(models, rotation=45)
         ax.set_ylim(0, 1.1)
         # Creating legend with metric colors for both on_split and total
-        legend_labels = [plt.Rectangle((0, 0), 1, 1, color=colors[m], alpha=0.6) for m in metrics] + [
+        legend_labels = [plt.Rectangle((0, 0), 0.5, 0.5, color=colors[m], alpha=0.6) for m in metrics] + [
             plt.Rectangle((0, 0), 1, 1, fc=colors[m], alpha=1.0, hatch="//") for m in metrics
         ]
         legend_texts = [f"{m} (on split)" for m in metrics] + [f"{m} (on all data)" for m in metrics]
         ax.legend(legend_labels, legend_texts, title="Metrics", loc="upper left")
-        ax.set_xlim(-0.45, len(models) - 0.4)
+        # ax.set_xlim(-0.45, len(models) - 0.4)
         plt.tight_layout()
         plt.savefig(os.path.join(output_path, f"{split}.png"))
         plt.savefig(os.path.join(output_path, f"{split}.pdf"))
@@ -207,11 +210,12 @@ if __name__ == "__main__":
             **subset_percentage[bear_size],
         )
 
-        model_scores = {"Accuracy": {}, "WASB": {}, "α": {}}
+        model_scores = {"Accuracy": {}, "WASB": {}, "WAF": {}, "α": {}}
         model_alphas_dict = {}
         for split in subset_percentage[bear_size]["splits"]:
             model_scores["Accuracy"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
             model_scores["WASB"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
+            model_scores["WAF"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
             model_scores["α"][f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
             model_alphas_dict[f"{split[0]}_{subset_percentage[bear_size]['threshold']}_{split[1]}"] = {}
 
@@ -249,6 +253,16 @@ if __name__ == "__main__":
                         f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
                         weighting_function,
                         relation_occurrence_buckets,
+                    )[41],
+                }
+                model_scores["WAF"][split][model] = {
+                    "on_split": get_checkpoint_occurrence_weighted_accuracy_overall(
+                        1, f"{output_path}/{model}_{split}_bear_{bear_size}.json", weighting_function
+                    )[0],
+                    "total": get_checkpoint_occurrence_weighted_accuracy_overall(
+                        42,
+                        f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
+                        weighting_function,
                     )[41],
                 }
                 model_alphas_dict[split][model] = get_slice_data(
