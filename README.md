@@ -34,4 +34,4 @@ Clone the repository containing the experiment results and place it next to the 
 ```bash
 git clone https://github.com/Jabbawukis/sample-efficiency-evaluation-results
 ```
-Extract the contents describe in the `sample-efficiency-evaluation-results` README.md file.
+Extract the contents as described in the [sample-efficiency-evaluation-results](https://github.com/Jabbawukis/sample-efficiency-evaluation-results) README.md file.
