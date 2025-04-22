@@ -199,11 +199,8 @@ if __name__ == "__main__":
             f"{subset_percentage[bear_size]['splits'][1][0]}_"
             f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}"
         )
-        #####################
-        output_path = f"./test/samples/{bear_size}/{splits_file_appendix}/"
+        output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{splits_file_appendix}/"
         os.makedirs(output_path, exist_ok=True)
-        #####################
-
         random.seed(seed)
         splits = split_relation_occurrences_info_json_on_occurrences(
             f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_wikipedia_20231101_en}",
@@ -221,20 +218,18 @@ if __name__ == "__main__":
 
         for model in tqdm(models, desc=f"Evaluating Probe results in BEAR-{bear_size}"):
             probing_results_final_model = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.final_model_probing_scores_wikipedia_20231101_en}"
-
-            # output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/occurrence_splits/"
-
             result = get_model_answer_for_occurrences_in_data(
                 path_to_probing_results=probing_results_final_model,
                 path_to_relation_info=f"{abs_path}/sample-efficiency-evaluation-results/fact_matching_results/BEAR-{bear_size}/{paths.relation_occurrence_info_wikipedia_20231101_en}",
                 split_info=splits,
             )
-
+            samples_path = f"{output_path}/samples"
+            os.makedirs(samples_path, exist_ok=True)
             for split, fact_dict in result.items():
-                save_dict_as_json(fact_dict, f"{output_path}/{model}_{split}_bear_{bear_size}.json")
+                save_dict_as_json(fact_dict, f"{samples_path}/{model}_{split}_bear_{bear_size}.json")
                 model_scores["Accuracy"][split][model] = {
                     "on_split": get_checkpoint_accuracy_overall(
-                        1, f"{output_path}/{model}_{split}_bear_{bear_size}.json"
+                        1, f"{samples_path}/{model}_{split}_bear_{bear_size}.json"
                     )[0],
                     "total": get_checkpoint_accuracy_overall(
                         42,
@@ -244,7 +239,7 @@ if __name__ == "__main__":
                 model_scores["WASB"][split][model] = {
                     "on_split": get_checkpoint_occurrence_weighted_accuracy(
                         1,
-                        f"{output_path}/{model}_{split}_bear_{bear_size}.json",
+                        f"{samples_path}/{model}_{split}_bear_{bear_size}.json",
                         weighting_function,
                         relation_occurrence_buckets,
                     )[0],
@@ -257,7 +252,7 @@ if __name__ == "__main__":
                 }
                 model_scores["WAF"][split][model] = {
                     "on_split": get_checkpoint_occurrence_weighted_accuracy_overall(
-                        1, f"{output_path}/{model}_{split}_bear_{bear_size}.json", weighting_function
+                        1, f"{samples_path}/{model}_{split}_bear_{bear_size}.json", weighting_function
                     )[0],
                     "total": get_checkpoint_occurrence_weighted_accuracy_overall(
                         42,
@@ -267,7 +262,7 @@ if __name__ == "__main__":
                 }
                 model_alphas_dict[split][model] = get_slice_data(
                     1,
-                    f"{output_path}/{model}_{split}_bear_{bear_size}.json",
+                    f"{samples_path}/{model}_{split}_bear_{bear_size}.json",
                 )
         for split, model_dict in model_alphas_dict.items():
             optimized_params = optimize(
@@ -282,14 +277,8 @@ if __name__ == "__main__":
                     "on_split": optimized_param["Alphas"][0]["alpha"],
                     "total": total_optimized_alpha,
                 }
-
-        # final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/split_occurrences/"
-        #####################
-        final_diagram_output_path = f"./test/dias/{bear_size}/{splits_file_appendix}/"
-        #####################
-
-        save_dict_as_json(model_scores, f"{output_path}/model_scores.json")
-
+        save_dict_as_json(model_scores, f"{output_path}/samples/model_scores.json")
+        final_diagram_output_path = f"{output_path}/dias/{bear_size}/{splits_file_appendix}/"
         os.makedirs(final_diagram_output_path, exist_ok=True)
         plot_scores(
             model_scores,

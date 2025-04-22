@@ -7,6 +7,7 @@ from info_gathering.model_performance_analysis.util import (
     get_checkpoint_occurrence_weighted_accuracy,
     get_checkpoint_occurrence_weighted_accuracy_overall,
 )
+from utility.utility import save_dict_as_json
 
 
 def weighting_function(occurrences, lambda_=0.05):
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     ]  # results depend on other models
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
-    weight_on_buckets = True  # True for bucket weighting, False fact weighting
+    weight_on_buckets = False  # True for bucket weighting, False fact weighting
     num_slices = 42
     num_buckets = 14
 
@@ -106,6 +107,7 @@ if __name__ == "__main__":
                 os.makedirs(final_diagram_output_path)
 
             model_weighted_accuracy_on_slices[model] = data
+        save_dict_as_json(model_weighted_accuracy_on_slices, f"{final_diagram_output_path}/model_scores.json")
         plot_params(
             model_weighted_accuracy_on_slices,
             final_diagram_output_path,

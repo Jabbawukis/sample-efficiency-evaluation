@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import info_gathering.paths as paths
 
 from info_gathering.model_performance_analysis.util import get_checkpoint_accuracy_overall
+from utility.utility import save_dict_as_json
 
 
 def plot_scores(scores_models: dict, output_path: str, output_diagram_name: str):
@@ -72,6 +73,7 @@ if __name__ == "__main__":
                 os.makedirs(final_diagram_output_path)
 
             model_accuracy_on_slices[model] = data
+        save_dict_as_json(model_accuracy_on_slices, f"{final_diagram_output_path}/model_scores.json")
         plot_scores(
             model_accuracy_on_slices,
             final_diagram_output_path,
