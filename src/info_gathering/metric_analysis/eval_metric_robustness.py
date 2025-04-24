@@ -10,12 +10,12 @@ import info_gathering.paths as paths
 from utility.utility import save_dict_as_json, load_json_dict, split_relation_occurrences_info_json_on_occurrences
 from lm_pub_quiz import DatasetResults
 
-from info_gathering.model_performance_analysis.util import (
+from info_gathering.model_accuracy.util import (
     get_checkpoint_accuracy_overall,
     get_checkpoint_occurrence_weighted_accuracy,
     get_checkpoint_occurrence_weighted_accuracy_overall,
 )
-from info_gathering.model_performance_analysis.eval_model_checkpoint_weighted_accuracy_on_slices import (
+from info_gathering.model_accuracy.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
@@ -199,7 +199,7 @@ if __name__ == "__main__":
             f"{subset_percentage[bear_size]['splits'][1][0]}_"
             f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}"
         )
-        output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{splits_file_appendix}/"
+        output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{splits_file_appendix}/"
         os.makedirs(output_path, exist_ok=True)
         random.seed(seed)
         splits = split_relation_occurrences_info_json_on_occurrences(

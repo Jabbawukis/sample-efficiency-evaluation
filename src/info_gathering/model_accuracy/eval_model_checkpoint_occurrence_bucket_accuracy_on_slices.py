@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import info_gathering.paths as paths
 import math
 
-from info_gathering.model_performance_analysis.util import get_checkpoint_occurrence_bucket_accuracy
+from info_gathering.model_accuracy.util import get_checkpoint_occurrence_bucket_accuracy
 
 
 def plot_checkpoint_accuracy(_data, _final_diagram_output_path):
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         for model in models:
             path_to_checkpoints_probing_results = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-big/{model}/{paths.checkpoints_extracted_wikipedia_20231101_en}"
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
+            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
 
             data = get_checkpoint_occurrence_bucket_accuracy(
                 path_to_checkpoints_probing_results,

@@ -2,21 +2,21 @@
 
 ## 1. Evaluation of the model answers for each checkpoint
 
-[Evaluation of checkpoints](model_performance_analysis/get_model_checkpoint_answer_for_occurrences_in_slices_data.py):
+[Evaluation of checkpoints](model_accuracy/get_model_checkpoint_answer_for_occurrences_in_slices_data.py):
 
 Counts the [increasing occurrences](https://github.com/Jabbawukis/sample-efficiency-evaluation-results/tree/main/fact_matching_results/BEAR-big/wikimedia_wikipedia_20231101_en/evaluation_on_slices) of BEAR facts in the training data up until the slice.
 The model checkpoints answers are evaluated for each fact.
 
 ## 2. Get the model checkpoint accuracies over the occurrence buckets (requires step 1. of model performance analysis)
 
-[Get accuracies over occurrence buckets](model_performance_analysis/eval_model_checkpoint_occurrence_bucket_accuracy_on_slices.py):
+[Get accuracies over occurrence buckets](model_accuracy/eval_model_checkpoint_occurrence_bucket_accuracy_on_slices.py):
 
 For each checkpoint probing result, the accuracy is calculated for each occurrence bucket.
 The accuracy results for each checkpoint are plotted and saved.
 
 ## 3. Get the model checkpoint weighted accuracies (requires step 1. of model performance analysis)
 
-[Get weighted accuracies](model_performance_analysis/eval_model_checkpoint_weighted_accuracy_on_slices.py):
+[Get weighted accuracies](model_accuracy/eval_model_checkpoint_weighted_accuracy_on_slices.py):
 
 For each checkpoint probing result, the bucket accuracy (dependent on fact occurrence) is calculated.
 The weighted accuracy is calculated by weighting the bucket accuracies by the lower bound of the bucket
@@ -29,7 +29,7 @@ and dividing it by the total sum of weights.
 
 ## 4. Get the model checkpoint accuracies over all facts (requires step 1. of model performance analysis)
 
-[Get accuracies over all facts](model_performance_analysis/eval_model_checkpoint_accuracy_on_slices.py):
+[Get accuracies over all facts](model_accuracy/eval_model_checkpoint_accuracy_on_slices.py):
 
 For each checkpoint probing result, the accuracy is calculated for all facts.
 

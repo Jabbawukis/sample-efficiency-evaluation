@@ -191,7 +191,7 @@ if __name__ == "__main__":
                 optimized_params[model] = load_json_dict(f"{_output_path}/{output_file_name_json}")
 
         if not optimize_over_all_slices:
-            output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/{function_dir_name}/"
+            output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/correct_answer_probability_analysis/BEAR-{bear_size}/{function_dir_name}/"
 
             if not os.path.exists(output_path_diagram):
                 os.makedirs(output_path_diagram)

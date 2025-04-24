@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import info_gathering.paths as paths
 
-from info_gathering.model_performance_analysis.util import get_checkpoint_accuracy_overall
+from info_gathering.model_accuracy.util import get_checkpoint_accuracy_overall
 from utility.utility import save_dict_as_json
 
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         final_diagram_output_path = ""
         for model in models:
             path_to_increasing_occurrences_in_slices = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/"
+            final_diagram_output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/"
             data = get_checkpoint_accuracy_overall(num_slices, path_to_increasing_occurrences_in_slices)
 
             if not os.path.exists(final_diagram_output_path):

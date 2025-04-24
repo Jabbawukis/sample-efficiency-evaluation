@@ -175,7 +175,7 @@ def run_optimization(
                 )
 
         if not optimize_over_all_slices:
-            output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/correct_answer_probability_analysis_plots/BEAR-{bear_size}/{function_dir_name}/"
+            output_path_diagram = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/correct_answer_probability_analysis/BEAR-{bear_size}/{function_dir_name}/"
 
             if not os.path.exists(output_path_diagram):
                 os.makedirs(output_path_diagram)
