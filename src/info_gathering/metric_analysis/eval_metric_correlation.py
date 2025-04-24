@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from utility.utility import load_json_dict
+import info_gathering.paths as paths
 
 if __name__ == "__main__":
     bear_sizes = ["small", "big"]
@@ -23,8 +24,8 @@ if __name__ == "__main__":
         "ACC": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/model_scores.json",
         "WASB": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/on_buckets/model_scores.json",
         "WAF": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/over_all_facts/model_scores.json",
-        "α": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/psf_optimized_alphas.json",
-        "λ": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/cdf_optimized_lambdas.json",
+        "α": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/{paths.model_optimized_params_wikipedia_20231101_en}/psf_optimized_alphas.json",
+        "λ": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/{paths.model_optimized_params_wikipedia_20231101_en}/cdf_optimized_lambdas.json",
     }
     for bear_size in bear_sizes:
         scores_matrix = []
