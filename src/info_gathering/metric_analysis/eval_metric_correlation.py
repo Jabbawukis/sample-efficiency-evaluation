@@ -55,8 +55,8 @@ if __name__ == "__main__":
         sorted_corr_matrix = df_corr[sorted_columns]
 
         sns.heatmap(sorted_corr_matrix, annot=True)
-        if bear_size == "big":
-            plt.title("Correlation Matrix of the Metrics (Final State)", fontsize=10)
+        # if bear_size == "big":
+        #     plt.title("Correlation Matrix of the Metrics (Final State)", fontsize=10)
         plt.tight_layout()
 
         output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_correlation/wikimedia_wikipedia_20231101_en/last_slice/BEAR-{bear_size}/"
@@ -103,8 +103,8 @@ if __name__ == "__main__":
         sorted_corr_matrix = df_corr[sorted_columns]
 
         sns.heatmap(sorted_corr_matrix, annot=True)
-        if bear_size == "big":
-            plt.title("Correlation Matrix of the Metrics (Over All Slices)", fontsize=10)
+        # if bear_size == "big":
+        #     plt.title("Correlation Matrix of the Metrics (Over All Slices)", fontsize=10)
         plt.tight_layout()
 
         output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_correlation/wikimedia_wikipedia_20231101_en/all_slices/BEAR-{bear_size}/"
