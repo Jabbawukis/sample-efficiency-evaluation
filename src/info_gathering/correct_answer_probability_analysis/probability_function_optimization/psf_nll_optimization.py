@@ -16,7 +16,12 @@ def power_scaling_function(alpha, x, L_0, x_0):
     return 1 - (L_0 + x_0 / (np.power((1 + x), alpha)))
 
 
+def power_scaling_function_default(alpha, x, L_0, x_0):
+    return 1 - (0 + 1 / (np.power((1 + x), alpha)))
+
+
 vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha", "L_0", "x_0"])
+vectorized_psf_default = np.vectorize(power_scaling_function_default, excluded=["alpha", "L_0", "x_0"])
 
 
 def compute_log_likelihood(t, p_i):
@@ -119,7 +124,7 @@ def optimize(data_slice_info, vectorized_function, num_slices=42, _optimize_over
                 {
                     "slice": str(slice_id),
                     "alpha": optimized_param,
-                    "args": [L_0, x_0],
+                    "args": [0, 1],
                 }
             )
             print(f"Final optimized alpha for {_model}: {optimized_param}")

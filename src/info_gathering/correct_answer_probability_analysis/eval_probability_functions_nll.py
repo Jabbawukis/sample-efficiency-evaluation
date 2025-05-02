@@ -11,6 +11,7 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
     vectorized_psf,
+    vectorized_psf_default,
 )
 from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
@@ -83,6 +84,14 @@ if __name__ == "__main__":
             "function_method": vectorized_psf,
             "function_name": "Power Scaling Function",
             "file_name": "psf_optimized_alphas.json",
+            "get_slice_data": get_slice_data,
+            "Params": "Alphas",
+            "Param": "alpha",
+        },
+        {
+            "function_method": vectorized_psf_default,
+            "function_name": "Power Scaling Function (Default)",
+            "file_name": "psf_optimized_alphas_default.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
             "Param": "alpha",
