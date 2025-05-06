@@ -22,8 +22,8 @@ if __name__ == "__main__":
     ]
     columns = {
         "ACC": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/model_scores.json",
-        "WASB": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/on_buckets/model_scores.json",
         "WAF": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/over_all_facts/model_scores.json",
+        "WASB": f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{{bear_size}}/on_buckets/model_scores.json",
         "α": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/{paths.model_optimized_params_wikipedia_20231101_en}/psf_optimized_alphas.json",
         "λ": f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/{paths.model_optimized_params_wikipedia_20231101_en}/cdf_optimized_lambdas.json",
     }
@@ -51,18 +51,10 @@ if __name__ == "__main__":
         scores_matrix = scores_matrix.T
         df = pd.DataFrame(scores_matrix, columns=list(columns.keys()), index=models)
         df_corr = df.corr(method="pearson")
-
-        sorted_columns = df_corr["ACC"].sort_values(ascending=False).index
-        sorted_corr_matrix = df_corr[sorted_columns]
-
-        sns.heatmap(sorted_corr_matrix, annot=True)
-        # if bear_size == "big":
-        #     plt.title("Correlation Matrix of the Metrics (Final State)", fontsize=10)
+        sns.heatmap(df_corr, annot=True)
         plt.tight_layout()
-
         output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_correlation/wikimedia_wikipedia_20231101_en/last_slice/BEAR-{bear_size}/"
         os.makedirs(output_path, exist_ok=True)
-
         plt.savefig(f"{output_path}/corr_last_slice_bear_{bear_size}.png")
         plt.savefig(f"{output_path}/corr_last_slice_bear_{bear_size}.pdf")
         plt.clf()
@@ -99,18 +91,10 @@ if __name__ == "__main__":
         scores_matrix = scores_matrix.T
         df = pd.DataFrame(scores_matrix, columns=list(columns.keys()), index=models * slices)
         df_corr = df.corr(method="pearson")
-
-        sorted_columns = df_corr["ACC"].sort_values(ascending=False).index
-        sorted_corr_matrix = df_corr[sorted_columns]
-
-        sns.heatmap(sorted_corr_matrix, annot=True)
-        # if bear_size == "big":
-        #     plt.title("Correlation Matrix of the Metrics (Over All Slices)", fontsize=10)
+        sns.heatmap(df_corr, annot=True)
         plt.tight_layout()
-
         output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_correlation/wikimedia_wikipedia_20231101_en/all_slices/BEAR-{bear_size}/"
         os.makedirs(output_path, exist_ok=True)
-
         plt.savefig(f"{output_path}/corr_all_slices_bear_{bear_size}.png")
         plt.savefig(f"{output_path}/corr_all_slices_bear_{bear_size}.pdf")
         plt.clf()
