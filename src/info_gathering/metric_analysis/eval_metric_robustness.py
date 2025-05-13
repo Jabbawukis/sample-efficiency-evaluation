@@ -175,12 +175,12 @@ if __name__ == "__main__":
     bear_sizes = ["big", "small"]
     subset_percentage = {
         "big": {
-            "threshold": 3,
+            "threshold": 2,
             "total_num_samples": 1000,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
         "small": {
-            "threshold": 12,
+            "threshold": 8,
             "total_num_samples": 1000,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
