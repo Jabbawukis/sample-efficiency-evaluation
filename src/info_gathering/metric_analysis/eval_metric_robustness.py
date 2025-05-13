@@ -172,7 +172,7 @@ if __name__ == "__main__":
         "llama_360m",
     ]  # results depend on other models
     num_buckets = 14
-    bear_sizes = ["small"]
+    bear_sizes = ["big", "small"]
     subset_percentage = {
         "big": {
             "threshold": 3,
