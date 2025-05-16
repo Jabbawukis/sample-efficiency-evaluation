@@ -33,7 +33,7 @@ def power_scaling_function(alpha, x, L_0, x_0):
 vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha", "L_0", "x_0"])
 
 
-def plot_scores(data: dict, output_path: str, num_samples: int):
+def plot_scores(data: dict, output_path: str):
     plt.figure(figsize=(10, 4))
     metrics = ["Accuracy", "WASB", "WAF", "α"]
     colors = {"Accuracy": "tab:blue", "α": "tab:green", "WASB": "tab:red", "WAF": "tab:orange"}
@@ -172,7 +172,7 @@ if __name__ == "__main__":
         "llama_360m",
     ]  # results depend on other models
     num_buckets = 14
-    bear_sizes = ["big", "small"]
+    bear_sizes = ["small", "big"]
     subset_percentage = {
         "big": {
             "threshold": 2,
@@ -285,8 +285,4 @@ if __name__ == "__main__":
         save_dict_as_json(model_scores, f"{output_path}/samples/model_scores.json")
         final_diagram_output_path = f"{output_path}/dias/{bear_size}/{splits_file_appendix}/"
         os.makedirs(final_diagram_output_path, exist_ok=True)
-        plot_scores(
-            model_scores,
-            final_diagram_output_path,
-            num_samples=subset_percentage[bear_size]["total_num_samples"],
-        )
+        plot_scores(model_scores, final_diagram_output_path)
