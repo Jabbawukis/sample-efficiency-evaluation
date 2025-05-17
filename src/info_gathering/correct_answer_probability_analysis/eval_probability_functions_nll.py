@@ -74,7 +74,7 @@ if __name__ == "__main__":
     functions = [
         {
             "function_method": vectorized_cdf,
-            "function_name": "Cumulative Distribution Function",
+            "function_name": "EDF",
             "file_name": "cdf_optimized_lambdas.json",
             "get_slice_data": get_slice_data,
             "Params": "Lambdas",
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         },
         {
             "function_method": vectorized_psf,
-            "function_name": "Power Scaling Function",
+            "function_name": "PSF",
             "file_name": "psf_optimized_alphas.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         },
         {
             "function_method": vectorized_psf_default,
-            "function_name": "Power Scaling Function (Default)",
+            "function_name": r"$PSF_{0,1}$",
             "file_name": "psf_optimized_alphas_default.json",
             "get_slice_data": get_slice_data,
             "Params": "Alphas",
