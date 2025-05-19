@@ -26,11 +26,16 @@ from info_gathering.correct_answer_probability_analysis.probability_function_opt
 )
 
 
-def power_scaling_function(alpha, x, L_0, x_0):
+def power_scaling_function_small(alpha, x, L_0, x_0):
     return 1 - (0 + 0.88 / (np.power((1 + x), alpha)))
 
 
-vectorized_psf = np.vectorize(power_scaling_function, excluded=["alpha", "L_0", "x_0"])
+def power_scaling_function_big(alpha, x, L_0, x_0):
+    return 1 - (0 + 0.92 / (np.power((1 + x), alpha)))
+
+
+vectorized_psf = np.vectorize(power_scaling_function_small, excluded=["alpha", "L_0", "x_0"])
+vectorized_psf_big = np.vectorize(power_scaling_function_big, excluded=["alpha", "L_0", "x_0"])
 
 
 def plot_scores(data: dict, output_path: str):
@@ -173,6 +178,10 @@ if __name__ == "__main__":
     ]  # results depend on other models
     num_buckets = 14
     bear_sizes = ["small", "big"]
+    psf_funcs = {
+        "small": vectorized_psf,
+        "big": vectorized_psf_big,
+    }
     subset_percentage = {
         "big": {
             "threshold": 2,
@@ -272,7 +281,7 @@ if __name__ == "__main__":
         for split, model_dict in model_alphas_dict.items():
             optimized_params = optimize(
                 model_dict,
-                vectorized_psf,
+                psf_funcs[bear_size],
                 1,
             )
             for model, optimized_param in optimized_params.items():

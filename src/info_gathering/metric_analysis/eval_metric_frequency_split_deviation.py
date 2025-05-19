@@ -3,7 +3,6 @@ import os
 
 import matplotlib.pyplot as plt
 from utility.utility import load_json_dict
-from scipy.stats import zscore
 
 
 def plot_diverging_bars_rel(metrics_dict: dict, output_path: str, title: str):
@@ -48,7 +47,7 @@ def plot_diverging_bars_rel(metrics_dict: dict, output_path: str, title: str):
     # Formatting
     ax.set_yticks(y)
     ax.set_yticklabels(metrics)
-    ax.set_xlabel("Deviation from Full Dataset")
+    ax.set_xlabel("Difference from Full Dataset")
     # ax.set_title(f"Metric {title} Deviations")
     ax.legend(loc="lower right")
     plt.tight_layout()
@@ -80,9 +79,10 @@ if __name__ == "__main__":
     for bear_size in bear_sizes:
         columns_rel = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
         columns_abs = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
-        model_scores = load_json_dict(
-            f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{subset_percentage[bear_size]['dir']}/samples/model_scores.json"
-        )
+        path_to_split_results = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{subset_percentage[bear_size]['dir']}"
+        plot_output = f"{path_to_split_results}/split_difference/"
+        os.makedirs(plot_output, exist_ok=True)
+        model_scores = load_json_dict(f"{path_to_split_results}/samples/model_scores.json")
         for split, _ in splits.items():
             for metric_name, _ in columns_rel.items():
                 score_total = []
@@ -99,5 +99,9 @@ if __name__ == "__main__":
                 abs_dev = np.subtract(split_list, score_total)
                 abs_dev = np.mean(abs_dev)
                 columns_abs[metric_name].append(abs_dev)
-        plot_diverging_bars_rel(columns_rel, f"./metric_frequency_split_rel_deviation_{bear_size}", "Mean Relative")
-        plot_diverging_bars_rel(columns_abs, f"./metric_frequency_split_abs_deviation_{bear_size}", "Mean Absolute")
+        plot_diverging_bars_rel(
+            columns_rel, f"{plot_output}/metric_frequency_split_rel_difference_{bear_size}", "Mean Relative"
+        )
+        plot_diverging_bars_rel(
+            columns_abs, f"{plot_output}/metric_frequency_split_abs_difference_{bear_size}", "Mean Absolute"
+        )
