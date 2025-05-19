@@ -3,50 +3,64 @@ import os
 
 import matplotlib.pyplot as plt
 from utility.utility import load_json_dict
+from scipy.stats import zscore
 
 
-def plot_scores(metrics_dict: dict, output_path: str):
+def plot_diverging_bars_rel(metrics_dict: dict, output_path: str, title: str):
     """
-    Plots grouped bars for each metric across low-split, high-split, and average,
-    annotates each bar with its value, and saves to PNG and PDF.
+    Plots a diverging horizontal bar chart for each metric’s low- and high-frequency
+    relative deviations from the full dataset. Saves the figure as PNG and PDF.
+
+    metrics_dict: dict of {metric_name: [low_dev, high_dev], ...}
+    output_path:   path (without extension) to save the figure.
     """
-    colors = {"Accuracy": "tab:blue", "α": "tab:green", "WASB": "tab:red", "WAF": "tab:orange"}
-    categories = ["Low frequency-split", "High frequency-split"]
-    x = np.arange(len(categories))
-    width = 0.2  # width of each bar
+    # Prepare data
+    metrics = list(metrics_dict.keys())
+    low_vals = np.array([v[0] for v in metrics_dict.values()])
+    high_vals = np.array([v[1] for v in metrics_dict.values()])
+    y = np.arange(len(metrics))
+    height = 0.4  # bar thickness
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for i, (metric, values) in enumerate(metrics_dict.items()):
-        # plot bars and capture the BarContainer
-        bars = ax.bar(
-            x + i * width - width * (len(metrics_dict) - 1) / 2,
-            values,
-            width,
-            label=metric,
-            color=colors[metric],
-            alpha=0.9,
-        )
-        # annotate each bar with its value, rounded to 4 decimals
-        ax.bar_label(bars, labels=[f"{v:.4f}" for v in values], padding=3)
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-    # Labels and legend
-    ax.set_xticks(x)
-    ax.set_xticklabels(categories)
-    ax.set_ylabel("Deviation To Full Dataset")
-    # ax.set_xlabel('Dataset Split')
-    # ax.set_title('Average Deviation of Splits to Full Dataset')
-    ax.legend(title="Metrics")
+    # Plot low-frequency bars (centered left/right of y)
+    ax.barh(
+        y - height / 2,
+        low_vals,
+        height=height,
+        label="Low freq-split",
+        color="tab:blue",
+        alpha=0.8,
+    )
+    # Plot high-frequency bars
+    ax.barh(
+        y + height / 2,
+        high_vals,
+        height=height,
+        label="High freq-split",
+        color="tab:orange",
+        alpha=0.8,
+    )
+
+    # Zero line
+    ax.axvline(0, color="black", linewidth=1)
+
+    # Formatting
+    ax.set_yticks(y)
+    ax.set_yticklabels(metrics)
+    ax.set_xlabel("Deviation from Full Dataset")
+    # ax.set_title(f"Metric {title} Deviations")
+    ax.legend(loc="lower right")
     plt.tight_layout()
 
     # Save outputs
-    plt.savefig(f"{output_path}.png")
-    plt.savefig(f"{output_path}.pdf")
-    plt.clf()
-    plt.close()
+    fig.savefig(f"{output_path}.png", dpi=300)
+    fig.savefig(f"{output_path}.pdf")
+    plt.close(fig)
 
 
 if __name__ == "__main__":
-    bear_sizes = ["small", "big"]
+    bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
     models = [
         "gpt2_209m",
@@ -64,20 +78,26 @@ if __name__ == "__main__":
         "small": {"dir": "0.8_0.2_8_0.2_0.8_seed_93", "low": "0.8_8_0.2", "high": "0.2_8_0.8"},
     }
     for bear_size in bear_sizes:
-        columns = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
+        columns_rel = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
+        columns_abs = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
         model_scores = load_json_dict(
             f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{subset_percentage[bear_size]['dir']}/samples/model_scores.json"
         )
         for split, _ in splits.items():
-            for metric_name, _ in columns.items():
+            for metric_name, _ in columns_rel.items():
                 score_total = []
                 split_list = []
                 for model_name, model_dict in model_scores[metric_name][subset_percentage[bear_size][split]].items():
                     split_list.append(model_dict["on_split"])
                     score_total.append(model_dict["total"])
-                subtraction = np.subtract(split_list, score_total)
-                subtraction = np.absolute(subtraction)
-                subtraction = np.mean(subtraction)
-                columns[metric_name].append(subtraction)
-        print(columns)
-        plot_scores(columns, f"./metric_frequency_split_deviation_{bear_size}")
+
+                rel_dev = np.subtract(split_list, score_total)
+                rel_dev = np.divide(rel_dev, score_total)
+                rel_dev = np.mean(rel_dev)
+                columns_rel[metric_name].append(rel_dev)
+
+                abs_dev = np.subtract(split_list, score_total)
+                abs_dev = np.mean(abs_dev)
+                columns_abs[metric_name].append(abs_dev)
+        plot_diverging_bars_rel(columns_rel, f"./metric_frequency_split_rel_deviation_{bear_size}", "Mean Relative")
+        plot_diverging_bars_rel(columns_abs, f"./metric_frequency_split_abs_deviation_{bear_size}", "Mean Absolute")
