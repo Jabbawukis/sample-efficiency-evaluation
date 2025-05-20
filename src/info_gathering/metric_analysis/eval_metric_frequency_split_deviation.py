@@ -73,8 +73,8 @@ if __name__ == "__main__":
     ]
     splits = {"low": [], "high": []}
     subset_percentage = {
-        "big": {"dir": "0.8_0.2_2_0.2_0.8_seed_93", "low": "0.8_2_0.2", "high": "0.2_2_0.8"},
-        "small": {"dir": "0.8_0.2_8_0.2_0.8_seed_93", "low": "0.8_8_0.2", "high": "0.2_8_0.8"},
+        "big": {"dir": "0.8_0.2_2_0.2_0.8_seed_93_3000", "low": "0.8_2_0.2", "high": "0.2_2_0.8"},
+        "small": {"dir": "0.8_0.2_8_0.2_0.8_seed_93_3000", "low": "0.8_8_0.2", "high": "0.2_8_0.8"},
     }
     for bear_size in bear_sizes:
         columns_rel = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}

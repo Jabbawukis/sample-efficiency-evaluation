@@ -185,12 +185,12 @@ if __name__ == "__main__":
     subset_percentage = {
         "big": {
             "threshold": 2,
-            "total_num_samples": 1000,
+            "total_num_samples": 3000,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
         "small": {
             "threshold": 8,
-            "total_num_samples": 1000,
+            "total_num_samples": 3000,
             "splits": [(0.8, 0.2), (0.2, 0.8)],
         },
     }
@@ -211,7 +211,8 @@ if __name__ == "__main__":
             f"{subset_percentage[bear_size]['splits'][0][1]}_"
             f"{subset_percentage[bear_size]['threshold']}_"
             f"{subset_percentage[bear_size]['splits'][1][0]}_"
-            f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}"
+            f"{subset_percentage[bear_size]['splits'][1][1]}_seed_{seed}_"
+            f"{subset_percentage[bear_size]['total_num_samples']}"
         )
         output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{splits_file_appendix}/"
         os.makedirs(output_path, exist_ok=True)
@@ -292,6 +293,6 @@ if __name__ == "__main__":
                     "total": total_optimized_alpha,
                 }
         save_dict_as_json(model_scores, f"{output_path}/samples/model_scores.json")
-        final_diagram_output_path = f"{output_path}/dias/{bear_size}/{splits_file_appendix}/"
+        final_diagram_output_path = f"{output_path}/dias/"
         os.makedirs(final_diagram_output_path, exist_ok=True)
         plot_scores(model_scores, final_diagram_output_path)
