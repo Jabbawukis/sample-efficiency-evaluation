@@ -35,3 +35,16 @@ Clone the repository containing the experiment results and place it next to the 
 git clone https://github.com/Jabbawukis/sample-efficiency-evaluation-results
 ```
 Extract the contents as described in the [sample-efficiency-evaluation-results](https://github.com/Jabbawukis/sample-efficiency-evaluation-results) README.md file.
+
+## Citation
+
+```
+@inproceedings{
+anonymous2025from,
+title={From Data to Knowledge: Evaluating How Efficiently Language Models Learn Facts},
+author={Anonymous},
+booktitle={First Workshop on Large Language Model Memorization},
+year={2025},
+url={https://openreview.net/forum?id=iXHpdSGd8o}
+}
+```
