@@ -55,11 +55,11 @@ export TEXT_KEY="text" # Key for text content in the dataset
 ## Citation
 ```
 @inproceedings{
-anonymous2025from,
-title={From Data to Knowledge: Evaluating How Efficiently Language Models Learn Facts},
-author={Anonymous},
-booktitle={First Workshop on Large Language Model Memorization},
-year={2025},
-url={https://openreview.net/forum?id=iXHpdSGd8o}
+   anonymous2025from,
+   title={From Data to Knowledge: Evaluating How Efficiently Language Models Learn Facts},
+   author={Anonymous},
+   booktitle={First Workshop on Large Language Model Memorization},
+   year={2025},
+   url={https://openreview.net/forum?id=iXHpdSGd8o}
 }
 ```
