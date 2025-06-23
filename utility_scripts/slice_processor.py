@@ -1,7 +1,7 @@
 import argparse
 import os
 from utility import utility
-from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
+from fact_matcher import FactMatcherSimple
 import datasets
 
 # Argument parser
@@ -17,6 +17,7 @@ parser.add_argument("--matcher_type", type=str, required=True)
 parser.add_argument("--total_slices", type=int, required=True)
 parser.add_argument("--slice_num", type=int, required=True)
 parser.add_argument("--save_file_content", type=lambda x: x.lower() == "true", required=True)
+parser.add_argument("--text_key", type=str, default="text")
 
 args = parser.parse_args()
 
@@ -70,7 +71,7 @@ with open(output, "w", encoding="utf-8") as f:
 dataset_slice = datasets.load_dataset(args.dataset_path, args.dataset_name, split=f"train[{start_index}:{end_index}]")
 fact_matcher = create_matcher()
 
-fact_matcher.create_fact_statistics(dataset_slice, text_key="text", save_file_content=args.save_file_content)
+fact_matcher.create_fact_statistics(dataset_slice, text_key=args.text_key, save_file_content=args.save_file_content)
 
 # Save results
 relation_info_output = os.path.join(args.rel_info_output_dir, f"{args.slice_num:02d}_relation_occurrence_info.json")

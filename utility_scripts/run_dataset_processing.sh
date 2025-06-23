@@ -2,18 +2,6 @@
 
 CUR_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Configuration
-#NUM_SLICES=4                                   # Number of slices to divide the dataset into
-#DATASET_PATH=""                                # Pass as string
-#DATASET_NAME=""                                # Optional
-#BEAR_DATA_PATH="BEAR"
-#BEAR_FACTS_PATH="BEAR/BEAR-big"
-#PATH_TO_ALL_ENTITIES="BEAR/all_entities.json"  # Optional (Pass as string)
-#EXCLUDE_ALIASES="False"                         # Optional (Pass as string)
-#REL_INFO_OUTPUT_DIR="output"
-#MATCHER_TYPE="simple"
-#SAVE_FILE_CONTENT_IN_SLICE="True"                       # Pass as string (Should always be True)
-
 # Create output directory if it doesn't exist
 mkdir -p "$REL_INFO_OUTPUT_DIR"
 
@@ -46,6 +34,7 @@ for (( i=0; i<NUM_SLICES; i++ )); do
         --matcher_type "$MATCHER_TYPE" \
         --total_slices $NUM_SLICES \
         --slice_num $((i)) \
+        --text_key "$TEXT_KEY" \
         --save_file_content "$SAVE_FILE_CONTENT_IN_SLICE" &
 
 done

@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer
-from sample_efficiency_evaluation import FactMatcherSimple
+from src import FactMatcherSimple
 from utility.utility import load_json_dict
 
 context_length = 128

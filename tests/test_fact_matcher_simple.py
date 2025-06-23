@@ -1,9 +1,9 @@
 import logging
 import os
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from sample_efficiency_evaluation import FactMatcherSimple
+from src import FactMatcherSimple
 
 
 class FactMatcherSimpleTest(unittest.TestCase):
