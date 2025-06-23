@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch, MagicMock
 
-from src import KnowledgeProber
+from sample_efficiency_evaluation import KnowledgeProber
 from utility import utility
 
 

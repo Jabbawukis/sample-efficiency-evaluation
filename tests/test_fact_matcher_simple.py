@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from src import FactMatcherSimple
+from sample_efficiency_evaluation import FactMatcherSimple
 
 
 class FactMatcherSimpleTest(unittest.TestCase):

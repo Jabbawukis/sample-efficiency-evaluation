@@ -1,7 +1,7 @@
 import argparse
 import os
 from utility import utility
-from fact_matcher import FactMatcherSimple
+from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
 import datasets
 
 # Argument parser

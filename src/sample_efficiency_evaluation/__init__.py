@@ -1,0 +1,2 @@
+from sample_efficiency_evaluation.fact_matcher import FactMatcherSimple
+from sample_efficiency_evaluation.knowledge_prober import KnowledgeProber

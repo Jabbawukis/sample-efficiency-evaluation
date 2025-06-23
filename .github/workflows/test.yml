@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
     paths:
     - "tests/**"
-    - "src/**"
+    - "../../sample_efficiency_evaluation/**"
   pull_request:
     branches: [ "main" ]
     paths:
     - "tests/**"
-    - "src/**"
+    - "../../sample_efficiency_evaluation/**"
     - ".github/workflows/test.yml"
     - "pyproject.toml"
 jobs:
