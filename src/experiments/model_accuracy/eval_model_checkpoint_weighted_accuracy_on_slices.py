@@ -1,9 +1,9 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-import info_gathering.paths as paths
+import experiments.paths as paths
 
-from info_gathering.model_accuracy.util import (
+from experiments.model_accuracy.util import (
     get_checkpoint_occurrence_weighted_accuracy,
     get_checkpoint_occurrence_weighted_accuracy_overall,
 )

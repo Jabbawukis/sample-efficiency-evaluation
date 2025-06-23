@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 import numpy as np
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 from tqdm import tqdm
 

@@ -5,23 +5,23 @@ import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 from utility.utility import save_dict_as_json, load_json_dict, split_relation_occurrences_info_json_on_occurrences
 from lm_pub_quiz import DatasetResults
 
-from info_gathering.model_accuracy.util import (
+from experiments.model_accuracy.util import (
     get_checkpoint_accuracy_overall,
     get_checkpoint_occurrence_weighted_accuracy,
     get_checkpoint_occurrence_weighted_accuracy_overall,
 )
-from info_gathering.model_accuracy.eval_model_checkpoint_weighted_accuracy_on_slices import (
+from experiments.model_accuracy.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
     optimize,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
 )
 

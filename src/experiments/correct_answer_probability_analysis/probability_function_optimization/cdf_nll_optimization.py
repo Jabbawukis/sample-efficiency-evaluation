@@ -4,7 +4,7 @@ import logging
 
 from scipy.optimize import minimize
 
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.util import (
     run_optimization,
     negative_log_likelihood,
 )

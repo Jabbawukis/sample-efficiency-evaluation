@@ -3,7 +3,7 @@ import os
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 from utility.utility import load_json_dict, save_dict_as_json
 

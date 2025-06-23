@@ -3,17 +3,17 @@ import numpy as np
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 from utility.utility import load_json_dict, save_dict_as_json
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.cdf_nll_optimization import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.cdf_nll_optimization import (
     vectorized_cdf,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.psf_nll_optimization import (
     vectorized_psf,
     vectorized_psf_default,
 )
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
     negative_log_likelihood,
 )

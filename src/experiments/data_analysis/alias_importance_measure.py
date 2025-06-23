@@ -1,5 +1,5 @@
 import os
-import info_gathering.paths as paths
+import experiments.paths as paths
 from utility.utility import load_json_dict
 
 

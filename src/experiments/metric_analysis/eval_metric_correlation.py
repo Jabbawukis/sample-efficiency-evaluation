@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from utility.utility import load_json_dict
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 if __name__ == "__main__":
     bear_sizes = ["small", "big"]

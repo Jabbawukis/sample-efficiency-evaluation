@@ -3,10 +3,10 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import info_gathering.paths as paths
+import experiments.paths as paths
 import math
 
-from info_gathering.model_accuracy.util import get_checkpoint_occurrence_bucket_accuracy
+from experiments.model_accuracy.util import get_checkpoint_occurrence_bucket_accuracy
 
 
 def plot_checkpoint_accuracy(_data, _final_diagram_output_path):

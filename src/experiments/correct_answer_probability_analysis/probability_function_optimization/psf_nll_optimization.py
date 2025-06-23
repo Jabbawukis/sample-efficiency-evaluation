@@ -1,11 +1,11 @@
 import logging
 import os
 import numpy as np
-import info_gathering.paths as paths
+import experiments.paths as paths
 
 from scipy.optimize import minimize
 from tqdm import tqdm
-from info_gathering.correct_answer_probability_analysis.probability_function_optimization.util import (
+from experiments.correct_answer_probability_analysis.probability_function_optimization.util import (
     get_slice_data,
     plot_params,
 )
