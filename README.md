@@ -27,13 +27,14 @@ This project aims to measure the sample efficiency of different language model a
 
 ### Get the BEAR Dataset
 
-1. Download the BEAR dataset from the following link: [BEAR Dataset](https://github.com/lm-pub-quiz/BEAR)
+1. Clone the BEAR dataset repository from the following link: [BEAR Dataset](https://github.com/lm-pub-quiz/BEAR)
 
-2. Place the downloaded dataset in the appropriate directory as specified in your configuration (or simply inside this directory).
+2. Place the BEAR dataset in the appropriate directory as specified in your configuration (or simply inside this directory).
 
 ### Usage
 
-To extract BEAR fact occurrences from a dataset, export the necessary environment variables and run the dataset processing script:
+To extract BEAR fact occurrences from a HuggingFace dataset,
+export the necessary environment variables and run the dataset processing script:
 
 ```bash
 
