@@ -5,7 +5,6 @@ import pandas as pd
 import seaborn as sns
 import math
 import logging
-from typing import Union, Optional
 from tqdm import tqdm
 
 import experiments.paths as paths
@@ -48,7 +47,9 @@ class ModelAccuracyEvaluator:
         for idx, checkpoint in enumerate(tqdm(sorted_checkpoints, desc="Evaluating Probe results in slices")):
             if subset_indices_path:
                 subset_indices_dict: dict = load_json_dict(os.path.realpath(subset_indices_path))
-                bear_results = DatasetResults.from_path(f"{path_to_checkpoints_probing_results}/{checkpoint}").filter_subset(subset_indices_dict)
+                bear_results = DatasetResults.from_path(
+                    f"{path_to_checkpoints_probing_results}/{checkpoint}"
+                ).filter_subset(subset_indices_dict)
             else:
                 bear_results = DatasetResults.from_path(f"{path_to_checkpoints_probing_results}/{checkpoint}")
 
@@ -58,7 +59,9 @@ class ModelAccuracyEvaluator:
                     lambda row: row.answer_idx == np.argmax(row.pll_scores), axis=1
                 )
                 for answer_row in relation_instance_table.itertuples():
-                    entity_dict[answer_row.sub_id]["occurrences_increase"][idx]["correct"] = answer_row.correctly_predicted
+                    entity_dict[answer_row.sub_id]["occurrences_increase"][idx][
+                        "correct"
+                    ] = answer_row.correctly_predicted
                     entity_dict[answer_row.sub_id]["occurrences_increase"][idx]["checkpoint"] = checkpoint
                     assert entity_dict[answer_row.sub_id]["occurrences_increase"][idx]["Slice"] == idx
 
@@ -88,7 +91,7 @@ class ModelAccuracyEvaluator:
         checkpoints = []
         for rel_id, entity_dict in increasing_occurrences.items():
             for ent_id, fact in entity_dict.items():
-                checkpoints = [d['checkpoint'] for d in fact['occurrences_increase']]
+                checkpoints = [d["checkpoint"] for d in fact["occurrences_increase"]]
                 break
             break
 
@@ -122,22 +125,37 @@ class ModelAccuracyEvaluator:
             for key, bucket in relation_accuracy_scores_dict.items():
                 if bucket["total"] == 0:
                     continue
-                accuracy_scores_output[key] = {"accuracy": bucket["correct"] / bucket["total"], "correct": bucket["correct"], "total": bucket["total"]}
+                accuracy_scores_output[key] = {
+                    "accuracy": bucket["correct"] / bucket["total"],
+                    "correct": bucket["correct"],
+                    "total": bucket["total"],
+                }
             final_output[_checkpoint] = accuracy_scores_output
 
         out_put_data = []
         for _checkpoint, buckets in final_output.items():
             for bucket, stats in buckets.items():
-                out_put_data.append({"Checkpoint": _checkpoint, "Frequency Buckets": bucket, "Accuracy": stats["accuracy"], "Frequency": stats["total"]})
+                out_put_data.append(
+                    {
+                        "Checkpoint": _checkpoint,
+                        "Frequency Buckets": bucket,
+                        "Accuracy": stats["accuracy"],
+                        "Frequency": stats["total"],
+                    }
+                )
         return out_put_data
 
-    def get_checkpoint_occurrence_weighted_accuracy(self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable, on_buckets: bool):
+    def get_checkpoint_occurrence_weighted_accuracy(
+        self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable, on_buckets: bool
+    ):
         if on_buckets:
             return self._get_weighted_accuracy_on_buckets(path_to_increasing_occurrences_in_slices, weighting_function)
         else:
             return self._get_weighted_accuracy_overall(path_to_increasing_occurrences_in_slices, weighting_function)
 
-    def _get_weighted_accuracy_on_buckets(self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable):
+    def _get_weighted_accuracy_on_buckets(
+        self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable
+    ):
         increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
         final_output = {}
 
@@ -145,7 +163,11 @@ class ModelAccuracyEvaluator:
             sum_of_weights = []
             relation_accuracy_scores_dict = {"0": {"correct": 0, "total": 0, "lower_bound": 0}}
             for occurrence in self.relation_occurrence_buckets:
-                relation_accuracy_scores_dict[f"{occurrence[0]}-{occurrence[1]}"] = {"correct": 0, "total": 0, "lower_bound": occurrence[0]}
+                relation_accuracy_scores_dict[f"{occurrence[0]}-{occurrence[1]}"] = {
+                    "correct": 0,
+                    "total": 0,
+                    "lower_bound": occurrence[0],
+                }
 
             for relation_id, entity_dict in increasing_occurrences.items():
                 for entity_id, fact in entity_dict.items():
@@ -180,7 +202,9 @@ class ModelAccuracyEvaluator:
             final_output[idx] = (1 / sum_of_weights) * sum_of_accuracy_scores if sum_of_weights > 0 else 0
         return final_output
 
-    def _get_weighted_accuracy_overall(self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable):
+    def _get_weighted_accuracy_overall(
+        self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable
+    ):
         increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
         final_output = {}
 
@@ -204,7 +228,9 @@ class ModelAccuracyEvaluator:
             final_output[idx] = sum_of_weights / sum_of_weights_total if sum_of_weights_total > 0 else 0
         return final_output
 
-    def plot_accuracy_scores(self, scores_models: dict, output_path: str, output_diagram_name: str, title: str, ylabel: str):
+    def plot_accuracy_scores(
+        self, scores_models: dict, output_path: str, output_diagram_name: str, title: str, ylabel: str
+    ):
         plt.figure(figsize=(16, 10))
         plt.xticks(range(0, self.num_slices))
 
@@ -245,15 +271,41 @@ class ModelAccuracyEvaluator:
             ax = axes[i]
             checkpoint_data = df[df["Checkpoint"] == checkpoint]
             ax2 = ax.twinx()
-            accuracy_plot = sns.barplot(data=checkpoint_data, x="Frequency Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy")
+            accuracy_plot = sns.barplot(
+                data=checkpoint_data, x="Frequency Buckets", y="Accuracy", ax=ax, color="blue", label="Accuracy"
+            )
             for p in accuracy_plot.patches:
                 value = f"{p.get_height():.2f}"
-                ax.text(p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="blue", fontsize=8)
+                ax.text(
+                    p.get_x() + p.get_width() / 2,
+                    p.get_height(),
+                    value,
+                    ha="center",
+                    va="bottom",
+                    color="blue",
+                    fontsize=8,
+                )
 
-            occurrences_plot = sns.barplot(data=checkpoint_data, x="Frequency Buckets", y="Frequency", ax=ax2, color="red", alpha=0.5, label="Frequency")
+            occurrences_plot = sns.barplot(
+                data=checkpoint_data,
+                x="Frequency Buckets",
+                y="Frequency",
+                ax=ax2,
+                color="red",
+                alpha=0.5,
+                label="Frequency",
+            )
             for p in occurrences_plot.patches:
                 value = f"{int(p.get_height())}"
-                ax2.text(p.get_x() + p.get_width() / 2, p.get_height(), value, ha="center", va="bottom", color="red", fontsize=8)
+                ax2.text(
+                    p.get_x() + p.get_width() / 2,
+                    p.get_height(),
+                    value,
+                    ha="center",
+                    va="bottom",
+                    color="red",
+                    fontsize=8,
+                )
 
             ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
             ax.set_ylabel("Accuracy", color="blue")
@@ -274,13 +326,21 @@ class ModelAccuracyEvaluator:
         plt.clf()
         plt.close()
 
+
 def weighting_function(occurrences, lambda_=0.05):
     return np.exp(-lambda_ * occurrences) if occurrences > 0 else 0
 
+
 if __name__ == "__main__":
     models = [
-        "gpt2_209m", "gpt2_355m", "mamba2_172m", "mamba2_432m",
-        "xlstm_247m", "xlstm_406m", "llama_208m", "llama_360m",
+        "gpt2_209m",
+        "gpt2_355m",
+        "mamba2_172m",
+        "mamba2_432m",
+        "xlstm_247m",
+        "xlstm_406m",
+        "llama_208m",
+        "llama_360m",
     ]
     bear_sizes = ["big", "small"]
     abs_path = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-evaluation")[0]
@@ -290,7 +350,9 @@ if __name__ == "__main__":
     # Task 1: Get model checkpoint answers
     for bear_size in bear_sizes:
         for model in models:
-            subset_path = f"{abs_path}/sample-efficiency-evaluation/BEAR/bear_lite_indices.json" if bear_size == "small" else None
+            subset_path = (
+                f"{abs_path}/sample-efficiency-evaluation/BEAR/bear_lite_indices.json" if bear_size == "small" else None
+            )
             evaluator.get_model_checkpoint_answers(bear_size, model, subset_path)
 
     # Task 2: Evaluate and plot overall accuracy
@@ -302,13 +364,19 @@ if __name__ == "__main__":
             model_accuracy_on_slices[model] = evaluator.get_checkpoint_accuracy_overall(path_to_data)
 
         save_dict_as_json(model_accuracy_on_slices, f"{output_path}/model_scores.json")
-        evaluator.plot_accuracy_scores(model_accuracy_on_slices, output_path, f"accuracy_on_slices_bear_{bear_size}", "Accuracy Scores Over All Facts", "Accuracy Score")
+        evaluator.plot_accuracy_scores(
+            model_accuracy_on_slices,
+            output_path,
+            f"accuracy_on_slices_bear_{bear_size}",
+            "Accuracy Scores Over All Facts",
+            "Accuracy Score",
+        )
 
     # Task 3: Evaluate and plot bucket accuracy
     for bear_size in bear_sizes:
         for model in models:
             path_to_data = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-            output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
+            output_path = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/combined_accuracy_plots_grid.png"
             bucket_accuracy_data = evaluator.get_checkpoint_occurrence_bucket_accuracy(path_to_data)
             evaluator.plot_bucket_accuracy(bucket_accuracy_data, output_path)
 
@@ -320,7 +388,15 @@ if __name__ == "__main__":
             output_path = f"{abs_path}/sample-efficiency-evaluation-results/sample_efficiency_measures/weighted_accuracy_over_slices/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{desc}"
             for model in models:
                 path_to_data = f"{abs_path}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}"
-                model_weighted_accuracy[model] = evaluator.get_checkpoint_occurrence_weighted_accuracy(path_to_data, weighting_function, on_buckets)
+                model_weighted_accuracy[model] = evaluator.get_checkpoint_occurrence_weighted_accuracy(
+                    path_to_data, weighting_function, weight_on_buckets
+                )
 
             save_dict_as_json(model_weighted_accuracy, f"{output_path}/model_scores.json")
-            evaluator.plot_accuracy_scores(model_weighted_accuracy, output_path, f"weighted_accuracy_on_slices_bear_{bear_size}", "Weighted Accuracy Scores", "Weighted Accuracy Score")
+            evaluator.plot_accuracy_scores(
+                model_weighted_accuracy,
+                output_path,
+                f"weighted_accuracy_on_slices_bear_{bear_size}",
+                "Weighted Accuracy Scores",
+                "Weighted Accuracy Score",
+            )
