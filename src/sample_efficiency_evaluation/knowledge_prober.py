@@ -11,7 +11,7 @@ from utility import utility
 
 class KnowledgeProber:
     """
-    KnowledgeProber class to probe the model with BEAR facts and analyze the results.
+    KnowledgeProber class to probe a model with BEAR facts and analyze the results.
     """
 
     def __init__(self, path_to_relation_occurrence_info_file: str, num_buckets: int = 14):
