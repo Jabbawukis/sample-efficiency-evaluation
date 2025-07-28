@@ -17,7 +17,7 @@ The results are plotted and saved as diagrams and JSON files.
 
 ## 1. Probability Function Optimization (requires step 1. of model performance analysis)
 
-Probability [functions](correct_answer_probability_analysis/)
+Probability [functions](answer_probability_analysis/)
 that approximate the probability of the model checkpoint to give the correct answer given 
 the number of occurrences of the fact in the training data, are optimized.
 
@@ -36,6 +36,6 @@ Hence, the optimized $x_0$ and $L_0$ values are used for the PSF_EXT2 function a
 
 ## 2. Evaluate the probability functions (requires step 1. of answer probability analysis)
 
-The probability functions are [evaluated](correct_answer_probability_analysis/eval_probability_functions_nll.py) for each model checkpoint and the results are saved as .png files.
+The probability functions are [evaluated](answer_probability_analysis/eval_probability_functions_nll.py) for each model checkpoint and the results are saved as .png files.
 Here, the negative log likelihood loss is calculated for each model checkpoint and for each probability function.
 The results are saved as .png files and .json files.
