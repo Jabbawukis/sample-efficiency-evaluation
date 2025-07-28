@@ -40,7 +40,7 @@ export the necessary environment variables and run the dataset processing script
 
 export NUM_SLICES=3 # Number of slices to process
 export DATASET_PATH="PatrickHaller/pile-10M-words" # Path to the dataset
-export DATASET_NAME="" # Name of the dataset (optional, can be left empty)
+export DATASET_NAME="" # Name of the dataset, e.g. "wikitext-103-raw-v1" from Salesforce/wikitext (optional, can be left empty)
 export BEAR_DATA_PATH="BEAR" # Path to the BEAR dataset
 export BEAR_FACTS_PATH="BEAR/BEAR-big" # Path to the BEAR facts
 export PATH_TO_ALL_ENTITIES="BEAR/all_entities.json" # Path to all entities in the BEAR dataset
