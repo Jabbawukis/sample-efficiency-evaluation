@@ -4,10 +4,10 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from utility.utility import load_json_dict, save_dict_as_json
-from experiments.answer_probability_analysis.optimization_utils import (
+from src.experiments.answer_probability_analysis.optimization_utils import (
     negative_log_likelihood,
 )
-from experiments.answer_probability_analysis.config import (
+from src.experiments.answer_probability_analysis.config import (
     ABS_PATH,
     MODELS,
     BEAR_SIZES,

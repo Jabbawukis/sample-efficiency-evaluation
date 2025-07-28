@@ -1,13 +1,12 @@
 import os
-import experiments.paths as paths
-from experiments.answer_probability_analysis.cdf_nll_optimization import (
+from src.experiments.answer_probability_analysis.cdf_nll_optimization import (
     vectorized_cdf,
 )
-from experiments.answer_probability_analysis.psf_nll_optimization import (
+from src.experiments.answer_probability_analysis.psf_nll_optimization import (
     vectorized_psf,
     vectorized_psf_default,
 )
-from experiments.answer_probability_analysis.optimization_utils import (
+from src.experiments.answer_probability_analysis.optimization_utils import (
     get_slice_data,
 )
 
