@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from utility.utility import load_json_dict
-from src.experiments.metric_analysis.config import BEAR_SIZES, SUBSET_PERCENTAGE, ABS_PATH
+from src.experiments.metric_analysis.config import BEAR_SIZES, SUBSET_PERCENTAGE_RESULTS_INFO, ABS_PATH
 from src.experiments.metric_analysis.utils import plot_diverging_bars_rel
 
 
@@ -10,7 +10,7 @@ def main():
     for bear_size in BEAR_SIZES:
         columns_rel = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
         columns_abs = {"Accuracy": [], "WASB": [], "WAF": [], "α": []}
-        path_to_split_results = f"{ABS_PATH}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{SUBSET_PERCENTAGE[bear_size]['dir']}"
+        path_to_split_results = f"{ABS_PATH}/sample-efficiency-evaluation-results/sample_efficiency_measures/metric_robustness/wikimedia_wikipedia_20231101_en/BEAR-{bear_size}/{SUBSET_PERCENTAGE_RESULTS_INFO[bear_size]['dir']}"
         plot_output = f"{path_to_split_results}/split_difference/"
         os.makedirs(plot_output, exist_ok=True)
         model_scores = load_json_dict(f"{path_to_split_results}/samples/model_scores.json")
@@ -18,7 +18,9 @@ def main():
             for metric_name, _ in columns_rel.items():
                 score_total = []
                 split_list = []
-                for model_name, model_dict in model_scores[metric_name][SUBSET_PERCENTAGE[bear_size][split]].items():
+                for model_name, model_dict in model_scores[metric_name][
+                    SUBSET_PERCENTAGE_RESULTS_INFO[bear_size][split]
+                ].items():
                     split_list.append(model_dict["on_split"])
                     score_total.append(model_dict["total"])
 

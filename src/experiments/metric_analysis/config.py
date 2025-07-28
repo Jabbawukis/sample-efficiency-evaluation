@@ -5,13 +5,13 @@ ABS_PATH = os.path.abspath(os.path.dirname(__file__)).split("sample-efficiency-e
 BEAR_SIZES = ["small", "big"]
 MODELS = [
     "gpt2_209m",
-    "llama_208m",
-    "xlstm_247m",
-    "mamba2_172m",
     "gpt2_355m",
-    "llama_360m",
-    "xlstm_406m",
+    "mamba2_172m",
     "mamba2_432m",
+    "xlstm_247m",
+    "xlstm_406m",
+    "llama_208m",
+    "llama_360m",
 ]
 
 COLUMNS = {
@@ -22,11 +22,22 @@ COLUMNS = {
     "λ": f"{ABS_PATH}/sample-efficiency-evaluation-results/probing_results/BEAR-{{bear_size}}/{{model}}/{paths.model_optimized_params_wikipedia_20231101_en}/cdf_optimized_lambdas.json",
 }
 
-SUBSET_PERCENTAGE = {
+SUBSET_PERCENTAGE_RESULTS_INFO = {
     "big": {"dir": "0.8_0.2_2_0.2_0.8_seed_93_3000", "low": "0.8_2_0.2", "high": "0.2_2_0.8"},
     "small": {"dir": "0.8_0.2_8_0.2_0.8_seed_93_3000", "low": "0.8_8_0.2", "high": "0.2_8_0.8"},
 }
-
+SUBSET_PERCENTAGE = {
+    "big": {
+        "threshold": 2,
+        "total_num_samples": 3000,
+        "splits": [(0.8, 0.2), (0.2, 0.8)],
+    },
+    "small": {
+        "threshold": 8,
+        "total_num_samples": 3000,
+        "splits": [(0.8, 0.2), (0.2, 0.8)],
+    },
+}
 NUM_BUCKETS = 14
 RELATION_OCCURRENCE_BUCKETS = []
 for i in range(NUM_BUCKETS):
