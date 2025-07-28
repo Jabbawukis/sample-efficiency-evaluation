@@ -7,7 +7,7 @@ import math
 import logging
 from tqdm import tqdm
 
-import experiments.paths as paths
+import src.experiments.paths as paths
 from utility.utility import save_dict_as_json, count_increasing_occurrences_in_slices, load_json_dict
 from lm_pub_quiz import DatasetResults
 
@@ -67,11 +67,13 @@ class ModelAccuracyEvaluator:
 
         save_dict_as_json(increasing_occurrences, output_path_to_increasing_occurrences_in_slices)
 
-    def get_checkpoint_accuracy_overall(self, path_to_increasing_occurrences_in_slices: str):
+    def get_checkpoint_accuracy_overall(self, path_to_increasing_occurrences_in_slices: str, num_slices: int = None):
+        if num_slices is None:
+            num_slices = self.num_slices
         increasing_occurrences = load_json_dict(path_to_increasing_occurrences_in_slices)
         final_output = {}
 
-        for idx in tqdm(range(self.num_slices), desc="Calculating overall accuracy"):
+        for idx in tqdm(range(num_slices), desc="Calculating overall accuracy"):
             correct = 0
             total = 0
             for relation_id, entity_dict in increasing_occurrences.items():
@@ -146,8 +148,14 @@ class ModelAccuracyEvaluator:
         return out_put_data
 
     def get_checkpoint_occurrence_weighted_accuracy(
-        self, path_to_increasing_occurrences_in_slices: str, weighting_function: callable, on_buckets: bool
+        self,
+        path_to_increasing_occurrences_in_slices: str,
+        weighting_function: callable,
+        on_buckets: bool,
+        num_slices: int = None,
     ):
+        if num_slices:
+            self.num_slices = num_slices
         if on_buckets:
             return self._get_weighted_accuracy_on_buckets(path_to_increasing_occurrences_in_slices, weighting_function)
         else:
