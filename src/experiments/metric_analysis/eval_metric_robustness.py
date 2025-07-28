@@ -5,18 +5,14 @@ from tqdm import tqdm
 import experiments.paths as paths
 from lm_pub_quiz import DatasetResults
 from utility.utility import save_dict_as_json, load_json_dict, split_relation_occurrences_info_json_on_occurrences
-from experiments.model_accuracy.util import (
-    get_checkpoint_accuracy_overall,
-    get_checkpoint_occurrence_weighted_accuracy,
-    get_checkpoint_occurrence_weighted_accuracy_overall,
-)
+from src.experiments.model_accuracy.accuracy_evaluation import ModelAccuracyEvaluator
 from experiments.model_accuracy.eval_model_checkpoint_weighted_accuracy_on_slices import (
     weighting_function,
 )
-from experiments.correct_answer_probability_analysis.psf_nll_optimization import (
+from src.experiments.answer_probability_analysis.psf_nll_optimization import (
     optimize,
 )
-from experiments.correct_answer_probability_analysis.optimization_utils import (
+from src.experiments.answer_probability_analysis.optimization_utils import (
     get_slice_data,
 )
 from src.experiments.metric_analysis.config import (
@@ -24,7 +20,6 @@ from src.experiments.metric_analysis.config import (
     MODELS,
     BEAR_SIZES,
     SUBSET_PERCENTAGE,
-    RELATION_OCCURRENCE_BUCKETS,
     SEED,
 )
 from src.experiments.metric_analysis.utils import (
@@ -78,6 +73,7 @@ def get_model_answer_for_occurrences_in_data(
 
 
 def main():
+    evaluator = ModelAccuracyEvaluator(MODELS, BEAR_SIZES, ABS_PATH)
     psf_funcs = {
         "small": vectorized_psf,
         "big": vectorized_psf_big,
@@ -120,36 +116,40 @@ def main():
             for split, fact_dict in result.items():
                 save_dict_as_json(fact_dict, f"{samples_path}/{model}_{split}_bear_{bear_size}.json")
                 model_scores["Accuracy"][split][model] = {
-                    "on_split": get_checkpoint_accuracy_overall(
-                        1, f"{samples_path}/{model}_{split}_bear_{bear_size}.json"
+                    "on_split": evaluator.get_checkpoint_accuracy_overall(
+                        f"{samples_path}/{model}_{split}_bear_{bear_size}.json", num_slices=1
                     )[0],
-                    "total": get_checkpoint_accuracy_overall(
-                        42,
+                    "total": evaluator.get_checkpoint_accuracy_overall(
                         f"{ABS_PATH}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
+                        num_slices=42,
                     )[41],
                 }
                 model_scores["WASB"][split][model] = {
-                    "on_split": get_checkpoint_occurrence_weighted_accuracy(
-                        1,
+                    "on_split": evaluator.get_checkpoint_occurrence_weighted_accuracy(
                         f"{samples_path}/{model}_{split}_bear_{bear_size}.json",
                         weighting_function,
-                        RELATION_OCCURRENCE_BUCKETS,
+                        on_buckets=True,
+                        num_slices=1,
                     )[0],
-                    "total": get_checkpoint_occurrence_weighted_accuracy(
-                        42,
+                    "total": evaluator.get_checkpoint_occurrence_weighted_accuracy(
                         f"{ABS_PATH}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
                         weighting_function,
-                        RELATION_OCCURRENCE_BUCKETS,
+                        on_buckets=True,
+                        num_slices=42,
                     )[41],
                 }
                 model_scores["WAF"][split][model] = {
-                    "on_split": get_checkpoint_occurrence_weighted_accuracy_overall(
-                        1, f"{samples_path}/{model}_{split}_bear_{bear_size}.json", weighting_function
+                    "on_split": evaluator.get_checkpoint_occurrence_weighted_accuracy(
+                        f"{samples_path}/{model}_{split}_bear_{bear_size}.json",
+                        weighting_function,
+                        on_buckets=False,
+                        num_slices=1,
                     )[0],
-                    "total": get_checkpoint_occurrence_weighted_accuracy_overall(
-                        42,
+                    "total": evaluator.get_checkpoint_occurrence_weighted_accuracy(
                         f"{ABS_PATH}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/{paths.increasing_occurrences_in_slices_wikipedia_20231101_en}",
                         weighting_function,
+                        on_buckets=False,
+                        num_slices=42,
                     )[41],
                 }
                 model_alphas_dict[split][model] = get_slice_data(

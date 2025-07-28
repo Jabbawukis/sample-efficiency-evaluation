@@ -5,7 +5,7 @@ import experiments.paths as paths
 
 from scipy.optimize import minimize
 from tqdm import tqdm
-from experiments.correct_answer_probability_analysis.probability_function_optimization.util import (
+from src.experiments.answer_probability_analysis.optimization_utils import (
     get_slice_data,
     plot_params,
 )
