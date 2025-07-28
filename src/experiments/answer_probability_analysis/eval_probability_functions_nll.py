@@ -61,18 +61,12 @@ def calculate_nll_for_model(model, bear_size):
 
     for function in FUNCTIONS:
         nll_sums = []
-        slice_data = function["get_slice_data"](
-            NUM_SLICES, path_to_increasing_occurrences_in_slices
-        )
+        slice_data = function["get_slice_data"](NUM_SLICES, path_to_increasing_occurrences_in_slices)
         optimized_params_dict = load_json_dict(
             f"{ABS_PATH}/sample-efficiency-evaluation-results/probing_results/BEAR-{bear_size}/{model}/wikimedia_wikipedia_20231101_en/evaluation_on_slices/correct_answer_probability_optimized_params/optimized_params/{function['file_name']}"
         )
-        list_of_optimized_params: list[dict] = optimized_params_dict[
-            function["Params"]
-        ]
-        available_params_for_slices = {
-            param["slice"]: param for param in list_of_optimized_params
-        }
+        list_of_optimized_params: list[dict] = optimized_params_dict[function["Params"]]
+        available_params_for_slices = {param["slice"]: param for param in list_of_optimized_params}
 
         for slice_id, _slice_data in slice_data.items():
             if slice_id not in available_params_for_slices:
@@ -83,11 +77,7 @@ def calculate_nll_for_model(model, bear_size):
             total_samples = _slice_data["total_samples"]
             slice_optimized_param = available_params_for_slices[slice_id]
             optimized_param = slice_optimized_param[function["Param"]]
-            additional_args = (
-                slice_optimized_param["args"]
-                if "args" in slice_optimized_param
-                else None
-            )
+            additional_args = slice_optimized_param["args"] if "args" in slice_optimized_param else None
 
             nll_sums.append(
                 {
@@ -113,17 +103,14 @@ def calculate_nll_for_model(model, bear_size):
                 }
             )
 
-        model_dict[model].append(
-            {"Function": function["function_name"], "NLL_values": nll_sums}
-        )
+        model_dict[model].append({"Function": function["function_name"], "NLL_values": nll_sums})
     return model_dict
 
 
 def main():
     for bear_size in BEAR_SIZES:
         nll_on_slices = [
-            calculate_nll_for_model(model, bear_size)
-            for model in tqdm(MODELS, desc="Get NLL on slices for models")
+            calculate_nll_for_model(model, bear_size) for model in tqdm(MODELS, desc="Get NLL on slices for models")
         ]
 
         for model_nll in nll_on_slices:
