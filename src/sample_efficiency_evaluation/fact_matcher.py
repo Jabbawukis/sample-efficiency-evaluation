@@ -9,7 +9,6 @@ from tqdm import tqdm
 from spacy.lang.en import English
 
 from utility import utility
-from utility.utility import word_in_sentence, load_json_dict, load_json_line_dict
 
 
 class FactMatcherBase(ABC):
@@ -87,13 +86,13 @@ class FactMatcherBase(ABC):
         :return: Relation dictionary
         """
         relation_dict: dict = {}
-        bear_relation_info_dict: dict = load_json_dict(bear_relation_info_path)
+        bear_relation_info_dict: dict = utility.load_json_dict(bear_relation_info_path)
         all_entities_dict: dict = {}
         if path_to_all_entities:
-            all_entities_dict = load_json_dict(path_to_all_entities)
+            all_entities_dict = utility.load_json_dict(path_to_all_entities)
         for relation_key, _ in bear_relation_info_dict.items():
             try:
-                fact_list: list[dict] = load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
+                fact_list: list[dict] = utility.load_json_line_dict(f"{bear_facts_path}/{relation_key}.jsonl")
                 relation_dict.update({relation_key: {}})
             except FileNotFoundError:
                 logging.warning("File not found: %s/%s.jsonl", bear_facts_path, relation_key)
@@ -231,7 +230,7 @@ class FactMatcherSimple(FactMatcherBase):
             obj_label: str = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_label"]
             obj_aliases: list[str] = self.entity_relation_occurrence_info_dict[relation_id][subj_id]["obj_aliases"]
 
-            if word_in_sentence(obj_label, sentence, len(obj_label) > self.min_entity_name_length):
+            if utility.word_in_sentence(obj_label, sentence, len(obj_label) > self.min_entity_name_length):
                 if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                     self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                 else:
@@ -243,7 +242,7 @@ class FactMatcherSimple(FactMatcherBase):
                 continue
 
             for alias in obj_aliases:
-                if word_in_sentence(alias, sentence, len(alias) > self.min_entity_name_length):
+                if utility.word_in_sentence(alias, sentence, len(alias) > self.min_entity_name_length):
                     if sentence in self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"]:
                         self.entity_relation_occurrence_info_dict[relation_id][subj_id]["sentences"][sentence] += 1
                     else:
